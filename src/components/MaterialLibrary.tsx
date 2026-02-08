@@ -43,125 +43,166 @@ const materials = [
 export default function MaterialLibrary() {
   const containerRef = useRef(null);
   
-  // Total scroll height = 5 "rolls" per product × 6 products = 30 scroll units
-  // Each product gets equal portion of scroll
-  const scrollPerProduct = 1 / materials.length;
-
-  return (
-    <section ref={containerRef} className="relative bg-[#1a1a1a]" style={{ height: `${materials.length * 500}vh` }}>
-      {/* Sticky container */}
-      <div className="sticky top-0 h-screen overflow-hidden">
-        {/* Section label */}
-        <div className="absolute top-8 left-8 z-30">
-          <span className="label text-white/50">The Material Library</span>
-        </div>
-
-        {/* Products */}
-        {materials.map((material, index) => (
-          <ProductZoom 
-            key={index}
-            material={material}
-            index={index}
-            totalProducts={materials.length}
-            containerRef={containerRef}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ProductZoom({ 
-  material, 
-  index, 
-  totalProducts,
-  containerRef 
-}: { 
-  material: typeof materials[0];
-  index: number;
-  totalProducts: number;
-  containerRef: React.RefObject<HTMLElement>;
-}) {
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
   });
 
-  // Each product gets its own scroll segment
+  return (
+    <section 
+      ref={containerRef} 
+      className="relative bg-[#1a1a1a]" 
+      style={{ height: `${materials.length * 500}vh` }}
+    >
+      {/* Sticky container */}
+      <div className="sticky top-0 h-screen overflow-hidden">
+        
+        {/* Background images - each zooms when active */}
+        {materials.map((material, index) => (
+          <ZoomingBackground 
+            key={`bg-${index}`}
+            material={material}
+            index={index}
+            totalProducts={materials.length}
+            scrollYProgress={scrollYProgress}
+          />
+        ))}
+
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/50 z-10" />
+
+        {/* Content */}
+        <div className="relative z-20 h-full flex flex-col justify-center px-6 md:px-12">
+          {/* Section label */}
+          <span className="label text-white/50 mb-8">The Material Library</span>
+
+          {/* Products list */}
+          <div className="space-y-2">
+            {materials.map((material, index) => (
+              <ProductItem 
+                key={index}
+                material={material}
+                index={index}
+                totalProducts={materials.length}
+                scrollYProgress={scrollYProgress}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ZoomingBackground({ 
+  material, 
+  index, 
+  totalProducts,
+  scrollYProgress 
+}: { 
+  material: typeof materials[0];
+  index: number;
+  totalProducts: number;
+  scrollYProgress: any;
+}) {
   const segmentSize = 1 / totalProducts;
   const start = index * segmentSize;
   const mid = start + segmentSize * 0.5;
   const end = start + segmentSize;
 
-  // Zoom: start normal → zoom in close → zoom out → fade out
+  // Zoom: 1 → 2.5 → 3 → 2 → 1
   const scale = useTransform(
     scrollYProgress,
     [start, start + segmentSize * 0.3, mid, end - segmentSize * 0.1, end],
-    [1, 2.5, 3, 2, 1]
+    [1, 1.8, 2.5, 2, 1.2]
   );
 
-  // Opacity: fade in → visible → fade out
+  // Opacity: fade in and out
   const opacity = useTransform(
     scrollYProgress,
-    [start, start + segmentSize * 0.1, mid, end - segmentSize * 0.1, end],
+    [start, start + segmentSize * 0.15, mid, end - segmentSize * 0.15, end],
     [0, 1, 1, 1, 0]
-  );
-
-  // Text opacity: appears in middle of zoom
-  const textOpacity = useTransform(
-    scrollYProgress,
-    [start + segmentSize * 0.2, start + segmentSize * 0.35, end - segmentSize * 0.3, end - segmentSize * 0.15],
-    [0, 1, 1, 0]
-  );
-
-  // Text scale: subtle zoom with image
-  const textScale = useTransform(
-    scrollYProgress,
-    [start, mid, end],
-    [0.8, 1, 0.9]
   );
 
   return (
     <motion.div 
-      className="absolute inset-0 flex items-center justify-center"
+      className="absolute inset-0 z-0"
       style={{ opacity }}
     >
-      {/* Background image with zoom */}
-      <motion.div 
-        className="absolute inset-0"
+      <motion.img 
+        src={material.image}
+        alt=""
+        className="w-full h-full object-cover"
         style={{ scale }}
-      >
-        <img 
-          src={material.image}
-          alt={material.name}
-          className="w-full h-full object-cover"
-        />
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/40" />
-      </motion.div>
+      />
+    </motion.div>
+  );
+}
 
-      {/* Text overlay */}
-      <motion.div 
-        className="relative z-10 text-center"
-        style={{ opacity: textOpacity, scale: textScale }}
-      >
-        <motion.h2 
-          className="font-serif text-6xl md:text-8xl lg:text-9xl text-white tracking-tight"
+function ProductItem({ 
+  material, 
+  index, 
+  totalProducts,
+  scrollYProgress 
+}: { 
+  material: typeof materials[0];
+  index: number;
+  totalProducts: number;
+  scrollYProgress: any;
+}) {
+  const segmentSize = 1 / totalProducts;
+  const start = index * segmentSize;
+  const mid = start + segmentSize * 0.5;
+  const end = start + segmentSize;
+
+  // Text scale: small → HUGE → small
+  const scale = useTransform(
+    scrollYProgress,
+    [start, start + segmentSize * 0.2, mid, end - segmentSize * 0.2, end],
+    [1, 1.5, 2.5, 1.5, 1]
+  );
+
+  // Move to center when active
+  const x = useTransform(
+    scrollYProgress,
+    [start, start + segmentSize * 0.2, mid, end - segmentSize * 0.2, end],
+    ['0%', '20%', '30%', '20%', '0%']
+  );
+
+  // Opacity boost when active
+  const opacity = useTransform(
+    scrollYProgress,
+    [start, start + segmentSize * 0.1, mid, end - segmentSize * 0.1, end],
+    [0.3, 1, 1, 1, 0.3]
+  );
+
+  // Color change when active
+  const color = useTransform(
+    scrollYProgress,
+    [start, start + segmentSize * 0.2, mid, end - segmentSize * 0.2, end],
+    ['rgba(255,255,255,0.4)', 'rgba(255,255,255,1)', 'rgba(255,255,255,1)', 'rgba(255,255,255,1)', 'rgba(255,255,255,0.4)']
+  );
+
+  return (
+    <motion.a
+      href={material.href}
+      className="block origin-left"
+      style={{ scale, x, opacity }}
+    >
+      <div className="flex items-baseline gap-4">
+        <motion.span 
+          className="font-serif text-4xl md:text-6xl lg:text-7xl tracking-tight"
+          style={{ color }}
         >
           {material.name}
-        </motion.h2>
-        <p className="text-white/60 text-sm md:text-base tracking-widest mt-4">
-          [{material.subtitle}]
-        </p>
-        <motion.a
-          href={material.href}
-          className="inline-flex items-center gap-3 mt-8 text-white/80 hover:text-white transition-colors"
-          whileHover={{ x: 10 }}
+        </motion.span>
+        <motion.span 
+          className="text-sm tracking-wide"
+          style={{ color }}
         >
-          <span className="text-sm tracking-wider">Explore</span>
-          <span className="text-xl">→</span>
-        </motion.a>
-      </motion.div>
-    </motion.div>
+          [{material.subtitle}]
+        </motion.span>
+      </div>
+    </motion.a>
   );
 }
