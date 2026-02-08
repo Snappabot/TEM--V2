@@ -16,7 +16,7 @@ export default function AnimatedFooter() {
             transition={{ duration: 0.6 }}
           >
             <img 
-              src="/TEM-website/logo.svg" 
+              src="/TEM--V2/logo.svg" 
               alt="Troweled Earth" 
               className="h-16 w-16 mb-6 invert" 
             />

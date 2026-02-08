@@ -6,35 +6,35 @@ import { useInView } from 'framer-motion';
 // TODO: Replace with Instagram API integration or embed widget
 const instagramPosts = [
   { 
-    image: '/TEM-website/images/products/marbellino/Marbellino+kitchen.png',
+    image: '/TEM--V2/images/products/marbellino/Marbellino+kitchen.png',
     caption: 'Marbellino kitchen transformation'
   },
   { 
-    image: '/TEM-website/images/products/metallics/Troweled+Metal+copper.png',
+    image: '/TEM--V2/images/products/metallics/Troweled+Metal+copper.png',
     caption: 'True Copper with natural patina'
   },
   { 
-    image: '/TEM-website/images/products/antique-stucco/Antique+stucco+fireplace.png',
+    image: '/TEM--V2/images/products/antique-stucco/Antique+stucco+fireplace.png',
     caption: 'Antique Stucco fireplace feature'
   },
   { 
-    image: '/TEM-website/images/products/rokka/Roka+ceiling+moody.png',
+    image: '/TEM--V2/images/products/rokka/Roka+ceiling+moody.png',
     caption: 'Rokka ceiling finish'
   },
   { 
-    image: '/TEM-website/images/products/custom-finishes/Custom+finish+fractured+plaster.png',
+    image: '/TEM--V2/images/products/custom-finishes/Custom+finish+fractured+plaster.png',
     caption: 'Custom fractured plaster'
   },
   { 
-    image: '/TEM-website/images/products/concretum/Concretum+with+light.png',
+    image: '/TEM--V2/images/products/concretum/Concretum+with+light.png',
     caption: 'Concretum patina finish'
   },
   { 
-    image: '/TEM-website/images/products/tadelakt/Tadelakt+bathroom+1.png',
+    image: '/TEM--V2/images/products/tadelakt/Tadelakt+bathroom+1.png',
     caption: 'Tadelakt bathroom'
   },
   { 
-    image: '/TEM-website/images/products/metallics/Troweled+Metals+Scorched+copper+1.png',
+    image: '/TEM--V2/images/products/metallics/Troweled+Metals+Scorched+copper+1.png',
     caption: 'Scorched copper effect'
   },
 ];
