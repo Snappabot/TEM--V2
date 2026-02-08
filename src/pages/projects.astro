@@ -1,0 +1,165 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CustomCursor from '../components/CustomCursor';
+import ScrollProgress from '../components/ScrollProgress';
+import AnimatedFooter from '../components/AnimatedFooter';
+
+// Gallery images from scraped content
+const galleryImages = [
+  { src: '/TEM-website/images/products/marbellino.png', title: 'Marbellino Kitchen', category: 'Marbellino' },
+  { src: '/TEM-website/images/products/concretum.png', title: 'Concretum Feature Wall', category: 'Concretum' },
+  { src: '/TEM-website/images/products/rokka.png', title: 'Rokka Ceiling', category: 'Rokka' },
+  { src: '/TEM-website/images/products/tadelakt.png', title: 'Tadelakt Bathroom', category: 'Tadelakt' },
+  { src: '/TEM-website/images/products/antique-stucco.png', title: 'Antique Stucco Fireplace', category: 'Antique Stucco' },
+  { src: '/TEM-website/images/products/metallics.png', title: 'True Copper Wall', category: 'Metallics' },
+  { src: '/TEM-website/images/products/custom-finishes.png', title: 'Fractured Plaster', category: 'Custom' },
+  { src: '/TEM-website/images/products/earthen-renders.png', title: 'Earthen Fireplace', category: 'Earthen' },
+  { src: '/TEM-website/images/gallery/Screenshot_20240515_165019_Instagram.jpg', title: 'Modern Interior', category: 'Featured' },
+  { src: '/TEM-website/images/gallery/Screenshot_20240515_164929_Instagram.jpg', title: 'Textured Wall', category: 'Featured' },
+  { src: '/TEM-website/images/gallery/Screenshot_20240108_132317_Instagram.jpg', title: 'Application Process', category: 'Process' },
+  { src: '/TEM-website/images/gallery/TADELAKT1.jpg', title: 'Tadelakt Detail', category: 'Tadelakt' },
+];
+
+const categories = ['All', 'Marbellino', 'Concretum', 'Rokka', 'Tadelakt', 'Metallics', 'Custom', 'Featured'];
+---
+
+<Layout title="Projects | Troweled Earth Melbourne">
+  <CustomCursor client:load />
+  <ScrollProgress client:load />
+
+  <!-- Hero Section -->
+  <section class="relative h-[50vh] min-h-[400px] flex items-center justify-center bg-[#0a0a0a] overflow-hidden">
+    <div class="relative z-20 text-center px-6">
+      <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Our Work</span>
+      <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight">
+        Projects
+      </h1>
+      <p class="text-white/60 mt-6 text-lg max-w-2xl mx-auto">
+        Explore our portfolio of stunning wall finishes across Melbourne and beyond.
+      </p>
+    </div>
+  </section>
+
+  <!-- Filter Bar -->
+  <section class="sticky top-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex gap-4 overflow-x-auto hide-scrollbar">
+        {categories.map((cat) => (
+          <button 
+            class="px-4 py-2 text-sm uppercase tracking-wider text-white/60 hover:text-white transition-colors whitespace-nowrap data-[active=true]:text-[#8b7355] data-[active=true]:border-b-2 data-[active=true]:border-[#8b7355]"
+            data-category={cat}
+            data-active={cat === 'All' ? 'true' : 'false'}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Grid -->
+  <section class="py-16 bg-[#0a0a0a]">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="gallery-grid">
+        {galleryImages.map((image, index) => (
+          <div 
+            class="group relative aspect-[4/3] overflow-hidden bg-[#1a1a1a] cursor-pointer gallery-item"
+            data-category={image.category}
+            style={`animation-delay: ${index * 0.1}s`}
+          >
+            <img 
+              src={image.src} 
+              alt={image.title}
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              loading="lazy"
+            />
+            
+            <!-- Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            <!-- Content -->
+            <div class="absolute inset-0 flex flex-col justify-end p-6 translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500">
+              <span class="text-[#8b7355] text-xs uppercase tracking-widest mb-2">{image.category}</span>
+              <h3 class="text-xl font-bold text-white">{image.title}</h3>
+            </div>
+            
+            <!-- Corner accent -->
+            <div class="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-white/0 group-hover:border-white/50 transition-all duration-500" />
+            <div class="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-white/0 group-hover:border-white/50 transition-all duration-500" />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-24 bg-[#1a1a1a]">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Have a Project in Mind?</h2>
+      <p class="text-xl text-white/60 mb-8">Let's create something extraordinary together.</p>
+      <a 
+        href="/#contact" 
+        class="inline-flex items-center gap-3 px-8 py-4 bg-[#8b7355] text-white font-medium uppercase tracking-widest text-sm hover:bg-[#a68b6a] transition-colors"
+      >
+        Start Your Project
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <AnimatedFooter client:visible />
+</Layout>
+
+<style>
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .gallery-item {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<script>
+  // Simple filter functionality
+  document.querySelectorAll('[data-category]').forEach(btn => {
+    if (btn.tagName === 'BUTTON') {
+      btn.addEventListener('click', () => {
+        const category = btn.dataset.category;
+        
+        // Update active state
+        document.querySelectorAll('button[data-category]').forEach(b => {
+          b.dataset.active = 'false';
+        });
+        btn.dataset.active = 'true';
+        
+        // Filter items
+        document.querySelectorAll('.gallery-item').forEach(item => {
+          if (category === 'All' || item.dataset.category === category) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    }
+  });
+</script>

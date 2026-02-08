@@ -1,0 +1,173 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CustomCursor from '../../components/CustomCursor';
+import ScrollProgress from '../../components/ScrollProgress';
+import AnimatedFooter from '../../components/AnimatedFooter';
+
+const product = {
+  name: 'Metallics',
+  tagline: 'True Metals Collection',
+  description: 'Premium range featuring real metal shavings - copper, steel, bronze, brass and rust finishes.',
+  image: '/TEM-website/images/products/metallics.png',
+  subProducts: [
+    {
+      name: 'True Copper',
+      description: 'Fine copper shavings embedded throughout create natural oxidisation that results in a beautiful patina and turquoise effect over time.'
+    },
+    {
+      name: 'True Steel',
+      description: 'Polished steel appearance with an even and smooth finish. Industrial, modern, and sleek.'
+    },
+    {
+      name: 'True Bronze',
+      description: 'Rich bronze finish with authentic metallic depth and warmth.'
+    },
+    {
+      name: 'True Brass',
+      description: 'Golden brass tones that add luxury and sophistication to any space.'
+    },
+    {
+      name: 'Rust Effect',
+      description: 'Controlled oxidisation for an authentic weathered rust appearance.'
+    }
+  ],
+  features: [
+    'Real metal shavings embedded throughout the mix',
+    'Natural oxidisation over time for authentic patina',
+    'Suitable for both internal and external application',
+    'Wide range of substrates',
+    'Durable and easy to apply',
+    'Industrial, modern, and sleek finish'
+  ],
+  benefits: [
+    'Authentic metallic finishes',
+    'Living surfaces that develop character',
+    'Statement walls and features',
+    'Industrial luxury aesthetic',
+    'Unique patina development'
+  ],
+  gallery: [
+    { src: '/TEM-website/images/products/metallics/Troweled+Metal+copper.png', title: 'True Copper' },
+    { src: '/TEM-website/images/products/metallics/Troweled+metal+copper+with+ageing+patina.png', title: 'Copper Patina' },
+    { src: '/TEM-website/images/products/metallics/Troweled+Metal+stainless+steel.png', title: 'Stainless Steel' },
+    { src: '/TEM-website/images/products/metallics/Troweled+Metal+brass+gold+combination.png', title: 'Brass Gold' },
+    { src: '/TEM-website/images/products/metallics/Troweled+metal+scorch+steel.png', title: 'Scorched Steel' },
+    { src: '/TEM-website/images/products/metallics/Troweled+Metals+Scorched+copper+1.png', title: 'Scorched Copper' },
+  ]
+};
+---
+
+<Layout title={`${product.name} | Troweled Earth Melbourne`}>
+  <CustomCursor client:load />
+  <ScrollProgress client:load />
+
+  <section class="relative h-[70vh] min-h-[500px] flex items-end bg-[#0a0a0a] overflow-hidden">
+    <div class="absolute inset-0">
+      <img src={product.image} alt={product.name} class="w-full h-full object-cover opacity-60" />
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
+    </div>
+    <div class="relative z-10 max-w-7xl mx-auto px-6 pb-16 w-full">
+      <a href="/TEM-website/#finishes" class="inline-flex items-center gap-2 text-white/60 hover:text-white mb-6 transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Finishes
+      </a>
+      <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">{product.tagline}</span>
+      <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight">{product.name}</h1>
+      <p class="text-xl text-white/70 mt-6 max-w-2xl">{product.description}</p>
+    </div>
+  </section>
+
+  <!-- Sub Products -->
+  <section class="py-24 bg-[#1a1a1a]">
+    <div class="max-w-7xl mx-auto px-6">
+      <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">The Collection</span>
+      <h2 class="text-4xl font-bold text-white mb-12">Available Metals</h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {product.subProducts.map(sub => (
+          <div class="bg-white/5 border border-white/10 p-8 rounded-lg hover:bg-white/10 transition-colors">
+            <h3 class="text-2xl font-bold text-white mb-3">{sub.name}</h3>
+            <p class="text-white/60">{sub.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="py-24 bg-[#f5f5f0]">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-16">
+        <div>
+          <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Features</span>
+          <h2 class="text-4xl font-bold text-[#1a1a1a] mb-8">Key Features</h2>
+          <ul class="space-y-4">
+            {product.features.map(feature => (
+              <li class="flex items-start gap-4">
+                <svg class="w-6 h-6 text-[#8b7355] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="text-[#1a1a1a]/70">{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Why Choose</span>
+          <h2 class="text-4xl font-bold text-[#1a1a1a] mb-8">Benefits</h2>
+          <ul class="space-y-4">
+            {product.benefits.map(benefit => (
+              <li class="flex items-start gap-4">
+                <svg class="w-6 h-6 text-[#8b7355] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-[#1a1a1a]/70">{benefit}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section class="py-24 bg-[#0a0a0a]">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-12">
+        <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Inspiration</span>
+        <h2 class="text-4xl font-bold text-white">Project Gallery</h2>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {product.gallery.map((img) => (
+          <div class="group relative aspect-square overflow-hidden bg-[#1a1a1a]">
+            <img 
+              src={img.src} 
+              alt={img.title}
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              loading="lazy"
+            />
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+              <span class="text-white font-medium">{img.title}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-24 bg-[#1a1a1a]">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Interested in {product.name}?</h2>
+      <p class="text-xl text-white/60 mb-8">Get in touch to discuss your project and receive a quote.</p>
+      <a href="/TEM-website/#contact" class="inline-flex items-center gap-3 px-8 py-4 bg-[#8b7355] text-white font-medium uppercase tracking-widest text-sm hover:bg-[#a68b6a] transition-colors">
+        Get a Quote
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <AnimatedFooter client:visible />
+</Layout>

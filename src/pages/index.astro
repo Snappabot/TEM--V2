@@ -1,0 +1,118 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AnimatedHero from '../components/AnimatedHero';
+import Statement from '../components/Statement';
+import ProductGrid from '../components/ProductGrid';
+import FeaturedProject from '../components/FeaturedProject';
+import Training from '../components/Training';
+import Contact from '../components/Contact';
+import AnimatedFooter from '../components/AnimatedFooter';
+import CustomCursor from '../components/CustomCursor';
+import ScrollProgress from '../components/ScrollProgress';
+import PageLoader from '../components/PageLoader';
+import InstagramFeed from '../components/InstagramFeed';
+---
+
+<Layout title="Troweled Earth Melbourne | Brutalist Wall Finishes">
+  <!-- Page Loader -->
+  <PageLoader client:load />
+  
+  <!-- Custom Cursor -->
+  <CustomCursor client:load />
+  
+  <!-- Scroll Progress Bar -->
+  <ScrollProgress client:load />
+  <!-- Fixed Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center mix-blend-difference">
+    <a href="/" class="flex items-center">
+      <img src="/TEM-website/logo.svg" alt="Troweled Earth" class="h-10 w-10 invert" />
+    </a>
+    
+    <nav class="hidden md:flex gap-8">
+      <a href="#finishes" class="text-white text-sm uppercase tracking-widest hover:opacity-70 transition-opacity">Finishes</a>
+      <a href="/TEM-website/projects" class="text-white text-sm uppercase tracking-widest hover:opacity-70 transition-opacity">Projects</a>
+      <a href="/TEM-website/story" class="text-white text-sm uppercase tracking-widest hover:opacity-70 transition-opacity">Our Story</a>
+      <a href="/TEM-website/training" class="text-white text-sm uppercase tracking-widest hover:opacity-70 transition-opacity">Training</a>
+      <a href="#contact" class="text-white text-sm uppercase tracking-widest hover:opacity-70 transition-opacity">Contact</a>
+    </nav>
+    
+    <button id="menu-toggle" class="md:hidden text-white">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </header>
+  
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="fixed inset-0 bg-[#0a0a0a] z-40 hidden flex-col justify-center items-center gap-8">
+    <a href="#finishes" class="text-white text-3xl uppercase tracking-widest hover:text-[#8b7355] transition-colors">Finishes</a>
+    <a href="/TEM-website/projects" class="text-white text-3xl uppercase tracking-widest hover:text-[#8b7355] transition-colors">Projects</a>
+    <a href="/TEM-website/story" class="text-white text-3xl uppercase tracking-widest hover:text-[#8b7355] transition-colors">Our Story</a>
+    <a href="/TEM-website/training" class="text-white text-3xl uppercase tracking-widest hover:text-[#8b7355] transition-colors">Training</a>
+    <a href="#contact" class="text-white text-3xl uppercase tracking-widest hover:text-[#8b7355] transition-colors">Contact</a>
+    <button id="menu-close" class="absolute top-4 right-6 text-white">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Page Content -->
+  <AnimatedHero client:load />
+  <Statement client:visible />
+  <ProductGrid client:visible />
+  <FeaturedProject client:visible />
+  <Training client:visible />
+  <InstagramFeed client:visible />
+  <Contact client:visible />
+  <AnimatedFooter client:visible />
+  
+  <script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const menuClose = document.getElementById('menu-close');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    menuToggle?.addEventListener('click', () => {
+      mobileMenu?.classList.remove('hidden');
+      mobileMenu?.classList.add('flex');
+    });
+    
+    menuClose?.addEventListener('click', () => {
+      mobileMenu?.classList.add('hidden');
+      mobileMenu?.classList.remove('flex');
+    });
+    
+    // Close menu when clicking a link
+    mobileMenu?.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu?.classList.add('hidden');
+        mobileMenu?.classList.remove('flex');
+      });
+    });
+  </script>
+</Layout>
+
+<style>
+  /* Smooth scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #0a0a0a;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #8b7355;
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a68b6a;
+  }
+</style>

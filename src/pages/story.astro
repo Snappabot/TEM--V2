@@ -1,0 +1,136 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CustomCursor from '../components/CustomCursor';
+import ScrollProgress from '../components/ScrollProgress';
+import AnimatedFooter from '../components/AnimatedFooter';
+---
+
+<Layout title="Our Story | Troweled Earth Melbourne">
+  <CustomCursor client:load />
+  <ScrollProgress client:load />
+
+  <!-- Hero Section -->
+  <section class="relative h-[60vh] min-h-[400px] flex items-center justify-center bg-[#0a0a0a] overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#0a0a0a]/80 z-10"></div>
+    <div class="relative z-20 text-center px-6">
+      <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Est. 2002</span>
+      <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight">
+        Our Story
+      </h1>
+    </div>
+  </section>
+
+  <!-- Story Content -->
+  <section class="py-24 bg-[#f5f5f0]">
+    <div class="max-w-4xl mx-auto px-6">
+      
+      <!-- Intro -->
+      <div class="mb-20">
+        <p class="text-2xl md:text-3xl text-[#1a1a1a] leading-relaxed font-light">
+          Inspired by Spanish heritage and travels throughout Europe, Troweled Earth has been crafting innovative wall coatings for over two decades.
+        </p>
+      </div>
+
+      <!-- José Section -->
+      <div class="mb-16 pb-16 border-b border-[#1a1a1a]/10">
+        <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">The Founder</span>
+        <h2 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-6">José</h2>
+        <p class="text-lg text-[#1a1a1a]/70 leading-relaxed">
+          José spent his younger years experimenting with the earth's many textures and forms before deciding to take his passion for natural materials to the next level. In 2002, he founded Troweled Earth, a company dedicated to creating high-quality wall art products that were both beautiful and sustainable.
+        </p>
+        <p class="text-lg text-[#1a1a1a]/70 leading-relaxed mt-4">
+          Using natural beneficial plasters made with hemp, lime, clay and other sustainable materials, Troweled Earth products were designed to improve the quality of homes and buildings, whilst also providing an attractive and unique design element.
+        </p>
+      </div>
+
+      <!-- Jarrad Section -->
+      <div class="mb-16 pb-16 border-b border-[#1a1a1a]/10">
+        <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">The Director</span>
+        <h2 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-6">Jarrad</h2>
+        <p class="text-lg text-[#1a1a1a]/70 leading-relaxed">
+          A few years after José established the company, Jarrad brought a new level of energy to the business. With a background in commerce, marketing and plastering, Jarrad was able to help Troweled Earth expand its reach, influence, and portfolio.
+        </p>
+        <p class="text-lg text-[#1a1a1a]/70 leading-relaxed mt-4">
+          Jarrad wears many hats in the company, from product developer to sales and marketing manager, and has been instrumental in helping the company grow and succeed.
+        </p>
+      </div>
+
+      <!-- Matt Section -->
+      <div class="mb-16 pb-16 border-b border-[#1a1a1a]/10">
+        <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Melbourne Director</span>
+        <h2 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-6">Matt</h2>
+        <p class="text-lg text-[#1a1a1a]/70 leading-relaxed">
+          One of the newest yet most experienced members to join the team is Matt. Matt came on board in 2018 and it was soon clear that he shared the same vision for the Troweled Earth brand as José and Jarrad.
+        </p>
+        <p class="text-lg text-[#1a1a1a]/70 leading-relaxed mt-4">
+          With over 20 years of plastering experience and running his own business, Matt has a goal to help grow the company and take its reach worldwide.
+        </p>
+      </div>
+
+      <!-- Melbourne Chapter -->
+      <div class="mb-16">
+        <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">The New Chapter</span>
+        <h2 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-6">Troweled Earth Melbourne</h2>
+        <p class="text-lg text-[#1a1a1a]/70 leading-relaxed">
+          After a successful run of over 20 years in Western Australia, the Troweled Earth team made the decision to bring their expertise to the East Coast. Troweled Earth Melbourne, headed by Matt, provides product sales, product training and customised product application through certified Troweled Earth trained applicators.
+        </p>
+        <p class="text-lg text-[#1a1a1a]/70 leading-relaxed mt-4">
+          The Troweled Earth team are passionate about their work, and they are dedicated to creating high-quality, sustainable products that will make a positive impact on the environment and the people who use them.
+        </p>
+      </div>
+
+      <!-- Values -->
+      <div class="grid md:grid-cols-3 gap-8 mt-20">
+        <div class="text-center p-8 bg-white rounded-lg shadow-sm">
+          <div class="w-16 h-16 bg-[#8b7355]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-[#1a1a1a] mb-2">Artistry</h3>
+          <p class="text-[#1a1a1a]/60">Crafting unique finishes that transform spaces into art</p>
+        </div>
+        
+        <div class="text-center p-8 bg-white rounded-lg shadow-sm">
+          <div class="w-16 h-16 bg-[#8b7355]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-[#1a1a1a] mb-2">Sustainability</h3>
+          <p class="text-[#1a1a1a]/60">Natural materials that benefit both homes and environment</p>
+        </div>
+        
+        <div class="text-center p-8 bg-white rounded-lg shadow-sm">
+          <div class="w-16 h-16 bg-[#8b7355]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-[#1a1a1a] mb-2">Quality</h3>
+          <p class="text-[#1a1a1a]/60">20+ years of expertise in every application</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-24 bg-[#1a1a1a]">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Transform Your Space?</h2>
+      <p class="text-xl text-white/60 mb-8">Let's discuss how Troweled Earth can bring your vision to life.</p>
+      <a 
+        href="/#contact" 
+        class="inline-flex items-center gap-3 px-8 py-4 bg-[#8b7355] text-white font-medium uppercase tracking-widest text-sm hover:bg-[#a68b6a] transition-colors"
+      >
+        Get In Touch
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <AnimatedFooter client:visible />
+</Layout>

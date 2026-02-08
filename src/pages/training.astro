@@ -1,0 +1,279 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CustomCursor from '../components/CustomCursor';
+import ScrollProgress from '../components/ScrollProgress';
+import AnimatedFooter from '../components/AnimatedFooter';
+---
+
+<Layout title="Training | Troweled Earth Melbourne">
+  <CustomCursor client:load />
+  <ScrollProgress client:load />
+
+  <!-- Hero Section -->
+  <section class="relative h-[60vh] min-h-[500px] flex items-center justify-center bg-[#0a0a0a] overflow-hidden">
+    <div class="absolute inset-0">
+      <img 
+        src="/TEM-website/images/gallery/Screenshot_20240108_132317_Instagram.jpg" 
+        alt="Training"
+        class="w-full h-full object-cover opacity-40"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/50 to-[#0a0a0a]" />
+    </div>
+    <div class="relative z-20 text-center px-6">
+      <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Learn The Craft</span>
+      <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight">
+        Training
+      </h1>
+      <p class="text-white/60 mt-6 text-lg max-w-2xl mx-auto">
+        Master the art of polished plaster with hands-on training from industry experts.
+      </p>
+    </div>
+  </section>
+
+  <!-- Why Train With Us -->
+  <section class="py-24 bg-[#f5f5f0]">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Why Choose Us</span>
+        <h2 class="text-4xl md:text-5xl font-bold text-[#1a1a1a]">20+ Years of Expertise</h2>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white p-8 rounded-lg shadow-sm hover:shadow-lg transition-shadow">
+          <div class="w-16 h-16 bg-[#8b7355]/10 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-[#1a1a1a] mb-3">Hands-On Learning</h3>
+          <p class="text-[#1a1a1a]/60">Learn by doing. Our workshops focus on practical application, not just theory.</p>
+        </div>
+        
+        <div class="bg-white p-8 rounded-lg shadow-sm hover:shadow-lg transition-shadow">
+          <div class="w-16 h-16 bg-[#8b7355]/10 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-[#1a1a1a] mb-3">Certification</h3>
+          <p class="text-[#1a1a1a]/60">Become a certified TEM applicator and join our network of trusted professionals.</p>
+        </div>
+        
+        <div class="bg-white p-8 rounded-lg shadow-sm hover:shadow-lg transition-shadow">
+          <div class="w-16 h-16 bg-[#8b7355]/10 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-[#1a1a1a] mb-3">Small Groups</h3>
+          <p class="text-[#1a1a1a]/60">Maximum 6 participants per session ensures personalized attention and guidance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Course Overview -->
+  <section class="py-24 bg-[#1a1a1a]">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">The Course</span>
+          <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">What You'll Learn</h2>
+          
+          <div class="space-y-6">
+            <div class="flex gap-4">
+              <div class="w-8 h-8 bg-[#8b7355] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <span class="text-white font-bold text-sm">1</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">Surface Preparation</h3>
+                <p class="text-white/60">Understanding substrates, priming techniques, and achieving the perfect base.</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="w-8 h-8 bg-[#8b7355] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <span class="text-white font-bold text-sm">2</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">Application Techniques</h3>
+                <p class="text-white/60">Master trowel work, layering, and achieving consistent finishes across large surfaces.</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="w-8 h-8 bg-[#8b7355] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <span class="text-white font-bold text-sm">3</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">Product Knowledge</h3>
+                <p class="text-white/60">Deep dive into each TEM product range, their properties, and ideal applications.</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="w-8 h-8 bg-[#8b7355] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <span class="text-white font-bold text-sm">4</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">Finishing & Sealing</h3>
+                <p class="text-white/60">Polishing techniques, sealer application, and long-term maintenance guidance.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative">
+          <img 
+            src="/TEM-website/images/products/custom-finishes.png" 
+            alt="Training in action"
+            class="w-full aspect-square object-cover rounded-lg"
+          />
+          <div class="absolute -bottom-6 -right-6 bg-[#8b7355] text-white p-6 rounded-lg">
+            <span class="block text-4xl font-bold">2-3</span>
+            <span class="text-white/80">Day Courses</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="py-24 bg-[#f5f5f0]">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Investment</span>
+        <h2 class="text-4xl md:text-5xl font-bold text-[#1a1a1a]">Training Packages</h2>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Starter -->
+        <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-2xl font-bold text-[#1a1a1a] mb-2">Introduction</h3>
+          <p class="text-[#1a1a1a]/60 mb-6">Perfect for beginners</p>
+          <div class="mb-6">
+            <span class="text-4xl font-bold text-[#1a1a1a]">Contact</span>
+            <span class="text-[#1a1a1a]/60"> for pricing</span>
+          </div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-[#1a1a1a]/70">
+              <svg class="w-5 h-5 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              1 Day Workshop
+            </li>
+            <li class="flex items-center gap-3 text-[#1a1a1a]/70">
+              <svg class="w-5 h-5 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Basic techniques
+            </li>
+            <li class="flex items-center gap-3 text-[#1a1a1a]/70">
+              <svg class="w-5 h-5 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Materials included
+            </li>
+          </ul>
+          <a href="/#contact" class="block w-full text-center py-3 border-2 border-[#1a1a1a] text-[#1a1a1a] font-medium uppercase tracking-wider text-sm hover:bg-[#1a1a1a] hover:text-white transition-colors">
+            Enquire Now
+          </a>
+        </div>
+        
+        <!-- Professional -->
+        <div class="bg-[#1a1a1a] p-8 rounded-lg shadow-lg relative overflow-hidden">
+          <div class="absolute top-0 right-0 bg-[#8b7355] text-white text-xs uppercase tracking-wider px-3 py-1">
+            Popular
+          </div>
+          <h3 class="text-2xl font-bold text-white mb-2">Professional</h3>
+          <p class="text-white/60 mb-6">Full certification course</p>
+          <div class="mb-6">
+            <span class="text-4xl font-bold text-white">Contact</span>
+            <span class="text-white/60"> for pricing</span>
+          </div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-white/70">
+              <svg class="w-5 h-5 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              2-3 Day Workshop
+            </li>
+            <li class="flex items-center gap-3 text-white/70">
+              <svg class="w-5 h-5 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              All TEM products
+            </li>
+            <li class="flex items-center gap-3 text-white/70">
+              <svg class="w-5 h-5 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Certification
+            </li>
+            <li class="flex items-center gap-3 text-white/70">
+              <svg class="w-5 h-5 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Ongoing support
+            </li>
+          </ul>
+          <a href="/#contact" class="block w-full text-center py-3 bg-[#8b7355] text-white font-medium uppercase tracking-wider text-sm hover:bg-[#a68b6a] transition-colors">
+            Enquire Now
+          </a>
+        </div>
+        
+        <!-- Custom -->
+        <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-2xl font-bold text-[#1a1a1a] mb-2">Custom</h3>
+          <p class="text-[#1a1a1a]/60 mb-6">Tailored to your needs</p>
+          <div class="mb-6">
+            <span class="text-4xl font-bold text-[#1a1a1a]">Contact</span>
+            <span class="text-[#1a1a1a]/60"> for pricing</span>
+          </div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-[#1a1a1a]/70">
+              <svg class="w-5 h-5 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Flexible duration
+            </li>
+            <li class="flex items-center gap-3 text-[#1a1a1a]/70">
+              <svg class="w-5 h-5 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              On-site training
+            </li>
+            <li class="flex items-center gap-3 text-[#1a1a1a]/70">
+              <svg class="w-5 h-5 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Team packages
+            </li>
+          </ul>
+          <a href="/#contact" class="block w-full text-center py-3 border-2 border-[#1a1a1a] text-[#1a1a1a] font-medium uppercase tracking-wider text-sm hover:bg-[#1a1a1a] hover:text-white transition-colors">
+            Enquire Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-24 bg-[#0a0a0a]">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Start Your Journey?</h2>
+      <p class="text-xl text-white/60 mb-8">Book your training session today and master the art of polished plaster.</p>
+      <a 
+        href="/#contact" 
+        class="inline-flex items-center gap-3 px-8 py-4 bg-[#8b7355] text-white font-medium uppercase tracking-widest text-sm hover:bg-[#a68b6a] transition-colors"
+      >
+        Book Training
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <AnimatedFooter client:visible />
+</Layout>

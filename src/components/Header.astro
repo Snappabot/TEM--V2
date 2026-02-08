@@ -1,0 +1,51 @@
+---
+// Minimal brutalist header
+---
+
+<header class="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center mix-blend-difference">
+  <a href="/" class="flex items-center">
+    <img src="/logo.svg" alt="Troweled Earth" class="h-10 w-10 invert" />
+  </a>
+  
+  <nav class="hidden md:flex gap-8">
+    <a href="/finishes" class="text-white text-sm uppercase tracking-widest hover:opacity-70 transition-opacity">Finishes</a>
+    <a href="/projects" class="text-white text-sm uppercase tracking-widest hover:opacity-70 transition-opacity">Projects</a>
+    <a href="/training" class="text-white text-sm uppercase tracking-widest hover:opacity-70 transition-opacity">Training</a>
+    <a href="/contact" class="text-white text-sm uppercase tracking-widest hover:opacity-70 transition-opacity">Contact</a>
+  </nav>
+  
+  <button id="menu-toggle" class="md:hidden text-white">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+</header>
+
+<!-- Mobile menu -->
+<div id="mobile-menu" class="fixed inset-0 bg-brutal-black z-40 hidden flex-col justify-center items-center gap-8">
+  <a href="/finishes" class="text-white text-3xl uppercase tracking-widest hover:opacity-70">Finishes</a>
+  <a href="/projects" class="text-white text-3xl uppercase tracking-widest hover:opacity-70">Projects</a>
+  <a href="/training" class="text-white text-3xl uppercase tracking-widest hover:opacity-70">Training</a>
+  <a href="/contact" class="text-white text-3xl uppercase tracking-widest hover:opacity-70">Contact</a>
+  <button id="menu-close" class="absolute top-4 right-6 text-white">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
+</div>
+
+<script>
+  const menuToggle = document.getElementById('menu-toggle');
+  const menuClose = document.getElementById('menu-close');
+  const mobileMenu = document.getElementById('mobile-menu');
+  
+  menuToggle?.addEventListener('click', () => {
+    mobileMenu?.classList.remove('hidden');
+    mobileMenu?.classList.add('flex');
+  });
+  
+  menuClose?.addEventListener('click', () => {
+    mobileMenu?.classList.add('hidden');
+    mobileMenu?.classList.remove('flex');
+  });
+</script>
