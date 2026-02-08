@@ -1,5 +1,5 @@
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 
 const materials = [
   { 
@@ -42,138 +42,126 @@ const materials = [
 
 export default function MaterialLibrary() {
   const containerRef = useRef(null);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  });
-
-  // Background parallax
-  const bgY = useTransform(scrollYProgress, [0, 1], ['-10%', '10%']);
+  // Total scroll height = 5 "rolls" per product × 6 products = 30 scroll units
+  // Each product gets equal portion of scroll
+  const scrollPerProduct = 1 / materials.length;
 
   return (
-    <section ref={containerRef} className="relative py-24 md:py-32 bg-[#1a1a1a] text-[#FAF9F6] overflow-hidden min-h-screen">
-      {/* Background image (changes on hover) with parallax */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        {materials.map((material, index) => (
-          <motion.div
-            key={index}
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: hoveredIndex === index ? 0.5 : 0 }}
-            transition={{ duration: 0.6 }}
-            style={{ y: bgY }}
-          >
-            <img 
-              src={material.image}
-              alt=""
-              className="w-full h-full object-cover scale-110"
-            />
-          </motion.div>
-        ))}
-        {/* Default background when nothing hovered */}
-        <motion.div
-          className="absolute inset-0"
-          animate={{ opacity: hoveredIndex === null ? 0.15 : 0 }}
-          transition={{ duration: 0.6 }}
-          style={{ y: bgY }}
-        >
-          <img 
-            src="/TEM--V2/images/products/marbellino/Marbellino+stairs+2.png"
-            alt=""
-            className="w-full h-full object-cover scale-110"
-          />
-        </motion.div>
-      </div>
-
-      <div className="relative z-10 px-6 md:px-12">
+    <section ref={containerRef} className="relative bg-[#1a1a1a]" style={{ height: `${materials.length * 500}vh` }}>
+      {/* Sticky container */}
+      <div className="sticky top-0 h-screen overflow-hidden">
         {/* Section label */}
-        <motion.span 
-          className="label block mb-12 md:mb-16"
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          The Material Library
-        </motion.span>
-
-        {/* Materials list */}
-        <div className="space-y-2 md:space-y-4">
-          {materials.map((material, index) => (
-            <MaterialItem 
-              key={index}
-              material={material}
-              index={index}
-              isHovered={hoveredIndex === index}
-              onHover={() => setHoveredIndex(index)}
-              onLeave={() => setHoveredIndex(null)}
-            />
-          ))}
+        <div className="absolute top-8 left-8 z-30">
+          <span className="label text-white/50">The Material Library</span>
         </div>
+
+        {/* Products */}
+        {materials.map((material, index) => (
+          <ProductZoom 
+            key={index}
+            material={material}
+            index={index}
+            totalProducts={materials.length}
+            containerRef={containerRef}
+          />
+        ))}
       </div>
     </section>
   );
 }
 
-function MaterialItem({ 
+function ProductZoom({ 
   material, 
   index, 
-  isHovered,
-  onHover, 
-  onLeave 
+  totalProducts,
+  containerRef 
 }: { 
   material: typeof materials[0];
   index: number;
-  isHovered: boolean;
-  onHover: () => void;
-  onLeave: () => void;
+  totalProducts: number;
+  containerRef: React.RefObject<HTMLElement>;
 }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  // Each product gets its own scroll segment
+  const segmentSize = 1 / totalProducts;
+  const start = index * segmentSize;
+  const mid = start + segmentSize * 0.5;
+  const end = start + segmentSize;
+
+  // Zoom: start normal → zoom in close → zoom out → fade out
+  const scale = useTransform(
+    scrollYProgress,
+    [start, start + segmentSize * 0.3, mid, end - segmentSize * 0.1, end],
+    [1, 2.5, 3, 2, 1]
+  );
+
+  // Opacity: fade in → visible → fade out
+  const opacity = useTransform(
+    scrollYProgress,
+    [start, start + segmentSize * 0.1, mid, end - segmentSize * 0.1, end],
+    [0, 1, 1, 1, 0]
+  );
+
+  // Text opacity: appears in middle of zoom
+  const textOpacity = useTransform(
+    scrollYProgress,
+    [start + segmentSize * 0.2, start + segmentSize * 0.35, end - segmentSize * 0.3, end - segmentSize * 0.15],
+    [0, 1, 1, 0]
+  );
+
+  // Text scale: subtle zoom with image
+  const textScale = useTransform(
+    scrollYProgress,
+    [start, mid, end],
+    [0.8, 1, 0.9]
+  );
 
   return (
-    <motion.a
-      ref={ref}
-      href={material.href}
-      className="group flex items-baseline justify-between border-b border-white/10 py-4 md:py-6 block"
-      initial={{ opacity: 0, x: -50 }}
-      animate={isInView ? { opacity: 1, x: 0 } : {}}
-      transition={{ delay: 0.1 * index, duration: 0.6 }}
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
+    <motion.div 
+      className="absolute inset-0 flex items-center justify-center"
+      style={{ opacity }}
     >
-      <div className="flex items-baseline gap-4 md:gap-8">
-        <motion.h3 
-          className="text-4xl md:text-6xl lg:text-7xl font-serif tracking-tight"
-          animate={{ 
-            x: isHovered ? 20 : 0,
-            fontStyle: isHovered ? 'italic' : 'normal'
-          }}
-          transition={{ duration: 0.4 }}
+      {/* Background image with zoom */}
+      <motion.div 
+        className="absolute inset-0"
+        style={{ scale }}
+      >
+        <img 
+          src={material.image}
+          alt={material.name}
+          className="w-full h-full object-cover"
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/40" />
+      </motion.div>
+
+      {/* Text overlay */}
+      <motion.div 
+        className="relative z-10 text-center"
+        style={{ opacity: textOpacity, scale: textScale }}
+      >
+        <motion.h2 
+          className="font-serif text-6xl md:text-8xl lg:text-9xl text-white tracking-tight"
         >
           {material.name}
-        </motion.h3>
-        <motion.span 
-          className="hidden md:block text-sm text-white/50 tracking-wide"
-          animate={{ opacity: isHovered ? 1 : 0.5 }}
-        >
+        </motion.h2>
+        <p className="text-white/60 text-sm md:text-base tracking-widest mt-4">
           [{material.subtitle}]
-        </motion.span>
-      </div>
-      
-      {/* Arrow */}
-      <motion.span 
-        className="text-2xl md:text-3xl"
-        animate={{ 
-          x: isHovered ? 20 : 0,
-          scale: isHovered ? 1.2 : 1
-        }}
-        transition={{ duration: 0.3 }}
-      >
-        →
-      </motion.span>
-    </motion.a>
+        </p>
+        <motion.a
+          href={material.href}
+          className="inline-flex items-center gap-3 mt-8 text-white/80 hover:text-white transition-colors"
+          whileHover={{ x: 10 }}
+        >
+          <span className="text-sm tracking-wider">Explore</span>
+          <span className="text-xl">→</span>
+        </motion.a>
+      </motion.div>
+    </motion.div>
   );
 }
