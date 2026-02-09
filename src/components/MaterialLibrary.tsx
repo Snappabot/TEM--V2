@@ -38,6 +38,12 @@ const materials = [
     image: '/TEM--V2/images/products/custom-finishes/Custom+finish+bar.png',
     href: '/TEM--V2/products/custom-finishes'
   },
+  { 
+    name: 'NATURAL', 
+    subtitle: 'Hemp // Clay // Lime',
+    image: '/TEM--V2/images/arch-plaster-render.jpg',
+    href: '/TEM--V2/products/natural-plasters'
+  },
 ];
 
 export default function MaterialLibrary() {
