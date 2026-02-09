@@ -120,30 +120,6 @@ export default function AnimatedHero() {
           Brutalist finishes for architects who refuse to settle.
         </motion.p>
         
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 1.2 }}
-          className="mt-12"
-        >
-          <a 
-            href="#finishes" 
-            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black font-medium uppercase tracking-widest text-sm overflow-hidden transition-all duration-300 hover:bg-stone-200"
-          >
-            <span className="relative z-10">Explore Finishes</span>
-            <motion.svg 
-              className="w-5 h-5 relative z-10"
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </motion.svg>
-          </a>
-        </motion.div>
-        
         {/* Scroll Indicator */}
         <motion.div
           className="absolute bottom-10 left-1/2 -translate-x-1/2"
