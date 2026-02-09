@@ -13,6 +13,10 @@ export default function ScrollZoomHero() {
   const textOpacity = useTransform(scrollYProgress, [0, 0.3, 0.5], [1, 1, 0]);
   const textY = useTransform(scrollYProgress, [0, 0.5], ['0%', '-20%']);
   
+  // Logo fades in as text fades out
+  const logoOpacity = useTransform(scrollYProgress, [0.4, 0.6, 0.9], [0, 1, 1]);
+  const logoScale = useTransform(scrollYProgress, [0.4, 0.6], [0.8, 1]);
+  
   // Background image zoom
   const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.3]);
   const bgOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.3]);
@@ -80,6 +84,18 @@ export default function ScrollZoomHero() {
             </h1>
           </motion.div>
         </div>
+
+        {/* Logo - fades in after text disappears */}
+        <motion.div 
+          className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none"
+          style={{ opacity: logoOpacity, scale: logoScale }}
+        >
+          <img 
+            src="/TEM--V2/images/logo.png" 
+            alt="Troweled Earth" 
+            className="w-48 md:w-64 lg:w-80 h-auto"
+          />
+        </motion.div>
 
         {/* Location tag */}
         <motion.div 
