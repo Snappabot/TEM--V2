@@ -20,11 +20,6 @@ export default function ScrollZoomHero() {
   // Background image zoom - no fade out
   const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.3]);
 
-  // Secondary images parallax
-  const img1Y = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
-  const img2Y = useTransform(scrollYProgress, [0, 1], ['0%', '-20%']);
-  const img1Scale = useTransform(scrollYProgress, [0, 0.5], [1, 1.15]);
-
   return (
     <section ref={containerRef} className="relative h-[400vh]">
       {/* Sticky container */}
@@ -39,29 +34,6 @@ export default function ScrollZoomHero() {
             src="/TEM--V2/images/giorgi-city-beach.jpg"
             alt=""
             className="w-full h-full object-cover"
-          />
-        </motion.div>
-
-        {/* Floating images with parallax */}
-        <motion.div 
-          className="absolute top-20 left-8 md:left-16 w-48 md:w-72 z-10"
-          style={{ y: img1Y, scale: img1Scale }}
-        >
-          <img 
-            src="/TEM--V2/images/products/marbellino/Marbellino+kitchen.png"
-            alt="Marbellino finish"
-            className="w-full shadow-2xl"
-          />
-        </motion.div>
-
-        <motion.div 
-          className="absolute bottom-32 right-8 md:right-16 w-40 md:w-64 z-10"
-          style={{ y: img2Y }}
-        >
-          <img 
-            src="/TEM--V2/images/products/concretum/Concretum+stairs.png"
-            alt="Concretum finish"
-            className="w-full shadow-2xl"
           />
         </motion.div>
 
