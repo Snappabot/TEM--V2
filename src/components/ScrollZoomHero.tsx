@@ -36,7 +36,7 @@ export default function ScrollZoomHero() {
           style={{ scale: bgScale }}
         >
           <img 
-            src="/TEM--V2/images/products/rokka/Roka+pilbara.png"
+            src="/TEM--V2/images/giorgi-city-beach.jpg"
             alt=""
             className="w-full h-full object-cover"
           />
