@@ -37,7 +37,7 @@ export default function ScrollZoomHero() {
           style={{ scale: bgScale, opacity: bgOpacity }}
         >
           <img 
-            src="/TEM--V2/images/products/marbellino/Marbellino+stairs+2.png"
+            src="/TEM--V2/images/products/rokka/Roka+pilbara.png"
             alt=""
             className="w-full h-full object-cover"
           />
