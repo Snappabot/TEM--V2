@@ -17,9 +17,8 @@ export default function ScrollZoomHero() {
   const logoOpacity = useTransform(scrollYProgress, [0.4, 0.6, 0.9], [0, 1, 1]);
   const logoScale = useTransform(scrollYProgress, [0.4, 0.6], [0.8, 1]);
   
-  // Background image zoom
+  // Background image zoom - no fade out
   const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.3]);
-  const bgOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.3]);
 
   // Secondary images parallax
   const img1Y = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
@@ -27,14 +26,14 @@ export default function ScrollZoomHero() {
   const img1Scale = useTransform(scrollYProgress, [0, 0.5], [1, 1.15]);
 
   return (
-    <section ref={containerRef} className="relative h-[200vh]">
+    <section ref={containerRef} className="relative h-[400vh]">
       {/* Sticky container */}
       <div className="sticky top-0 h-screen overflow-hidden bg-[#FAF9F6]">
         
         {/* Background image with zoom */}
         <motion.div 
           className="absolute inset-0 z-0"
-          style={{ scale: bgScale, opacity: bgOpacity }}
+          style={{ scale: bgScale }}
         >
           <img 
             src="/TEM--V2/images/products/rokka/Roka+pilbara.png"
@@ -100,7 +99,6 @@ export default function ScrollZoomHero() {
         {/* Location tag */}
         <motion.div 
           className="absolute bottom-8 right-8 text-xs tracking-widest text-[#1a1a1a]/60 z-20"
-          style={{ opacity: bgOpacity }}
         >
           MAT: MARBELLINO // LOC: MELBOURNE
         </motion.div>
