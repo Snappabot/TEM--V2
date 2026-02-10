@@ -11,7 +11,7 @@ const materials = [
   { 
     name: 'CONCRETUM', 
     subtitle: 'Raw Concrete // Matte',
-    image: '/TEM--V2/images/products/concretum/Concretum+angular+exterior.jpg',
+    image: '/TEM--V2/images/products/concretum/Concretum+stairs.png',
     href: '/TEM--V2/products/concretum'
   },
   { 
