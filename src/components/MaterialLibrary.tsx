@@ -5,7 +5,7 @@ const materials = [
   { 
     name: 'MARBELLINO', 
     subtitle: 'Venetian // High Polish',
-    image: '/TEM--V2/images/products/marbellino/Marbellino+curved+sunset.jpg',
+    image: '/TEM--V2/images/products/marbellino/Marbellino+state+of+kin.jpg',
     href: '/TEM--V2/products/marbellino'
   },
   { 
@@ -23,7 +23,7 @@ const materials = [
   { 
     name: 'ROKKA', 
     subtitle: 'Textured Stone // Natural',
-    image: '/TEM--V2/images/products/rokka/Roka+ceiling.png',
+    image: '/TEM--V2/images/products/rokka/Roka+pilbara.png',
     href: '/TEM--V2/products/rokka'
   },
   { 
