@@ -14,7 +14,31 @@ interface UserSession {
   createdAt: string;
 }
 
+interface LocationCategory {
+  id: string;
+  name: string;
+  areas: string[];
+}
+
 const MAX_GENERATIONS = 10;
+
+const locationCategories: LocationCategory[] = [
+  {
+    id: 'exterior-level1',
+    name: 'Exterior - Level 1',
+    areas: ['Main Walls', 'Balcony / Terrace', 'Columns & Pillars', 'Window Surrounds']
+  },
+  {
+    id: 'exterior-ground',
+    name: 'Exterior - Ground Floor',
+    areas: ['Street Facade', 'Entry / Portico', 'Garage / Carport', 'Garden Walls']
+  },
+  {
+    id: 'interior',
+    name: 'Interior',
+    areas: ['Feature Walls', 'Bathroom / Wet Areas', 'Stairwell', 'Fireplace Surround']
+  }
+];
 
 const textures: Texture[] = [
   // Marbellino
@@ -50,12 +74,22 @@ export default function FinishVisualizer() {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedTextures, setSelectedTextures] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleLocation = (location: string) => {
+    setSelectedLocations(prev => {
+      if (prev.includes(location)) {
+        return prev.filter(l => l !== location);
+      }
+      return [...prev, location];
+    });
+  };
 
   // Load session from localStorage on mount
   useEffect(() => {
@@ -161,6 +195,7 @@ export default function FinishVisualizer() {
 
   const handleReset = () => {
     setUploadedImage(null);
+    setSelectedLocations([]);
     setSelectedTextures([]);
     setGeneratedImage(null);
     setShowResult(false);
@@ -363,9 +398,9 @@ export default function FinishVisualizer() {
               <div className="mt-8 flex gap-4">
                 <button
                   onClick={handleGenerate}
-                  disabled={!uploadedImage || selectedTextures.length === 0 || isGenerating}
+                  disabled={!uploadedImage || selectedLocations.length === 0 || selectedTextures.length === 0 || isGenerating}
                   className={`flex-1 py-4 px-6 rounded-lg font-medium transition-all ${
-                    !uploadedImage || selectedTextures.length === 0 || isGenerating
+                    !uploadedImage || selectedLocations.length === 0 || selectedTextures.length === 0 || isGenerating
                       ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
                       : 'bg-white text-black hover:bg-neutral-200'
                   }`}
@@ -394,28 +429,69 @@ export default function FinishVisualizer() {
               </div>
             </div>
 
-            {/* Right: Texture Selection */}
-            <div>
-              <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-4">
-                Step 2: Select Finishes (up to 4)
-              </h2>
-
-              {/* Category Filter */}
-              <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                {categories.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
-                      activeCategory === cat
-                        ? 'bg-white text-black'
-                        : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+            {/* Right: Location & Texture Selection */}
+            <div className="space-y-8">
+              {/* Step 2: Location Selection */}
+              <div>
+                <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-4">
+                  Step 2: Select Application Areas
+                </h2>
+                
+                <div className="space-y-4">
+                  {locationCategories.map(category => (
+                    <div key={category.id} className="bg-neutral-900 rounded-lg p-4">
+                      <h3 className="text-sm font-medium text-neutral-300 mb-3">{category.name}</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {category.areas.map(area => {
+                          const isSelected = selectedLocations.includes(area);
+                          return (
+                            <button
+                              key={area}
+                              onClick={() => toggleLocation(area)}
+                              className={`px-3 py-1.5 rounded-full text-xs transition-all ${
+                                isSelected
+                                  ? 'bg-white text-black'
+                                  : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                              }`}
+                            >
+                              {area}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {selectedLocations.length > 0 && (
+                  <p className="text-xs text-neutral-500 mt-3">
+                    Selected: {selectedLocations.join(', ')}
+                  </p>
+                )}
               </div>
+
+              {/* Step 3: Texture Selection */}
+              <div>
+                <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-4">
+                  Step 3: Select Finishes (up to 4)
+                </h2>
+
+                {/* Category Filter */}
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                  {categories.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCategory(cat)}
+                      className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
+                        activeCategory === cat
+                          ? 'bg-white text-black'
+                          : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
 
               {/* Texture Grid */}
               <div className="grid grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-2">
@@ -460,6 +536,7 @@ export default function FinishVisualizer() {
                   })}
                 </AnimatePresence>
               </div>
+              </div>
             </div>
           </div>
         )}
@@ -467,29 +544,36 @@ export default function FinishVisualizer() {
 
       {/* Info Section */}
       <div className="border-t border-neutral-800 py-16 px-8">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-light mb-4">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-8 mt-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
             <div>
               <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl">1</span>
               </div>
               <h3 className="font-medium mb-2">Upload</h3>
-              <p className="text-neutral-400 text-sm">Upload a photo of your wall, facade, or elevation</p>
+              <p className="text-neutral-400 text-sm">Upload your elevation drawing or facade photo</p>
             </div>
             <div>
               <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl">2</span>
               </div>
-              <h3 className="font-medium mb-2">Select</h3>
-              <p className="text-neutral-400 text-sm">Choose up to 4 finishes to visualize</p>
+              <h3 className="font-medium mb-2">Location</h3>
+              <p className="text-neutral-400 text-sm">Select where the finishes will be applied</p>
             </div>
             <div>
               <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl">3</span>
               </div>
+              <h3 className="font-medium mb-2">Finishes</h3>
+              <p className="text-neutral-400 text-sm">Choose up to 4 finishes to visualize</p>
+            </div>
+            <div>
+              <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl">4</span>
+              </div>
               <h3 className="font-medium mb-2">Generate</h3>
-              <p className="text-neutral-400 text-sm">AI creates a realistic visualization of your space</p>
+              <p className="text-neutral-400 text-sm">AI creates a realistic visualization</p>
             </div>
           </div>
         </div>
