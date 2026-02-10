@@ -5,13 +5,13 @@ const materials = [
   { 
     name: 'MARBELLINO', 
     subtitle: 'Venetian // High Polish',
-    image: '/TEM--V2/images/products/marbellino/Marbellino+bathroom+8.png',
+    image: '/TEM--V2/images/products/marbellino/Marbellino+curved+sunset.jpg',
     href: '/TEM--V2/products/marbellino'
   },
   { 
     name: 'CONCRETUM', 
     subtitle: 'Raw Concrete // Matte',
-    image: '/TEM--V2/images/products/concretum/Concretum+stairs.png',
+    image: '/TEM--V2/images/products/concretum/Concretum+angular+exterior.jpg',
     href: '/TEM--V2/products/concretum'
   },
   { 
@@ -29,13 +29,13 @@ const materials = [
   { 
     name: 'TADELAKT', 
     subtitle: 'Moroccan // Waterproof',
-    image: '/TEM--V2/images/products/tadelakt/Tadelakt+bathroom+1.png',
+    image: '/TEM--V2/images/products/tadelakt/Tadelakt+moody+shower.jpg',
     href: '/TEM--V2/products/tadelakt'
   },
   { 
     name: 'CUSTOM', 
     subtitle: 'Your Vision // Our Craft',
-    image: '/TEM--V2/images/products/custom-finishes/Custom+finish+bar.png',
+    image: '/TEM--V2/images/products/custom-finishes/Custom+lunar+bedroom.jpg',
     href: '/TEM--V2/products/custom-finishes'
   },
   { 
