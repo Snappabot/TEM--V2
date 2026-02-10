@@ -2,12 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Troweled Earth Logo component
-const TreeLogo = ({ className = "w-8 h-8" }: { className?: string }) => (
+const TreeLogo = ({ className = "w-8 h-8", invert = true }: { className?: string; invert?: boolean }) => (
   <img 
     src="/TEM--V2/images/logo.png" 
     alt="Troweled Earth" 
     className={`${className} object-contain`}
-    style={{ filter: 'brightness(0) invert(0.5)' }}
+    style={invert ? { filter: 'invert(1)' } : undefined}
   />
 );
 
