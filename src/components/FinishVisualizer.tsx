@@ -1,6 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Tree of Life Logo component
+const TreeLogo = ({ className = "w-8 h-8", color = "currentColor" }: { className?: string; color?: string }) => (
+  <svg viewBox="0 0 100 100" className={className} style={{ color }}>
+    <g fill="currentColor">
+      <path d="M48 95 L48 60 Q48 55 50 55 Q52 55 52 60 L52 95 Z" />
+      <path d="M50 55 Q35 45 25 35 Q20 30 25 25 Q30 20 35 25 Q42 32 50 40" fill="none" stroke="currentColor" strokeWidth="3" />
+      <path d="M50 55 Q65 45 75 35 Q80 30 75 25 Q70 20 65 25 Q58 32 50 40" fill="none" stroke="currentColor" strokeWidth="3" />
+      <path d="M35 30 Q25 20 20 10 Q18 5 22 5 Q28 5 35 15" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M65 30 Q75 20 80 10 Q82 5 78 5 Q72 5 65 15" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M50 40 L50 10 Q50 5 50 8" fill="none" stroke="currentColor" strokeWidth="2.5" />
+      <path d="M50 25 Q40 18 35 12" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M50 25 Q60 18 65 12" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M48 95 Q40 98 35 95 Q30 92 35 90" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M52 95 Q60 98 65 95 Q70 92 65 90" fill="none" stroke="currentColor" strokeWidth="2" />
+    </g>
+  </svg>
+);
+
 interface Texture {
   id: string;
   name: string;
@@ -458,9 +476,11 @@ export default function FinishVisualizer() {
                                   className="w-8 h-8 rounded object-cover ring-2 ring-green-500"
                                 />
                               ) : (
-                                <div className={`w-8 h-8 rounded border-2 border-dashed ${
-                                  isActive ? 'border-neutral-400' : 'border-neutral-700'
-                                }`} />
+                                <div className={`w-8 h-8 rounded flex items-center justify-center ${
+                                  isActive ? 'bg-neutral-200' : 'bg-neutral-800'
+                                }`}>
+                                  <TreeLogo className={`w-5 h-5 ${isActive ? 'text-neutral-500' : 'text-neutral-600'}`} />
+                                </div>
                               )}
                               <div className="flex-1 min-w-0">
                                 <p className={`text-sm font-medium ${isActive ? 'text-black' : 'text-white'}`}>
@@ -576,9 +596,7 @@ export default function FinishVisualizer() {
                         animate={{ opacity: 1 }}
                         className="bg-neutral-900/50 rounded-lg p-8 flex flex-col items-center justify-center h-full min-h-[300px]"
                       >
-                        <svg className="w-12 h-12 text-neutral-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-                        </svg>
+                        <TreeLogo className="w-16 h-16 text-neutral-700 mb-4" />
                         <p className="text-neutral-500 text-center">
                           Click on an area to select a finish
                         </p>
@@ -598,22 +616,22 @@ export default function FinishVisualizer() {
           <h2 className="text-xl font-light mb-6">How It Works</h2>
           <div className="grid grid-cols-3 gap-6">
             <div>
-              <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-                <span className="text-lg">1</span>
+              <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
+                <TreeLogo className="w-7 h-7 text-neutral-400" />
               </div>
               <h3 className="font-medium mb-1 text-sm">Upload</h3>
               <p className="text-neutral-400 text-xs">Upload your elevation drawing</p>
             </div>
             <div>
-              <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-                <span className="text-lg">2</span>
+              <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
+                <TreeLogo className="w-7 h-7 text-neutral-400" />
               </div>
               <h3 className="font-medium mb-1 text-sm">Customize</h3>
               <p className="text-neutral-400 text-xs">Assign finishes to each area</p>
             </div>
             <div>
-              <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-                <span className="text-lg">3</span>
+              <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
+                <TreeLogo className="w-7 h-7 text-neutral-400" />
               </div>
               <h3 className="font-medium mb-1 text-sm">Generate</h3>
               <p className="text-neutral-400 text-xs">AI creates your visualization</p>
