@@ -1,0 +1,18 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CustomCursor from '../components/CustomCursor';
+import ScrollProgress from '../components/ScrollProgress';
+import FinishVisualizer from '../components/FinishVisualizer';
+import AnimatedFooter from '../components/AnimatedFooter';
+---
+
+<Layout title="Finish Visualizer | Troweled Earth Melbourne">
+  <CustomCursor client:load />
+  <ScrollProgress client:load />
+  
+  <main>
+    <FinishVisualizer client:load />
+  </main>
+
+  <AnimatedFooter client:visible />
+</Layout>
