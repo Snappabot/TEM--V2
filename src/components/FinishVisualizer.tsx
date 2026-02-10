@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Texture {
@@ -7,6 +7,14 @@ interface Texture {
   category: string;
   image: string;
 }
+
+interface UserSession {
+  email: string;
+  generationsUsed: number;
+  createdAt: string;
+}
+
+const MAX_GENERATIONS = 10;
 
 const textures: Texture[] = [
   // Marbellino
@@ -38,6 +46,9 @@ const textures: Texture[] = [
 const categories = ['All', 'Marbellino', 'Concretum', 'Rokka', 'Metallics'];
 
 export default function FinishVisualizer() {
+  const [userSession, setUserSession] = useState<UserSession | null>(null);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [selectedTextures, setSelectedTextures] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -45,6 +56,46 @@ export default function FinishVisualizer() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load session from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('tem-visualizer-session');
+    if (saved) {
+      try {
+        const session = JSON.parse(saved) as UserSession;
+        setUserSession(session);
+      } catch (e) {
+        localStorage.removeItem('tem-visualizer-session');
+      }
+    }
+  }, []);
+
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError('');
+    
+    if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    const session: UserSession = {
+      email,
+      generationsUsed: 0,
+      createdAt: new Date().toISOString(),
+    };
+    
+    localStorage.setItem('tem-visualizer-session', JSON.stringify(session));
+    setUserSession(session);
+  };
+
+  const remainingGenerations = userSession 
+    ? MAX_GENERATIONS - userSession.generationsUsed 
+    : 0;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -76,13 +127,22 @@ export default function FinishVisualizer() {
     : textures.filter(t => t.category === activeCategory);
 
   const handleGenerate = async () => {
-    if (!uploadedImage || selectedTextures.length === 0) return;
+    if (!uploadedImage || selectedTextures.length === 0 || !userSession) return;
+    if (remainingGenerations <= 0) return;
     
     setIsGenerating(true);
     
     // TODO: Integrate with AI API (Replicate/OpenAI)
     // For now, simulate generation
     await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    // Update generation count
+    const updatedSession = {
+      ...userSession,
+      generationsUsed: userSession.generationsUsed + 1,
+    };
+    localStorage.setItem('tem-visualizer-session', JSON.stringify(updatedSession));
+    setUserSession(updatedSession);
     
     // Placeholder - will be replaced with actual AI generation
     setGeneratedImage(uploadedImage);
@@ -109,6 +169,64 @@ export default function FinishVisualizer() {
     }
   };
 
+  // Email Gate
+  if (!userSession) {
+    return (
+      <div className="min-h-screen bg-neutral-950 text-white flex items-center justify-center px-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full"
+        >
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-5xl font-light tracking-tight mb-4">
+              FINISH VISUALIZER
+            </h1>
+            <p className="text-neutral-400">
+              See your space transformed with our premium plaster finishes. 
+              Enter your email to get 10 free visualizations.
+            </p>
+          </div>
+
+          <form onSubmit={handleEmailSubmit} className="space-y-4">
+            <div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full px-4 py-4 bg-neutral-900 border border-neutral-800 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
+              />
+              {emailError && (
+                <p className="text-red-400 text-sm mt-2">{emailError}</p>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="w-full py-4 bg-white text-black font-medium rounded-lg hover:bg-neutral-200 transition-colors"
+            >
+              Start Visualizing
+            </button>
+          </form>
+
+          <p className="text-neutral-600 text-xs text-center mt-6">
+            By continuing, you agree to receive updates about Troweled Earth products. 
+            You can unsubscribe at any time.
+          </p>
+
+          {/* Preview Grid */}
+          <div className="mt-12 grid grid-cols-4 gap-2">
+            {textures.slice(0, 8).map(t => (
+              <div key={t.id} className="aspect-square rounded overflow-hidden opacity-50">
+                <img src={t.image} alt={t.name} className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
       {/* Header */}
@@ -128,194 +246,223 @@ export default function FinishVisualizer() {
         >
           Upload your elevation photo, select up to 4 finishes, and see your vision come to life
         </motion.p>
+        
+        {/* Generations Counter */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 rounded-full"
+        >
+          <span className="text-neutral-500 text-sm">Visualizations remaining:</span>
+          <span className={`font-medium ${remainingGenerations <= 3 ? 'text-amber-400' : 'text-white'}`}>
+            {remainingGenerations} / {MAX_GENERATIONS}
+          </span>
+        </motion.div>
       </div>
 
       <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Left: Upload & Preview */}
-          <div>
-            <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-4">
-              Step 1: Upload Your Photo
-            </h2>
-            
-            <div 
-              className={`relative aspect-[4/3] rounded-lg overflow-hidden border-2 border-dashed transition-colors ${
-                uploadedImage ? 'border-transparent' : 'border-neutral-700 hover:border-neutral-500'
-              }`}
+        {remainingGenerations <= 0 ? (
+          // Out of generations
+          <div className="text-center py-20">
+            <h2 className="text-2xl font-light mb-4">You've used all your visualizations</h2>
+            <p className="text-neutral-400 mb-8">
+              Contact us to discuss your project and get more visualizations.
+            </p>
+            <a 
+              href="/TEM--V2/#contact"
+              className="inline-block px-8 py-4 bg-white text-black font-medium rounded-lg hover:bg-neutral-200 transition-colors"
             >
-              {uploadedImage ? (
-                <>
-                  <img 
-                    src={showResult && generatedImage ? generatedImage : uploadedImage} 
-                    alt="Uploaded elevation" 
-                    className="w-full h-full object-cover"
-                  />
-                  {showResult && (
-                    <div className="absolute top-4 left-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full">
-                      AI Generated
-                    </div>
-                  )}
-                  <button
-                    onClick={handleReset}
-                    className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </>
-              ) : (
-                <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer bg-neutral-900 hover:bg-neutral-800 transition-colors">
-                  <svg className="w-12 h-12 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-neutral-400">Click to upload elevation photo</span>
-                  <span className="text-neutral-600 text-sm mt-1">JPG, PNG up to 10MB</span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-
-            {/* Selected Textures Preview */}
-            {selectedTextures.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-3">
-                  Selected Finishes ({selectedTextures.length}/4)
-                </h3>
-                <div className="flex gap-3">
-                  {selectedTextures.map((id, index) => {
-                    const texture = textures.find(t => t.id === id);
-                    return (
-                      <motion.div
-                        key={id}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="relative"
-                      >
-                        <img 
-                          src={texture?.image} 
-                          alt={texture?.name}
-                          className="w-16 h-16 rounded object-cover ring-2 ring-white"
-                        />
-                        <span className="absolute -top-2 -left-2 w-5 h-5 bg-white text-black text-xs flex items-center justify-center rounded-full font-medium">
-                          {index + 1}
-                        </span>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="mt-8 flex gap-4">
-              <button
-                onClick={handleGenerate}
-                disabled={!uploadedImage || selectedTextures.length === 0 || isGenerating}
-                className={`flex-1 py-4 px-6 rounded-lg font-medium transition-all ${
-                  !uploadedImage || selectedTextures.length === 0 || isGenerating
-                    ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
-                    : 'bg-white text-black hover:bg-neutral-200'
+              Get in Touch
+            </a>
+          </div>
+        ) : (
+          <div className="grid lg:grid-cols-2 gap-12">
+            {/* Left: Upload & Preview */}
+            <div>
+              <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-4">
+                Step 1: Upload Your Photo
+              </h2>
+              
+              <div 
+                className={`relative aspect-[4/3] rounded-lg overflow-hidden border-2 border-dashed transition-colors ${
+                  uploadedImage ? 'border-transparent' : 'border-neutral-700 hover:border-neutral-500'
                 }`}
               >
-                {isGenerating ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Generating...
-                  </span>
+                {uploadedImage ? (
+                  <>
+                    <img 
+                      src={showResult && generatedImage ? generatedImage : uploadedImage} 
+                      alt="Uploaded elevation" 
+                      className="w-full h-full object-cover"
+                    />
+                    {showResult && (
+                      <div className="absolute top-4 left-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full">
+                        AI Generated
+                      </div>
+                    )}
+                    <button
+                      onClick={handleReset}
+                      className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </>
                 ) : (
-                  'Generate Visualization'
+                  <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer bg-neutral-900 hover:bg-neutral-800 transition-colors">
+                    <svg className="w-12 h-12 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-neutral-400">Click to upload elevation photo</span>
+                    <span className="text-neutral-600 text-sm mt-1">JPG, PNG up to 10MB</span>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </label>
                 )}
-              </button>
-              
-              {generatedImage && (
-                <button
-                  onClick={handleSave}
-                  className="py-4 px-6 rounded-lg font-medium bg-neutral-800 text-white hover:bg-neutral-700 transition-colors"
-                >
-                  Save Image
-                </button>
+              </div>
+
+              {/* Selected Textures Preview */}
+              {selectedTextures.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-3">
+                    Selected Finishes ({selectedTextures.length}/4)
+                  </h3>
+                  <div className="flex gap-3">
+                    {selectedTextures.map((id, index) => {
+                      const texture = textures.find(t => t.id === id);
+                      return (
+                        <motion.div
+                          key={id}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="relative"
+                        >
+                          <img 
+                            src={texture?.image} 
+                            alt={texture?.name}
+                            className="w-16 h-16 rounded object-cover ring-2 ring-white"
+                          />
+                          <span className="absolute -top-2 -left-2 w-5 h-5 bg-white text-black text-xs flex items-center justify-center rounded-full font-medium">
+                            {index + 1}
+                          </span>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
-            </div>
-          </div>
 
-          {/* Right: Texture Selection */}
-          <div>
-            <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-4">
-              Step 2: Select Finishes (up to 4)
-            </h2>
-
-            {/* Category Filter */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-              {categories.map(cat => (
+              {/* Action Buttons */}
+              <div className="mt-8 flex gap-4">
                 <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
-                    activeCategory === cat
-                      ? 'bg-white text-black'
-                      : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                  onClick={handleGenerate}
+                  disabled={!uploadedImage || selectedTextures.length === 0 || isGenerating}
+                  className={`flex-1 py-4 px-6 rounded-lg font-medium transition-all ${
+                    !uploadedImage || selectedTextures.length === 0 || isGenerating
+                      ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                      : 'bg-white text-black hover:bg-neutral-200'
                   }`}
                 >
-                  {cat}
+                  {isGenerating ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Generating...
+                    </span>
+                  ) : (
+                    'Generate Visualization'
+                  )}
                 </button>
-              ))}
+                
+                {generatedImage && (
+                  <button
+                    onClick={handleSave}
+                    className="py-4 px-6 rounded-lg font-medium bg-neutral-800 text-white hover:bg-neutral-700 transition-colors"
+                  >
+                    Save Image
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Texture Grid */}
-            <div className="grid grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-2">
-              <AnimatePresence mode="popLayout">
-                {filteredTextures.map(texture => {
-                  const isSelected = selectedTextures.includes(texture.id);
-                  const selectionIndex = selectedTextures.indexOf(texture.id);
-                  
-                  return (
-                    <motion.button
-                      key={texture.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      onClick={() => toggleTexture(texture.id)}
-                      className={`relative aspect-square rounded-lg overflow-hidden group transition-all ${
-                        isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-neutral-950' : ''
-                      } ${selectedTextures.length >= 4 && !isSelected ? 'opacity-50' : ''}`}
-                    >
-                      <img 
-                        src={texture.image} 
-                        alt={texture.name}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className={`absolute inset-0 transition-opacity ${
-                        isSelected ? 'bg-black/30' : 'bg-black/0 group-hover:bg-black/20'
-                      }`} />
-                      
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 w-6 h-6 bg-white text-black text-sm flex items-center justify-center rounded-full font-medium">
-                          {selectionIndex + 1}
+            {/* Right: Texture Selection */}
+            <div>
+              <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-4">
+                Step 2: Select Finishes (up to 4)
+              </h2>
+
+              {/* Category Filter */}
+              <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
+                      activeCategory === cat
+                        ? 'bg-white text-black'
+                        : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              {/* Texture Grid */}
+              <div className="grid grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-2">
+                <AnimatePresence mode="popLayout">
+                  {filteredTextures.map(texture => {
+                    const isSelected = selectedTextures.includes(texture.id);
+                    const selectionIndex = selectedTextures.indexOf(texture.id);
+                    
+                    return (
+                      <motion.button
+                        key={texture.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        onClick={() => toggleTexture(texture.id)}
+                        className={`relative aspect-square rounded-lg overflow-hidden group transition-all ${
+                          isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-neutral-950' : ''
+                        } ${selectedTextures.length >= 4 && !isSelected ? 'opacity-50' : ''}`}
+                      >
+                        <img 
+                          src={texture.image} 
+                          alt={texture.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className={`absolute inset-0 transition-opacity ${
+                          isSelected ? 'bg-black/30' : 'bg-black/0 group-hover:bg-black/20'
+                        }`} />
+                        
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-white text-black text-sm flex items-center justify-center rounded-full font-medium">
+                            {selectionIndex + 1}
+                          </div>
+                        )}
+                        
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                          <p className="text-xs text-white font-medium">{texture.name}</p>
+                          <p className="text-xs text-neutral-400">{texture.category}</p>
                         </div>
-                      )}
-                      
-                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                        <p className="text-xs text-white font-medium">{texture.name}</p>
-                        <p className="text-xs text-neutral-400">{texture.category}</p>
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </AnimatePresence>
+                      </motion.button>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Info Section */}
