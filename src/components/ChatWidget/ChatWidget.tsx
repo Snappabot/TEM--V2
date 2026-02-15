@@ -309,7 +309,7 @@ export default function ChatWidget() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Type your message..."
-                  className="flex-1 px-4 py-2 bg-[#f5f5f0] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#8b7355]/30"
+                  className="flex-1 px-4 py-2 bg-[#f5f5f0] text-[#1a1a1a] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#8b7355]/30 placeholder:text-[#1a1a1a]/50"
                   disabled={isLoading}
                 />
                 <button
