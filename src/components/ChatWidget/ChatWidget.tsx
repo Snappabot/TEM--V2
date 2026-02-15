@@ -26,7 +26,7 @@ export default function ChatWidget() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId] = useState<string>(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [leadInfo, setLeadInfo] = useState<LeadInfo>({});
   const [showLeadForm, setShowLeadForm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
