@@ -2,14 +2,16 @@
 import '../styles/global.css';
 import { ViewTransitions } from 'astro:transitions';
 import Header from '../components/Header';
+import ChatWidget from '../components/ChatWidget/ChatWidget';
 
 interface Props {
   title: string;
   description?: string;
   hideHeader?: boolean;
+  hideChat?: boolean;
 }
 
-const { title, description = "Raw. Bold. Brutal. Melbourne's artisan plaster finishes, born from the earth, troweled by hand.", hideHeader = false } = Astro.props;
+const { title, description = "Raw. Bold. Brutal. Melbourne's artisan plaster finishes, born from the earth, troweled by hand.", hideHeader = false, hideChat = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -40,5 +42,6 @@ const { title, description = "Raw. Bold. Brutal. Melbourne's artisan plaster fin
     <main class="w-full">
       <slot />
     </main>
+    {!hideChat && <ChatWidget client:load />}
   </body>
 </html>
