@@ -48,7 +48,7 @@ function findRelevantInfo(message: string): { response: string; productsFound: s
   
   // Price/cost
   if (lowerMessage.includes('cost') || lowerMessage.includes('price') || lowerMessage.includes('how much') || lowerMessage.includes('quote')) {
-    responses.push(`Pricing depends on the product, area size, and project complexity. For a detailed quote, contact Matt:\n\n📞 ${companyInfo.contact.phone}\n📧 ${companyInfo.contact.email}\n\nOr leave your details and we'll get back to you!`);
+    responses.push(`Pricing depends on the product, area size, and project complexity.\n\n**Where to buy:**\n🏪 Render Supply Co\n🏪 Geelong Colour World\n🏪 Wet Trades Hyatt\n\nFor project quotes, contact Matt:\n📞 ${companyInfo.contact.phone}\n📧 ${companyInfo.contact.email}`);
   }
   
   // Warranty
