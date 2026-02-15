@@ -66,6 +66,11 @@ function findRelevantInfo(message: string): { response: string; productsFound: s
     responses.push("Yes, we offer hands-on training workshops! Perfect for plasterers, builders, and DIY enthusiasts. Follow us on Instagram @troweled_earth_melbourne for upcoming dates, or contact us to register your interest.");
   }
   
+  // Suppliers / Where to buy
+  if (lowerMessage.includes('supplier') || lowerMessage.includes('stockist') || lowerMessage.includes('where to buy') || lowerMessage.includes('buy') || lowerMessage.includes('purchase') || lowerMessage.includes('store')) {
+    responses.push("You can find our products at these trusted suppliers:\n\n🏪 **Render Supply Co**\n🏪 **Geelong Colour World**\n🏪 **Wet Trades Hyatt**\n\nOr contact us directly for bulk orders and project consultations!");
+  }
+  
   // Comparison
   if (lowerMessage.includes('difference') || lowerMessage.includes('compare') || lowerMessage.includes('vs') || lowerMessage.includes('which')) {
     responses.push("Quick comparison of our finishes:\n\n**Marbellino** - Polished, stone-like, can do floors\n**Tadelakt** - Waterproof, great for showers\n**Concretum** - Industrial concrete look\n**Rokka** - Textured stone effect\n\nWhat look are you going for?");
