@@ -1,13 +1,15 @@
 ---
 import '../styles/global.css';
 import { ViewTransitions } from 'astro:transitions';
+import Header from '../components/Header';
 
 interface Props {
   title: string;
   description?: string;
+  hideHeader?: boolean;
 }
 
-const { title, description = "Raw. Bold. Brutal. Melbourne's artisan plaster finishes, born from the earth, troweled by hand." } = Astro.props;
+const { title, description = "Raw. Bold. Brutal. Melbourne's artisan plaster finishes, born from the earth, troweled by hand.", hideHeader = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -34,6 +36,7 @@ const { title, description = "Raw. Bold. Brutal. Melbourne's artisan plaster fin
     <title>{title}</title>
   </head>
   <body class="antialiased scroll-smooth w-full min-w-full bg-black text-white">
+    {!hideHeader && <Header client:load />}
     <main class="w-full">
       <slot />
     </main>
