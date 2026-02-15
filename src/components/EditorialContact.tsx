@@ -33,6 +33,19 @@ export default function EditorialContact() {
           </motion.a>
         </motion.div>
 
+        {/* About Section */}
+        <motion.div
+          className="mb-16 pb-16 border-b border-white/10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.15 }}
+        >
+          <span className="label block mb-4">Our Story</span>
+          <p className="text-white/70 max-w-3xl text-lg leading-relaxed">
+            Established in 2002 in Perth, Western Australia, Troweled Earth have created a unique and customisable product range — from Venetian plaster and textured renders to concrete finishes and stucco. A household name associated with style and class in design aesthetics. Now expanding into Melbourne, offering training, product sales, and personalised application services.
+          </p>
+        </motion.div>
+
         {/* Footer grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 border-t border-white/10 pt-12">
           {/* Contact */}

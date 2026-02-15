@@ -1,0 +1,207 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header';
+import AnimatedFooter from '../../components/AnimatedFooter';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+// Get all posts for navigation
+const allPosts = await getCollection('blog');
+const sortedPosts = allPosts.sort((a, b) => 
+  new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+const currentIndex = sortedPosts.findIndex(p => p.slug === post.slug);
+const prevPost = sortedPosts[currentIndex + 1];
+const nextPost = sortedPosts[currentIndex - 1];
+
+// Format date helper
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-AU', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(date);
+}
+---
+
+<Layout title={`${post.data.title} | Troweled Earth Melbourne`} description={post.data.excerpt}>
+  <Header client:load />
+
+  <!-- Hero Section -->
+  <section class="relative h-[60vh] min-h-[500px] flex items-end justify-center bg-[#0a0a0a] overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0a]/50 to-[#0a0a0a] z-10"></div>
+    
+    <!-- Featured Image Placeholder -->
+    <div class="absolute inset-0 flex items-center justify-center">
+      <span class="text-[#8b7355] text-[20rem] font-bold opacity-10">T</span>
+    </div>
+    
+    <div class="relative z-20 text-center px-6 pb-16 max-w-4xl">
+      <div class="flex items-center justify-center gap-4 mb-6">
+        <span class="text-[#8b7355] text-sm uppercase tracking-[0.2em]">
+          {formatDate(post.data.date)}
+        </span>
+        {post.data.tags && post.data.tags.length > 0 && (
+          <>
+            <span class="text-white/30">•</span>
+            <span class="text-white/60 text-sm">{post.data.tags[0]}</span>
+          </>
+        )}
+      </div>
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight">
+        {post.data.title}
+      </h1>
+      <p class="text-white/60 mt-6 text-lg max-w-2xl mx-auto">
+        {post.data.excerpt}
+      </p>
+    </div>
+  </section>
+
+  <!-- Article Content -->
+  <article class="py-16 md:py-24 bg-[#f5f5f0]">
+    <div class="max-w-3xl mx-auto px-6">
+      <div class="prose prose-lg prose-slate max-w-none 
+        prose-headings:font-bold prose-headings:text-[#1a1a1a] prose-headings:tracking-tight
+        prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
+        prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
+        prose-h4:text-lg prose-h4:mt-6 prose-h4:mb-3
+        prose-p:text-[#1a1a1a]/80 prose-p:leading-relaxed
+        prose-a:text-[#8b7355] prose-a:no-underline hover:prose-a:underline
+        prose-strong:text-[#1a1a1a]
+        prose-blockquote:border-l-[#8b7355] prose-blockquote:bg-white prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:not-italic
+        prose-ul:list-disc prose-ul:pl-6
+        prose-ol:list-decimal prose-ol:pl-6
+        prose-li:text-[#1a1a1a]/80
+        prose-table:bg-white prose-table:rounded-lg prose-table:overflow-hidden prose-table:shadow-sm
+        prose-th:bg-[#1a1a1a] prose-th:text-white prose-th:font-medium prose-th:py-3 prose-th:px-4 prose-th:text-left
+        prose-td:py-3 prose-td:px-4 prose-td:border-b prose-td:border-[#f5f5f0]
+        prose-hr:border-[#1a1a1a]/10
+        prose-code:bg-[#1a1a1a] prose-code:text-white prose-code:px-2 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+        prose-pre:bg-[#1a1a1a] prose-pre:rounded-lg
+        ">
+        <Content />
+      </div>
+
+      <!-- Tags -->
+      {post.data.tags && post.data.tags.length > 0 && (
+        <div class="mt-16 pt-8 border-t border-[#1a1a1a]/10">
+          <span class="text-sm uppercase tracking-[0.2em] text-[#1a1a1a]/40 block mb-4">Topics</span>
+          <div class="flex flex-wrap gap-2">
+            {post.data.tags.map((tag: string) => (
+              <span class="px-4 py-2 bg-white text-[#1a1a1a]/70 text-sm rounded-full">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <!-- Author -->
+      <div class="mt-12 flex items-center gap-4 p-6 bg-white rounded-lg">
+        <div class="w-14 h-14 bg-[#8b7355]/10 rounded-full flex items-center justify-center">
+          <span class="text-[#8b7355] text-xl font-bold">T</span>
+        </div>
+        <div>
+          <span class="block font-medium text-[#1a1a1a]">{post.data.author}</span>
+          <span class="text-sm text-[#1a1a1a]/60">Melbourne's artisan plaster specialists</span>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- Post Navigation -->
+  <section class="py-16 bg-[#0a0a0a]">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-8">
+        {prevPost ? (
+          <a href={`/TEM--V2/blog/${prevPost.slug}`} class="group p-6 bg-[#1a1a1a] rounded-lg hover:bg-[#252525] transition-colors">
+            <span class="text-[#8b7355] text-xs uppercase tracking-[0.2em] flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+              </svg>
+              Previous Article
+            </span>
+            <span class="block text-white font-medium mt-2 group-hover:text-[#8b7355] transition-colors line-clamp-2">
+              {prevPost.data.title}
+            </span>
+          </a>
+        ) : (
+          <div></div>
+        )}
+        
+        {nextPost ? (
+          <a href={`/TEM--V2/blog/${nextPost.slug}`} class="group p-6 bg-[#1a1a1a] rounded-lg hover:bg-[#252525] transition-colors text-right">
+            <span class="text-[#8b7355] text-xs uppercase tracking-[0.2em] flex items-center justify-end gap-2">
+              Next Article
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </span>
+            <span class="block text-white font-medium mt-2 group-hover:text-[#8b7355] transition-colors line-clamp-2">
+              {nextPost.data.title}
+            </span>
+          </a>
+        ) : (
+          <div></div>
+        )}
+      </div>
+
+      <!-- Back to Blog -->
+      <div class="mt-12 text-center">
+        <a 
+          href="/TEM--V2/blog" 
+          class="inline-flex items-center gap-3 text-white/60 hover:text-white transition-colors"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          View All Articles
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related CTA -->
+  <section class="py-24 bg-[#f5f5f0]">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-6">Ready to Start Your Project?</h2>
+      <p class="text-xl text-[#1a1a1a]/60 mb-8">
+        Let's discuss how artisan plaster finishes can transform your space.
+      </p>
+      <a 
+        href="/TEM--V2/#contact" 
+        class="inline-flex items-center gap-3 px-8 py-4 bg-[#1a1a1a] text-white font-medium uppercase tracking-widest text-sm hover:bg-[#8b7355] transition-colors"
+      >
+        Get In Touch
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <AnimatedFooter client:visible />
+</Layout>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

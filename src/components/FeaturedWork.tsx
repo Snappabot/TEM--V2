@@ -18,7 +18,7 @@ const projects = [
   },
   {
     title: 'EARTHEN RETREAT',
-    location: 'Portsea, VIC',
+    location: 'Claremont, WA',
     material: 'Rokka',
     image: '/TEM--V2/images/products/rokka/Roka+ceiling+moody.png',
     year: '2023'

@@ -1,0 +1,364 @@
+---
+import Layout from '../layouts/Layout.astro';
+export const prerender = false;
+---
+
+<Layout title="Admin | Troweled Earth Visualizer">
+  <div id="admin-app" class="min-h-screen bg-neutral-950 text-white">
+    <!-- Password Gate -->
+    <div id="login-section" class="flex items-center justify-center min-h-screen px-4">
+      <div class="max-w-md w-full">
+        <h1 class="text-3xl font-light text-center mb-8">Admin Access</h1>
+        <form id="login-form" class="space-y-4">
+          <input
+            type="password"
+            id="admin-password"
+            placeholder="Admin password"
+            class="w-full px-4 py-4 bg-neutral-900 border border-neutral-800 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+          />
+          <p id="login-error" class="text-red-400 text-sm hidden"></p>
+          <button
+            type="submit"
+            class="w-full py-4 bg-white text-black font-medium rounded-lg hover:bg-neutral-200 transition-colors"
+          >
+            Enter
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard (hidden until authenticated) -->
+    <div id="dashboard-section" class="hidden">
+      <div class="py-8 px-8 border-b border-neutral-800">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+          <h1 class="text-2xl font-light">Visualizer Admin</h1>
+          <button
+            id="logout-btn"
+            class="text-neutral-400 hover:text-white text-sm transition-colors"
+          >
+            Log out
+          </button>
+        </div>
+      </div>
+
+      <div class="max-w-6xl mx-auto px-8 py-8">
+        <!-- Create New Code -->
+        <div class="mb-8 p-6 bg-neutral-900 rounded-lg">
+          <h2 class="text-lg font-medium mb-4">Create New Access Code</h2>
+          <form id="create-code-form" class="flex flex-wrap gap-4 items-end">
+            <div>
+              <label class="block text-sm text-neutral-500 mb-2">Max Generations</label>
+              <input
+                type="number"
+                id="max-generations"
+                value="10"
+                min="1"
+                max="100"
+                class="w-24 px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-neutral-500"
+              />
+            </div>
+            <div class="flex-1 min-w-[200px]">
+              <label class="block text-sm text-neutral-500 mb-2">Note (optional)</label>
+              <input
+                type="text"
+                id="code-note"
+                placeholder="e.g., Client name, project"
+                class="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-500"
+              />
+            </div>
+            <button
+              type="submit"
+              class="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-500 transition-colors"
+            >
+              Create Code
+            </button>
+          </form>
+          <div id="new-code-result" class="mt-4 hidden">
+            <p class="text-neutral-400 text-sm mb-2">New code created:</p>
+            <div class="inline-flex items-center gap-3 px-4 py-3 bg-neutral-800 rounded-lg">
+              <code id="new-code-value" class="text-xl font-mono text-green-400"></code>
+              <button id="copy-code-btn" class="text-neutral-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Access Codes List -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-medium">Access Codes</h2>
+            <button
+              id="refresh-btn"
+              class="text-neutral-400 hover:text-white text-sm transition-colors flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
+            </button>
+          </div>
+
+          <div id="codes-loading" class="text-neutral-500 py-8 text-center">
+            Loading codes...
+          </div>
+
+          <div id="codes-table" class="hidden overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-neutral-500 border-b border-neutral-800">
+                  <th class="px-4 py-3">Code</th>
+                  <th class="px-4 py-3">Status</th>
+                  <th class="px-4 py-3">Email</th>
+                  <th class="px-4 py-3">Generations</th>
+                  <th class="px-4 py-3">Created</th>
+                  <th class="px-4 py-3">Note</th>
+                  <th class="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody id="codes-tbody">
+              </tbody>
+            </table>
+          </div>
+
+          <div id="codes-empty" class="hidden text-neutral-500 py-8 text-center">
+            No access codes found. Create one above.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ADMIN_PASSWORD = 'TEM-admin-2026!';
+    
+    let adminPassword: string | null = null;
+
+    // Elements
+    const loginSection = document.getElementById('login-section') as HTMLElement;
+    const dashboardSection = document.getElementById('dashboard-section') as HTMLElement;
+    const loginForm = document.getElementById('login-form') as HTMLFormElement;
+    const loginError = document.getElementById('login-error') as HTMLElement;
+    const passwordInput = document.getElementById('admin-password') as HTMLInputElement;
+    const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement;
+    const createCodeForm = document.getElementById('create-code-form') as HTMLFormElement;
+    const maxGenerationsInput = document.getElementById('max-generations') as HTMLInputElement;
+    const codeNoteInput = document.getElementById('code-note') as HTMLInputElement;
+    const newCodeResult = document.getElementById('new-code-result') as HTMLElement;
+    const newCodeValue = document.getElementById('new-code-value') as HTMLElement;
+    const copyCodeBtn = document.getElementById('copy-code-btn') as HTMLButtonElement;
+    const refreshBtn = document.getElementById('refresh-btn') as HTMLButtonElement;
+    const codesLoading = document.getElementById('codes-loading') as HTMLElement;
+    const codesTable = document.getElementById('codes-table') as HTMLElement;
+    const codesTbody = document.getElementById('codes-tbody') as HTMLElement;
+    const codesEmpty = document.getElementById('codes-empty') as HTMLElement;
+
+    // Check for stored session
+    const storedPassword = sessionStorage.getItem('tem-admin-password');
+    if (storedPassword === ADMIN_PASSWORD) {
+      adminPassword = storedPassword;
+      showDashboard();
+    }
+
+    // Login form
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = passwordInput.value;
+      
+      if (password === ADMIN_PASSWORD) {
+        adminPassword = password;
+        sessionStorage.setItem('tem-admin-password', password);
+        showDashboard();
+      } else {
+        loginError.textContent = 'Invalid password';
+        loginError.classList.remove('hidden');
+      }
+    });
+
+    // Logout
+    logoutBtn.addEventListener('click', () => {
+      adminPassword = null;
+      sessionStorage.removeItem('tem-admin-password');
+      loginSection.classList.remove('hidden');
+      dashboardSection.classList.add('hidden');
+      passwordInput.value = '';
+      loginError.classList.add('hidden');
+    });
+
+    // Create code form
+    createCodeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const maxGenerations = parseInt(maxGenerationsInput.value) || 10;
+      const note = codeNoteInput.value.trim();
+
+      try {
+        const response = await fetch('/TEM--V2/api/admin/codes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Password': adminPassword || ''
+          },
+          body: JSON.stringify({ maxGenerations, note })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create code');
+        }
+
+        // Show the new code
+        newCodeValue.textContent = data.code.code;
+        newCodeResult.classList.remove('hidden');
+        
+        // Clear form
+        codeNoteInput.value = '';
+        
+        // Refresh list
+        loadCodes();
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Failed to create code');
+      }
+    });
+
+    // Copy code button
+    copyCodeBtn.addEventListener('click', () => {
+      const code = newCodeValue.textContent;
+      if (code) {
+        navigator.clipboard.writeText(code);
+        copyCodeBtn.innerHTML = `
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        `;
+        setTimeout(() => {
+          copyCodeBtn.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+            </svg>
+          `;
+        }, 2000);
+      }
+    });
+
+    // Refresh button
+    refreshBtn.addEventListener('click', loadCodes);
+
+    function showDashboard() {
+      loginSection.classList.add('hidden');
+      dashboardSection.classList.remove('hidden');
+      loadCodes();
+    }
+
+    async function loadCodes() {
+      codesLoading.classList.remove('hidden');
+      codesTable.classList.add('hidden');
+      codesEmpty.classList.add('hidden');
+
+      try {
+        const response = await fetch('/TEM--V2/api/admin/codes', {
+          headers: {
+            'X-Admin-Password': adminPassword || ''
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to load codes');
+        }
+
+        codesLoading.classList.add('hidden');
+
+        if (data.codes.length === 0) {
+          codesEmpty.classList.remove('hidden');
+          return;
+        }
+
+        // Render codes
+        codesTbody.innerHTML = data.codes.map((code: any) => `
+          <tr class="border-b border-neutral-800 ${!code.active ? 'opacity-50' : ''}">
+            <td class="px-4 py-4">
+              <code class="font-mono text-amber-400">${code.code}</code>
+            </td>
+            <td class="px-4 py-4">
+              ${code.active 
+                ? (code.isRegistered 
+                    ? '<span class="text-green-400">Registered</span>' 
+                    : '<span class="text-blue-400">Available</span>')
+                : '<span class="text-red-400">Deactivated</span>'
+              }
+            </td>
+            <td class="px-4 py-4 text-neutral-400">
+              ${code.email || '—'}
+            </td>
+            <td class="px-4 py-4">
+              <span class="${code.usedGenerations >= code.maxGenerations ? 'text-red-400' : 'text-white'}">
+                ${code.usedGenerations} / ${code.maxGenerations}
+              </span>
+            </td>
+            <td class="px-4 py-4 text-neutral-500">
+              ${code.createdAt}
+            </td>
+            <td class="px-4 py-4 text-neutral-500 max-w-[200px] truncate">
+              ${code.note || '—'}
+            </td>
+            <td class="px-4 py-4">
+              ${code.active 
+                ? `<button 
+                    class="deactivate-btn text-red-400 hover:text-red-300 text-sm transition-colors"
+                    data-code="${code.code}"
+                  >
+                    Deactivate
+                  </button>` 
+                : ''
+              }
+            </td>
+          </tr>
+        `).join('');
+
+        codesTable.classList.remove('hidden');
+
+        // Attach deactivate handlers
+        document.querySelectorAll('.deactivate-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const code = (e.currentTarget as HTMLElement).dataset.code;
+            if (!code) return;
+            
+            if (!confirm(`Deactivate code ${code}? Users with this code will lose access.`)) {
+              return;
+            }
+
+            try {
+              const response = await fetch('/TEM--V2/api/admin/codes', {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Admin-Password': adminPassword || ''
+                },
+                body: JSON.stringify({ code })
+              });
+
+              const data = await response.json();
+
+              if (!response.ok) {
+                throw new Error(data.error || 'Failed to deactivate code');
+              }
+
+              loadCodes();
+            } catch (error) {
+              alert(error instanceof Error ? error.message : 'Failed to deactivate code');
+            }
+          });
+        });
+
+      } catch (error) {
+        codesLoading.classList.add('hidden');
+        alert(error instanceof Error ? error.message : 'Failed to load codes');
+      }
+    }
+  </script>
+</Layout>
