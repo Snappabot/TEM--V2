@@ -181,16 +181,16 @@ export default function ChatWidget() {
             className="fixed bottom-6 right-6 z-50 w-[380px] h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-[#1a1a1a] text-white p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="bg-[#1a1a1a] text-white p-5 flex items-center justify-between">
+              <div className="flex items-center gap-4">
                 <img 
                   src="/TEM--V2/images/jose-chat-avatar.png" 
                   alt="Jose" 
-                  className="w-10 h-10 rounded-full object-cover"
+                  className="w-14 h-14 rounded-full object-cover border-2 border-[#8b7355]"
                 />
                 <div>
-                  <h3 className="font-semibold">Jose from Troweled Earth</h3>
-                  <p className="text-xs text-white/60">Ask me anything</p>
+                  <h3 className="font-semibold text-lg">Jose from Troweled Earth</h3>
+                  <p className="text-sm text-white/60">Ask me anything</p>
                 </div>
               </div>
               <button
