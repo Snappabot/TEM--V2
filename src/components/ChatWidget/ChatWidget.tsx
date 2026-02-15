@@ -178,7 +178,7 @@ export default function ChatWidget() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 w-[380px] h-[600px]"
+            className="fixed bottom-6 right-6 z-50 w-[440px] h-[700px]"
           >
             {/* Jose Avatar - hanging over the top */}
             <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-10">
@@ -194,8 +194,8 @@ export default function ChatWidget() {
               {/* Header */}
               <div className="bg-[#1a1a1a] text-white pt-8 pb-4 px-5 flex items-center justify-between">
                 <div className="flex-1 text-center">
-                  <h3 className="font-semibold text-lg">Jose from Troweled Earth</h3>
-                  <p className="text-sm text-white/60">Ask me anything</p>
+                  <h3 className="font-semibold text-xl">Jose from Troweled Earth</h3>
+                  <p className="text-base text-white/60">Ask me anything</p>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
@@ -221,7 +221,7 @@ export default function ChatWidget() {
                         : 'bg-white text-[#1a1a1a] rounded-bl-md shadow-sm'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap"
+                    <p className="text-base whitespace-pre-wrap"
                        dangerouslySetInnerHTML={{ 
                          __html: msg.content
                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -250,13 +250,13 @@ export default function ChatWidget() {
             {/* Quick Questions (show only at start) */}
             {messages.length <= 2 && (
               <div className="px-4 py-2 bg-white border-t border-[#f5f5f0]">
-                <p className="text-xs text-[#1a1a1a]/50 mb-2">Quick questions:</p>
+                <p className="text-sm text-[#1a1a1a]/50 mb-2">Quick questions:</p>
                 <div className="flex flex-wrap gap-2">
                   {quickQuestions.map((q) => (
                     <button
                       key={q}
                       onClick={() => setInput(q)}
-                      className="text-xs px-3 py-1 bg-[#f5f5f0] text-[#1a1a1a]/70 rounded-full hover:bg-[#8b7355] hover:text-white transition-colors"
+                      className="text-sm px-4 py-2 bg-[#f5f5f0] text-[#1a1a1a]/70 rounded-full hover:bg-[#8b7355] hover:text-white transition-colors"
                     >
                       {q}
                     </button>
@@ -313,7 +313,7 @@ export default function ChatWidget() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Type your message..."
-                  className="flex-1 px-4 py-2 bg-[#f5f5f0] text-[#1a1a1a] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#8b7355]/30 placeholder:text-[#1a1a1a]/50"
+                  className="flex-1 px-5 py-3 bg-[#f5f5f0] text-[#1a1a1a] rounded-full text-base focus:outline-none focus:ring-2 focus:ring-[#8b7355]/30 placeholder:text-[#1a1a1a]/50"
                   disabled={isLoading}
                 />
                 <button
