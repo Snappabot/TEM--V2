@@ -34,7 +34,7 @@ export const products: ProductInfo[] = [
       "Repairable and patchable with no visible marks",
       "Made in Australia"
     ],
-    warranty: "7-Year Limited Warranty for residential applications",
+    warranty: "10-Year Limited Warranty for residential applications",
     maintenance: "Clean every 12-18 months. Floor sealers may need reapplication every 24 months.",
     technicalSpecs: {
       "VOC": "<50 g/L (Green Star compliant)",
@@ -62,7 +62,7 @@ export const products: ProductInfo[] = [
       "Non-combustible",
       "Thick application (2-5mm)"
     ],
-    warranty: "7-Year Limited Warranty",
+    warranty: "10-Year Limited Warranty",
     maintenance: "Clean every 12-18 months. Inspect sealants at substrate interfaces.",
     technicalSpecs: {
       "Thickness": "2-5mm",
@@ -90,7 +90,7 @@ export const products: ProductInfo[] = [
       "Traditional Moroccan technique",
       "Can be polished with stones and soap"
     ],
-    warranty: "7-Year Limited Warranty",
+    warranty: "10-Year Limited Warranty",
     maintenance: "Clean with mild soap. Can be re-polished to restore shine.",
     technicalSpecs: {
       "Waterproof": "Yes - naturally",
@@ -116,7 +116,7 @@ export const products: ProductInfo[] = [
       "Seamless finish",
       "Low VOC"
     ],
-    warranty: "7-Year Limited Warranty",
+    warranty: "10-Year Limited Warranty",
     maintenance: "Clean every 12-18 months",
     technicalSpecs: {
       "VOC": "<50 g/L",
@@ -141,7 +141,7 @@ export const products: ProductInfo[] = [
       "Easy to apply",
       "Affordable without compromising quality"
     ],
-    warranty: "7-Year Limited Warranty",
+    warranty: "10-Year Limited Warranty",
     maintenance: "Clean every 12-18 months",
     technicalSpecs: {
       "VOC": "<50 g/L",
@@ -167,7 +167,7 @@ export const products: ProductInfo[] = [
       "Custom colours available",
       "Ages beautifully"
     ],
-    warranty: "7-Year Limited Warranty",
+    warranty: "10-Year Limited Warranty",
     maintenance: "Clean every 12-18 months. Low-pressure water blast (<450 psi) at 45° angle.",
     technicalSpecs: {
       "VOC": "<50 g/L",
@@ -194,7 +194,7 @@ export const products: ProductInfo[] = [
       "Non-combustible",
       "Thicker application (3-5mm) for durability"
     ],
-    warranty: "7-Year Limited Warranty",
+    warranty: "10-Year Limited Warranty",
     maintenance: "Clean every 12-18 months. Low-pressure water blast.",
     technicalSpecs: {
       "Thickness": "3-5mm",
@@ -221,7 +221,7 @@ export const companyInfo = {
     "Product supply",
     "Consultation and quoting"
   ],
-  warranties: "All products come with a 7-Year Limited Warranty when applied by Troweled Earth-approved applicators."
+  warranties: "All products come with a 10-Year Limited Warranty when applied by Troweled Earth-approved applicators."
 };
 
 export const faqs = [
@@ -231,7 +231,7 @@ export const faqs = [
   },
   {
     question: "How long does the finish last?",
-    answer: "All our products come with a 7-Year Limited Warranty. With proper maintenance (cleaning every 12-18 months), our finishes can last decades."
+    answer: "All our products come with a 10-Year Limited Warranty. With proper maintenance (cleaning every 12-18 months), our finishes can last decades."
   },
   {
     question: "Are your products environmentally friendly?",

@@ -59,7 +59,7 @@ function findRelevantInfo(message: string): { response: string; productsFound: s
   }
   
   if (lowerMessage.includes('warranty') || lowerMessage.includes('guarantee')) {
-    responses.push("All Troweled Earth products come with a **7-Year Limited Warranty** when applied by our approved applicators. This covers peeling, blistering, flaking, and delamination.");
+    responses.push("All Troweled Earth products come with a **10-Year Limited Warranty** when applied by our approved applicators. This covers peeling, blistering, flaking, and delamination.");
   }
   
   if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('email')) {
