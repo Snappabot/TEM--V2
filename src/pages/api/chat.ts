@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { products, companyInfo, faqs } from '../../lib/chatbot/knowledge-base';
 import { supabase, saveLead, saveConversation } from '../../lib/supabase';
+import { sendLeadNotification } from '../../lib/email';
 
 // Simple keyword matching for MVP (replace with OpenAI embeddings later)
 function findRelevantInfo(message: string): { response: string; productsFound: string[] } {
@@ -209,6 +210,14 @@ export const PUT: APIRoute = async ({ request }) => {
     if (result.error) {
       throw result.error;
     }
+    
+    // Send email notification to Matt
+    await sendLeadNotification({
+      name,
+      email,
+      phone,
+      productsInterested
+    });
     
     return new Response(JSON.stringify({ success: true, lead: result.data }), {
       status: 200,
