@@ -112,8 +112,31 @@ export default function ChatWidget() {
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In production, send to Supabase
-    console.log('Lead captured:', leadInfo);
+    
+    try {
+      // Save lead to Supabase
+      const response = await fetch('/TEM--V2/api/chat', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...leadInfo,
+          sessionId,
+          productsInterested: messages
+            .filter(m => m.role === 'assistant')
+            .flatMap(m => {
+              const matches = m.content.match(/\*\*([A-Za-z\s]+)\*\*/g);
+              return matches ? matches.map(m => m.replace(/\*\*/g, '')) : [];
+            })
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save lead');
+      }
+    } catch (error) {
+      console.error('Lead save error:', error);
+    }
+    
     setShowLeadForm(false);
     
     const thankYouMessage: Message = {
