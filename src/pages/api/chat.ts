@@ -1,10 +1,93 @@
 import type { APIRoute } from 'astro';
+import { products, companyInfo } from '../../lib/chatbot/knowledge-base';
 import { saveLead, saveConversation } from '../../lib/supabase';
 import { sendLeadNotification } from '../../lib/email';
-import { chat as ollamaChat, isAvailable as ollamaAvailable } from '../../lib/ollama';
 
-// Store conversation history per session (in-memory for now)
-const conversationHistory = new Map<string, {role: string, content: string}[]>();
+// Simple keyword matching - fast and free
+function findRelevantInfo(message: string): { response: string; productsFound: string[] } {
+  const lowerMessage = message.toLowerCase();
+  let responses: string[] = [];
+  let productsFound: string[] = [];
+  
+  // Check for product mentions
+  for (const product of products) {
+    const productNameLower = product.name.toLowerCase();
+    if (lowerMessage.includes(productNameLower)) {
+      productsFound.push(product.name);
+      responses.push(`**${product.name}** - ${product.overview}\n\n**Key Features:**\n${product.keyFeatures.slice(0,3).map(f => `• ${f}`).join('\n')}\n\n**Warranty:** ${product.warranty}`);
+    }
+  }
+  
+  // Wet areas
+  if (lowerMessage.includes('bathroom') || lowerMessage.includes('shower') || lowerMessage.includes('wet')) {
+    if (responses.length === 0) {
+      productsFound.push('Tadelakt');
+      responses.push("For bathrooms and wet areas, I recommend **Tadelakt** - it's our traditional Moroccan waterproof plaster. Naturally antibacterial, seamless finish, perfect for showers and around pools!");
+    }
+  }
+  
+  // Floors
+  if (lowerMessage.includes('floor')) {
+    productsFound.push('Marbellino');
+    responses.push("For floors, **Marbellino** is your best choice - it's our only product suitable for floor applications. Creates a beautiful polished stone-like finish.");
+  }
+  
+  // Exterior
+  if (lowerMessage.includes('exterior') || lowerMessage.includes('outside') || lowerMessage.includes('outdoor')) {
+    if (responses.length === 0) {
+      productsFound.push('Concretum', 'Rokka');
+      responses.push("For exterior applications, check out **Concretum** (industrial concrete look) or **Rokka** (textured stone effect). Both are weather-resistant and UV stable.");
+    }
+  }
+  
+  // Eco/sustainable
+  if (lowerMessage.includes('eco') || lowerMessage.includes('sustainable') || lowerMessage.includes('green')) {
+    productsFound.push('Hemp Earthen Render');
+    responses.push("All our products are eco-friendly with low VOC! Our **Hemp Earthen Render** is particularly sustainable - contains hemp fibres for a beautiful rammed earth aesthetic.");
+  }
+  
+  // Price/cost
+  if (lowerMessage.includes('cost') || lowerMessage.includes('price') || lowerMessage.includes('how much') || lowerMessage.includes('quote')) {
+    responses.push(`Pricing depends on the product, area size, and project complexity. For a detailed quote, contact Matt:\n\n📞 ${companyInfo.contact.phone}\n📧 ${companyInfo.contact.email}\n\nOr leave your details and we'll get back to you!`);
+  }
+  
+  // Warranty
+  if (lowerMessage.includes('warranty') || lowerMessage.includes('guarantee')) {
+    responses.push("All Troweled Earth products come with a **10-Year Limited Warranty** when applied by our approved applicators. This covers peeling, blistering, flaking, and delamination.");
+  }
+  
+  // Contact
+  if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('email') || lowerMessage.includes('call')) {
+    responses.push(`You can reach us at:\n\n📞 ${companyInfo.contact.phone}\n📧 ${companyInfo.contact.email}\n📱 Instagram: ${companyInfo.contact.instagram}\n\nWe're based in Melbourne and service the greater Melbourne area.`);
+  }
+  
+  // Training
+  if (lowerMessage.includes('training') || lowerMessage.includes('workshop') || lowerMessage.includes('learn') || lowerMessage.includes('course')) {
+    responses.push("Yes, we offer hands-on training workshops! Perfect for plasterers, builders, and DIY enthusiasts. Follow us on Instagram @troweled_earth_melbourne for upcoming dates, or contact us to register your interest.");
+  }
+  
+  // Comparison
+  if (lowerMessage.includes('difference') || lowerMessage.includes('compare') || lowerMessage.includes('vs') || lowerMessage.includes('which')) {
+    responses.push("Quick comparison of our finishes:\n\n**Marbellino** - Polished, stone-like, can do floors\n**Tadelakt** - Waterproof, great for showers\n**Concretum** - Industrial concrete look\n**Rokka** - Textured stone effect\n\nWhat look are you going for?");
+  }
+  
+  // Greetings
+  if (lowerMessage.match(/^(hi|hello|hey|g'day|good morning|good afternoon|howdy)/)) {
+    responses = [`G'day! 👋 Welcome to Troweled Earth Melbourne. I can help you find the perfect plaster finish.\n\nWhat are you working on? A bathroom, feature wall, or something else?`];
+  }
+  
+  // Thanks
+  if (lowerMessage.match(/(thanks|thank you|cheers|ta)/)) {
+    responses = ["You're welcome! Let me know if you have any other questions. 😊"];
+  }
+  
+  // Default response
+  if (responses.length === 0) {
+    responses.push(`I'd love to help! Here are some things I can tell you about:\n\n• **Marbellino** - Venetian plaster, polished finish\n• **Tadelakt** - Waterproof, great for bathrooms\n• **Concretum** - Industrial concrete look\n• **Rokka** - Textured stone effect\n\nOr ask about pricing, warranty, or training workshops!\n\nFor specific questions, call Matt: ${companyInfo.contact.phone}`);
+  }
+  
+  return { response: responses.join('\n\n'), productsFound };
+}
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -18,39 +101,16 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
     
-    // Get conversation history for this session
-    let history = conversationHistory.get(sessionId) || [];
-    
-    // Get response from Ollama
-    let response: string;
-    const available = await ollamaAvailable();
-    
-    if (available) {
-      response = await ollamaChat(message, history);
-    } else {
-      // Fallback if Ollama isn't running
-      response = "G'day! I'm having a small technical issue. Please contact us directly at 0439 243 055 or matt-troweledearth@outlook.com for immediate help!";
-    }
-    
-    // Update history (keep last 10 exchanges to limit context size)
-    history.push({ role: 'user', content: message });
-    history.push({ role: 'assistant', content: response });
-    if (history.length > 20) {
-      history = history.slice(-20);
-    }
-    conversationHistory.set(sessionId, history);
+    const { response, productsFound } = findRelevantInfo(message);
     
     // Save to Supabase (non-blocking)
     saveConversation({
       session_id: sessionId,
-      messages: history,
-      products_mentioned: extractProducts(message + ' ' + response)
+      messages: [{ role: 'user', content: message }, { role: 'assistant', content: response }],
+      products_mentioned: productsFound
     }).catch(err => console.error('Failed to save conversation:', err));
     
-    return new Response(JSON.stringify({ 
-      response,
-      sessionId 
-    }), {
+    return new Response(JSON.stringify({ response, sessionId }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -59,20 +119,13 @@ export const POST: APIRoute = async ({ request }) => {
     console.error('Chat API error:', error);
     return new Response(JSON.stringify({ 
       error: 'Failed to process message',
-      response: "Sorry, I'm having trouble right now. Please call us at 0439 243 055 for immediate assistance!"
+      response: "Sorry, I'm having trouble. Please call us at 0439 243 055!"
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
   }
 };
-
-// Extract product names from text
-function extractProducts(text: string): string[] {
-  const products = ['Marbellino', 'Tadelakt', 'Tadelino', 'Concretum', 'Rokka', 'Antique Stucco', 'Hemp Earthen Render'];
-  const lower = text.toLowerCase();
-  return products.filter(p => lower.includes(p.toLowerCase()));
-}
 
 // Endpoint to save lead from form
 export const PUT: APIRoute = async ({ request }) => {
