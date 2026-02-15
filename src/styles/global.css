@@ -103,3 +103,64 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Blog article content styling */
+.blog-content {
+  color: #1a1a1a;
+}
+
+.blog-content h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  color: #1a1a1a;
+}
+
+.blog-content h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #1a1a1a;
+}
+
+.blog-content p {
+  color: rgba(26, 26, 26, 0.85);
+  line-height: 1.75;
+  margin-bottom: 1.5rem;
+}
+
+.blog-content ul, .blog-content ol {
+  color: rgba(26, 26, 26, 0.85);
+  margin-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.blog-content li {
+  margin-bottom: 0.5rem;
+}
+
+.blog-content strong {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.blog-content a {
+  color: #8b7355;
+}
+
+.blog-content blockquote {
+  border-left: 4px solid #8b7355;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: rgba(26, 26, 26, 0.85);
+}
+
+.blog-content hr {
+  border-color: rgba(26, 26, 26, 0.1);
+  margin: 2rem 0;
+}
