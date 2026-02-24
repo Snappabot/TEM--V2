@@ -2,15 +2,15 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const navLinks = [
-  { label: 'Finishes', href: '/TEM--V2/#finishes' },
-  { label: 'Projects', href: '/TEM--V2/projects' },
-  { label: 'Our Story', href: '/TEM--V2/story' },
-  { label: 'Training', href: '/TEM--V2/training' },
-  { label: 'Applicators', href: '/TEM--V2/applicators' },
-  { label: 'Where to Buy', href: '/TEM--V2/suppliers' },
-  { label: 'Blog', href: '/TEM--V2/blog' },
-  { label: 'Visualizer', href: '/TEM--V2/visualizer' },
-  { label: 'Contact', href: '/TEM--V2/#contact' },
+  { label: 'Finishes', href: '/#finishes' },
+  { label: 'Projects', href: '/projects' },
+  { label: 'Our Story', href: '/story' },
+  { label: 'Training', href: '/training' },
+  { label: 'Applicators', href: '/applicators' },
+  { label: 'Where to Buy', href: '/suppliers' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Visualizer', href: '/visualizer' },
+  { label: 'Contact', href: '/#contact' },
 ];
 
 // Animation variants
@@ -95,9 +95,9 @@ export default function Header() {
       <header className="fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-6">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <a href="/TEM--V2/" className="flex items-center gap-3">
+          <a href="/" className="flex items-center gap-3">
             <img 
-              src="/TEM--V2/images/logo.png" 
+              src="/images/logo.png" 
               alt="Troweled Earth" 
               className="h-10 object-contain" 
               style={{ filter: 'invert(1)' }} 
@@ -140,12 +140,12 @@ export default function Header() {
               <div className="flex items-center justify-between px-6 md:px-12 py-6">
                 {/* Logo in menu */}
                 <a 
-                  href="/TEM--V2/" 
+                  href="/" 
                   className="flex items-center gap-3"
                   onClick={closeMenu}
                 >
                   <img 
-                    src="/TEM--V2/images/logo.png" 
+                    src="/images/logo.png" 
                     alt="Troweled Earth" 
                     className="h-10 object-contain invert" 
                   />

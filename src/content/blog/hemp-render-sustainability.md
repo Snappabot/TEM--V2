@@ -2,12 +2,12 @@
 title: "Safety and Sustainability of Earthen Hemp Rammed Render"
 date: 2024-12-10
 excerpt: "Our Earthen Hemp Rammed Render achieves fire safety certification while delivering exceptional environmental credentials. Discover how natural building can meet modern standards."
-featuredImage: "/TEM--V2/images/blog/hemp-1.jpg"
+featuredImage: "/images/blog/hemp-1.jpg"
 author: "Troweled Earth"
 tags: ["sustainability", "hemp", "fire safety", "eco-friendly", "natural building"]
 ---
 
-![Earthen Hemp Render finish](/TEM--V2/images/blog/hemp-1.jpg)
+![Earthen Hemp Render finish](/images/blog/hemp-1.jpg)
 
 ## Building Naturally, Building Safely
 

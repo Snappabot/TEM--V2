@@ -32,7 +32,7 @@ export default function EditorialHero() {
           >
             <div className="relative aspect-[3/4] max-w-[320px] overflow-hidden">
               <motion.img 
-                src="/TEM--V2/images/products/marbellino/Marbellino+kitchen.png"
+                src="/images/products/marbellino/Marbellino+kitchen.png"
                 alt="Marbellino kitchen finish"
                 className="w-full h-full object-cover"
                 style={{ scale }}
@@ -50,7 +50,7 @@ export default function EditorialHero() {
           >
             <div className="relative h-[70vh] md:h-[85vh] overflow-hidden">
               <motion.img 
-                src="/TEM--V2/images/products/marbellino/Marbellino+stairs+2.png"
+                src="/images/products/marbellino/Marbellino+stairs+2.png"
                 alt="Sculptural Marbellino staircase"
                 className="w-full h-full object-cover"
                 style={{ scale }}

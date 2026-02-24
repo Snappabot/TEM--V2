@@ -19,7 +19,7 @@ export default function FeaturedProject() {
         style={{ y: imageY }}
       >
         <img 
-          src="/TEM--V2/images/gallery/Screenshot_20240515_165019_Instagram.jpg" 
+          src="/images/gallery/Screenshot_20240515_165019_Instagram.jpg" 
           alt="Enclosed House Project"
           className="w-full h-[120%] object-cover"
         />

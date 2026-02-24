@@ -31,7 +31,7 @@ export default function ScrollZoomHero() {
           style={{ scale: bgScale }}
         >
           <img 
-            src="/TEM--V2/images/giorgi-city-beach.jpg"
+            src="/images/giorgi-city-beach.jpg"
             alt=""
             className="w-full h-full object-cover"
           />
@@ -62,7 +62,7 @@ export default function ScrollZoomHero() {
           style={{ opacity: logoOpacity, scale: logoScale }}
         >
           <img 
-            src="/TEM--V2/images/logo.png" 
+            src="/images/logo.png" 
             alt="Troweled Earth" 
             className="w-48 md:w-64 lg:w-80 h-auto"
           />

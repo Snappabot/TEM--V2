@@ -41,7 +41,7 @@ function formatDate(date: Date): string {
       
       <!-- Featured Post (Latest) -->
       {sortedPosts.length > 0 && (
-        <a href={`/TEM--V2/blog/${sortedPosts[0].slug}`} class="block group mb-16">
+        <a href={`/blog/${sortedPosts[0].slug}`} class="block group mb-16">
           <article class="grid md:grid-cols-2 gap-8 items-center bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
             <div class="aspect-[4/3] bg-[#1a1a1a] relative overflow-hidden">
               <div class="absolute inset-0 bg-gradient-to-br from-[#8b7355]/30 to-transparent"></div>
@@ -76,7 +76,7 @@ function formatDate(date: Date): string {
       <!-- Post Grid -->
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {sortedPosts.slice(1).map((post) => (
-          <a href={`/TEM--V2/blog/${post.slug}`} class="block group">
+          <a href={`/blog/${post.slug}`} class="block group">
             <article class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all hover:-translate-y-1">
               <div class="aspect-[16/10] bg-[#1a1a1a] relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-[#8b7355]/20 to-transparent"></div>
@@ -128,7 +128,7 @@ function formatDate(date: Date): string {
         Get the latest articles, project showcases, and workshop announcements delivered to your inbox.
       </p>
       <a 
-        href="/TEM--V2/#contact" 
+        href="/#contact" 
         class="inline-flex items-center gap-3 px-8 py-4 bg-[#8b7355] text-white font-medium uppercase tracking-widest text-sm hover:bg-[#a68b6a] transition-colors"
       >
         Get In Touch

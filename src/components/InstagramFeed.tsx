@@ -6,35 +6,35 @@ import { useInView } from 'framer-motion';
 // TODO: Replace with Instagram API integration or embed widget
 const instagramPosts = [
   { 
-    image: '/TEM--V2/images/instagram/insta-1.jpg',
+    image: '/images/instagram/insta-1.jpg',
     caption: 'Venetian plaster feature wall'
   },
   { 
-    image: '/TEM--V2/images/instagram/insta-2.jpg',
+    image: '/images/instagram/insta-2.jpg',
     caption: 'Textured render application'
   },
   { 
-    image: '/TEM--V2/images/instagram/insta-3.jpg',
+    image: '/images/instagram/insta-3.jpg',
     caption: 'Polished plaster finish'
   },
   { 
-    image: '/TEM--V2/images/instagram/insta-4.jpg',
+    image: '/images/instagram/insta-4.jpg',
     caption: 'Concrete effect walls'
   },
   { 
-    image: '/TEM--V2/images/instagram/insta-5.jpg',
+    image: '/images/instagram/insta-5.jpg',
     caption: 'Custom stucco work'
   },
   { 
-    image: '/TEM--V2/images/instagram/insta-6.jpg',
+    image: '/images/instagram/insta-6.jpg',
     caption: 'Modern interior finish'
   },
   { 
-    image: '/TEM--V2/images/instagram/insta-7.jpg',
+    image: '/images/instagram/insta-7.jpg',
     caption: 'Metallic plaster effect'
   },
   { 
-    image: '/TEM--V2/images/instagram/insta-8.jpg',
+    image: '/images/instagram/insta-8.jpg',
     caption: 'Feature wall transformation'
   },
 ];

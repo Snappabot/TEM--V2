@@ -112,7 +112,7 @@ function formatDate(date: Date): string {
     <div class="max-w-5xl mx-auto px-6">
       <div class="grid md:grid-cols-2 gap-8">
         {prevPost ? (
-          <a href={`/TEM--V2/blog/${prevPost.slug}`} class="group p-6 bg-[#1a1a1a] rounded-lg hover:bg-[#252525] transition-colors">
+          <a href={`/blog/${prevPost.slug}`} class="group p-6 bg-[#1a1a1a] rounded-lg hover:bg-[#252525] transition-colors">
             <span class="text-[#8b7355] text-xs uppercase tracking-[0.2em] flex items-center gap-2">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
@@ -128,7 +128,7 @@ function formatDate(date: Date): string {
         )}
         
         {nextPost ? (
-          <a href={`/TEM--V2/blog/${nextPost.slug}`} class="group p-6 bg-[#1a1a1a] rounded-lg hover:bg-[#252525] transition-colors text-right">
+          <a href={`/blog/${nextPost.slug}`} class="group p-6 bg-[#1a1a1a] rounded-lg hover:bg-[#252525] transition-colors text-right">
             <span class="text-[#8b7355] text-xs uppercase tracking-[0.2em] flex items-center justify-end gap-2">
               Next Article
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -147,7 +147,7 @@ function formatDate(date: Date): string {
       <!-- Back to Blog -->
       <div class="mt-12 text-center">
         <a 
-          href="/TEM--V2/blog" 
+          href="/blog" 
           class="inline-flex items-center gap-3 text-white/60 hover:text-white transition-colors"
         >
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,7 +167,7 @@ function formatDate(date: Date): string {
         Let's discuss how artisan plaster finishes can transform your space.
       </p>
       <a 
-        href="/TEM--V2/#contact" 
+        href="/#contact" 
         class="inline-flex items-center gap-3 px-8 py-4 bg-[#1a1a1a] text-white font-medium uppercase tracking-widest text-sm hover:bg-[#8b7355] transition-colors"
       >
         Get In Touch

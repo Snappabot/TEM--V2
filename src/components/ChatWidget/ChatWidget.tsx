@@ -62,7 +62,7 @@ export default function ChatWidget() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/TEM--V2/api/chat', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -115,7 +115,7 @@ export default function ChatWidget() {
     
     try {
       // Save lead to Supabase
-      const response = await fetch('/TEM--V2/api/chat', {
+      const response = await fetch('/api/chat', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -178,28 +178,36 @@ export default function ChatWidget() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 w-[440px] h-[700px]"
+            className="fixed inset-4 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[440px] sm:h-[700px]"
           >
-            {/* Jose Avatar - hanging over the top */}
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-10">
+            {/* Jose Avatar - hanging over the top (hidden on small mobile) */}
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-10 hidden sm:block">
               <img 
-                src="/TEM--V2/images/jose-chat-avatar.png" 
+                src="/images/jose-chat-avatar.png" 
                 alt="Jose" 
                 className="w-20 h-20 rounded-full object-cover border-4 border-[#8b7355] shadow-lg bg-white"
               />
             </div>
 
             {/* Chat container */}
-            <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden h-full mt-10">
+            <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden h-full sm:mt-10">
               {/* Header */}
-              <div className="bg-[#1a1a1a] text-white pt-8 pb-4 px-5 flex items-center justify-between">
-                <div className="flex-1 text-center">
-                  <h3 className="font-semibold text-xl">Jose from Troweled Earth</h3>
-                  <p className="text-base text-white/60">Ask me anything</p>
+              <div className="bg-[#1a1a1a] text-white pt-4 sm:pt-8 pb-4 px-5 flex items-center justify-between relative">
+                {/* Jose avatar inline on mobile */}
+                <div className="sm:hidden mr-3">
+                  <img 
+                    src="/images/jose-chat-avatar.png" 
+                    alt="Jose" 
+                    className="w-12 h-12 rounded-full object-cover border-2 border-[#8b7355] bg-white"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg sm:text-xl sm:text-center">Jose from Troweled Earth</h3>
+                  <p className="text-sm sm:text-base text-white/60 sm:text-center">Ask me anything</p>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="absolute top-12 right-4 text-white/60 hover:text-white transition-colors"
+                  className="text-white/60 hover:text-white transition-colors p-2"
                 >
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

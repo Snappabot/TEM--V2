@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Troweled Earth Logo component
 const TreeLogo = ({ className = "w-8 h-8", invert = true }: { className?: string; invert?: boolean }) => (
   <img 
-    src="/TEM--V2/images/logo.png" 
+    src="/images/logo.png" 
     alt="Troweled Earth" 
     className={`${className} object-contain`}
     style={invert ? { filter: 'invert(1)' } : undefined}
@@ -67,73 +67,73 @@ const locationCategories: LocationCategory[] = [
 
 const textures: Texture[] = [
   // Marbellino — 12 colours from palette grid
-  { id: 'marbellino-taupe', name: 'Taupe', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-taupe.jpg' },
-  { id: 'marbellino-charcoal', name: 'Charcoal', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-charcoal.jpg' },
-  { id: 'marbellino-plum', name: 'Plum', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-plum.jpg' },
-  { id: 'marbellino-sage', name: 'Sage', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-sage.jpg' },
-  { id: 'marbellino-olive', name: 'Olive', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-olive.jpg' },
-  { id: 'marbellino-steel', name: 'Steel', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-steel.jpg' },
-  { id: 'marbellino-sand', name: 'Sand', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-sand.jpg' },
-  { id: 'marbellino-seafoam', name: 'Seafoam', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-seafoam.jpg' },
-  { id: 'marbellino-warmgrey', name: 'Warm Grey', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-warmgrey.jpg' },
-  { id: 'marbellino-linen', name: 'Linen', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-linen.jpg' },
-  { id: 'marbellino-silver', name: 'Silver', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-silver.jpg' },
-  { id: 'marbellino-ivory', name: 'Ivory', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-ivory.jpg' },
-  { id: 'marbellino-bianco', name: 'Bianco', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-bianco.jpg' },
-  { id: 'marbellino-coldgrey', name: 'Cold Grey', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-coldgrey.jpg' },
-  { id: 'marbellino-slateblue', name: 'Slate Blue', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-slateblue.jpg' },
-  { id: 'marbellino-storm', name: 'Storm', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-storm.jpg' },
-  { id: 'marbellino-eucalyptus', name: 'Eucalyptus', category: 'Marbellino', image: '/TEM--V2/images/visualizer/marbellino-eucalyptus.jpg' },
+  { id: 'marbellino-taupe', name: 'Taupe', category: 'Marbellino', image: '/images/visualizer/marbellino-taupe.jpg' },
+  { id: 'marbellino-charcoal', name: 'Charcoal', category: 'Marbellino', image: '/images/visualizer/marbellino-charcoal.jpg' },
+  { id: 'marbellino-plum', name: 'Plum', category: 'Marbellino', image: '/images/visualizer/marbellino-plum.jpg' },
+  { id: 'marbellino-sage', name: 'Sage', category: 'Marbellino', image: '/images/visualizer/marbellino-sage.jpg' },
+  { id: 'marbellino-olive', name: 'Olive', category: 'Marbellino', image: '/images/visualizer/marbellino-olive.jpg' },
+  { id: 'marbellino-steel', name: 'Steel', category: 'Marbellino', image: '/images/visualizer/marbellino-steel.jpg' },
+  { id: 'marbellino-sand', name: 'Sand', category: 'Marbellino', image: '/images/visualizer/marbellino-sand.jpg' },
+  { id: 'marbellino-seafoam', name: 'Seafoam', category: 'Marbellino', image: '/images/visualizer/marbellino-seafoam.jpg' },
+  { id: 'marbellino-warmgrey', name: 'Warm Grey', category: 'Marbellino', image: '/images/visualizer/marbellino-warmgrey.jpg' },
+  { id: 'marbellino-linen', name: 'Linen', category: 'Marbellino', image: '/images/visualizer/marbellino-linen.jpg' },
+  { id: 'marbellino-silver', name: 'Silver', category: 'Marbellino', image: '/images/visualizer/marbellino-silver.jpg' },
+  { id: 'marbellino-ivory', name: 'Ivory', category: 'Marbellino', image: '/images/visualizer/marbellino-ivory.jpg' },
+  { id: 'marbellino-bianco', name: 'Bianco', category: 'Marbellino', image: '/images/visualizer/marbellino-bianco.jpg' },
+  { id: 'marbellino-coldgrey', name: 'Cold Grey', category: 'Marbellino', image: '/images/visualizer/marbellino-coldgrey.jpg' },
+  { id: 'marbellino-slateblue', name: 'Slate Blue', category: 'Marbellino', image: '/images/visualizer/marbellino-slateblue.jpg' },
+  { id: 'marbellino-storm', name: 'Storm', category: 'Marbellino', image: '/images/visualizer/marbellino-storm.jpg' },
+  { id: 'marbellino-eucalyptus', name: 'Eucalyptus', category: 'Marbellino', image: '/images/visualizer/marbellino-eucalyptus.jpg' },
   
   // Concretum
-  { id: 'concretum-dark', name: 'Anthracite', category: 'Concretum', image: '/TEM--V2/images/visualizer/concretum-dark.jpg' },
-  { id: 'concretum-pitted', name: 'Weathered', category: 'Concretum', image: '/TEM--V2/images/visualizer/concretum-pitted.jpg' },
-  { id: 'concretum-grey', name: 'Raw', category: 'Concretum', image: '/TEM--V2/images/visualizer/concretum-grey.jpg' },
-  { id: 'concretum-rammed', name: 'Rammed', category: 'Concretum', image: '/TEM--V2/images/visualizer/concretum-rammed.jpg' },
+  { id: 'concretum-dark', name: 'Anthracite', category: 'Concretum', image: '/images/visualizer/concretum-dark.jpg' },
+  { id: 'concretum-pitted', name: 'Weathered', category: 'Concretum', image: '/images/visualizer/concretum-pitted.jpg' },
+  { id: 'concretum-grey', name: 'Raw', category: 'Concretum', image: '/images/visualizer/concretum-grey.jpg' },
+  { id: 'concretum-rammed', name: 'Rammed', category: 'Concretum', image: '/images/visualizer/concretum-rammed.jpg' },
   
   // Rokka
-  { id: 'rokka-earth', name: 'Earth', category: 'Rokka', image: '/TEM--V2/images/visualizer/rokka-earth.jpg' },
-  { id: 'rokka-grey', name: 'Stone', category: 'Rokka', image: '/TEM--V2/images/visualizer/rokka-grey.jpg' },
-  { id: 'rokka-bone', name: 'Warm Bone', category: 'Rokka', image: '/TEM--V2/images/visualizer/rokka-bone.png' },
-  { id: 'rokka-pilbara', name: 'Pilbara', category: 'Rokka', image: '/TEM--V2/images/visualizer/rokka-pilbara.png' },
-  { id: 'rokka-sample', name: 'Natural', category: 'Rokka', image: '/TEM--V2/images/visualizer/rokka-sample.png' },
+  { id: 'rokka-earth', name: 'Earth', category: 'Rokka', image: '/images/visualizer/rokka-earth.jpg' },
+  { id: 'rokka-grey', name: 'Stone', category: 'Rokka', image: '/images/visualizer/rokka-grey.jpg' },
+  { id: 'rokka-bone', name: 'Warm Bone', category: 'Rokka', image: '/images/visualizer/rokka-bone.png' },
+  { id: 'rokka-pilbara', name: 'Pilbara', category: 'Rokka', image: '/images/visualizer/rokka-pilbara.png' },
+  { id: 'rokka-sample', name: 'Natural', category: 'Rokka', image: '/images/visualizer/rokka-sample.png' },
   
   // Metallics
-  { id: 'metallic-bronze', name: 'Bronze', category: 'Metallics', image: '/TEM--V2/images/visualizer/metallic-bronze.jpg' },
-  { id: 'metallic-copper', name: 'Copper', category: 'Metallics', image: '/TEM--V2/images/visualizer/metallic-copper.jpg' },
-  { id: 'metallic-rust', name: 'Rust', category: 'Metallics', image: '/TEM--V2/images/visualizer/metallic-rust.jpg' },
-  { id: 'metallic-steel', name: 'Steel', category: 'Metallics', image: '/TEM--V2/images/visualizer/metallic-steel.jpg' },
-  { id: 'metallic-verdigris', name: 'Verdigris', category: 'Metallics', image: '/TEM--V2/images/visualizer/metallic-verdigris.jpg' },
+  { id: 'metallic-bronze', name: 'Bronze', category: 'Metallics', image: '/images/visualizer/metallic-bronze.jpg' },
+  { id: 'metallic-copper', name: 'Copper', category: 'Metallics', image: '/images/visualizer/metallic-copper.jpg' },
+  { id: 'metallic-rust', name: 'Rust', category: 'Metallics', image: '/images/visualizer/metallic-rust.jpg' },
+  { id: 'metallic-steel', name: 'Steel', category: 'Metallics', image: '/images/visualizer/metallic-steel.jpg' },
+  { id: 'metallic-verdigris', name: 'Verdigris', category: 'Metallics', image: '/images/visualizer/metallic-verdigris.jpg' },
   
   // Tadelakt
-  { id: 'tadelakt-natural', name: 'Natural', category: 'Tadelakt', image: '/TEM--V2/images/visualizer/tadelakt-natural.png' },
-  { id: 'tadelakt-green', name: 'Sage', category: 'Tadelakt', image: '/TEM--V2/images/visualizer/tadelakt-green.png' },
-  { id: 'tadelakt-blush', name: 'Blush', category: 'Tadelakt', image: '/TEM--V2/images/visualizer/tadelakt-blush.png' },
-  { id: 'tadelakt-white', name: 'Ivory', category: 'Tadelakt', image: '/TEM--V2/images/visualizer/tadelakt-white.png' },
+  { id: 'tadelakt-natural', name: 'Natural', category: 'Tadelakt', image: '/images/visualizer/tadelakt-natural.png' },
+  { id: 'tadelakt-green', name: 'Sage', category: 'Tadelakt', image: '/images/visualizer/tadelakt-green.png' },
+  { id: 'tadelakt-blush', name: 'Blush', category: 'Tadelakt', image: '/images/visualizer/tadelakt-blush.png' },
+  { id: 'tadelakt-white', name: 'Ivory', category: 'Tadelakt', image: '/images/visualizer/tadelakt-white.png' },
   
   // Antique Stucco
-  { id: 'stucco-raw', name: 'Raw', category: 'Antique Stucco', image: '/TEM--V2/images/visualizer/stucco-raw.png' },
-  { id: 'stucco-gold', name: 'Gold Patina', category: 'Antique Stucco', image: '/TEM--V2/images/visualizer/stucco-gold.png' },
-  { id: 'stucco-aged', name: 'Aged', category: 'Antique Stucco', image: '/TEM--V2/images/visualizer/stucco-aged.png' },
-  { id: 'stucco-exterior', name: 'Exterior', category: 'Antique Stucco', image: '/TEM--V2/images/visualizer/stucco-exterior.png' },
+  { id: 'stucco-raw', name: 'Raw', category: 'Antique Stucco', image: '/images/visualizer/stucco-raw.png' },
+  { id: 'stucco-gold', name: 'Gold Patina', category: 'Antique Stucco', image: '/images/visualizer/stucco-gold.png' },
+  { id: 'stucco-aged', name: 'Aged', category: 'Antique Stucco', image: '/images/visualizer/stucco-aged.png' },
+  { id: 'stucco-exterior', name: 'Exterior', category: 'Antique Stucco', image: '/images/visualizer/stucco-exterior.png' },
   
   // Earthen Hemp
-  { id: 'hemp-natural', name: 'Natural', category: 'Earthen Hemp', image: '/TEM--V2/images/visualizer/hemp-natural.png' },
-  { id: 'hemp-sand', name: 'Sand', category: 'Earthen Hemp', image: '/TEM--V2/images/visualizer/hemp-sand.jpg' },
-  { id: 'hemp-sandstone', name: 'Sandstone', category: 'Earthen Hemp', image: '/TEM--V2/images/visualizer/hemp-sandstone.jpg' },
-  { id: 'hemp-charcoal', name: 'Charcoal', category: 'Earthen Hemp', image: '/TEM--V2/images/visualizer/hemp-charcoal.jpg' },
-  { id: 'hemp-sage', name: 'Sage', category: 'Earthen Hemp', image: '/TEM--V2/images/visualizer/hemp-sage.jpg' },
-  { id: 'hemp-cream', name: 'Cream', category: 'Earthen Hemp', image: '/TEM--V2/images/visualizer/hemp-cream.jpg' },
-  { id: 'hemp-mocha', name: 'Mocha', category: 'Earthen Hemp', image: '/TEM--V2/images/visualizer/hemp-mocha.jpg' },
-  { id: 'hemp-lightsage', name: 'Light Sage', category: 'Earthen Hemp', image: '/TEM--V2/images/visualizer/hemp-lightsage.jpg' },
-  { id: 'hemp-grey', name: 'Grey', category: 'Earthen Hemp', image: '/TEM--V2/images/visualizer/hemp-grey.jpg' },
-  { id: 'hemp-white', name: 'White', category: 'Earthen Hemp', image: '/TEM--V2/images/visualizer/hemp-white.jpg' },
+  { id: 'hemp-natural', name: 'Natural', category: 'Earthen Hemp', image: '/images/visualizer/hemp-natural.png' },
+  { id: 'hemp-sand', name: 'Sand', category: 'Earthen Hemp', image: '/images/visualizer/hemp-sand.jpg' },
+  { id: 'hemp-sandstone', name: 'Sandstone', category: 'Earthen Hemp', image: '/images/visualizer/hemp-sandstone.jpg' },
+  { id: 'hemp-charcoal', name: 'Charcoal', category: 'Earthen Hemp', image: '/images/visualizer/hemp-charcoal.jpg' },
+  { id: 'hemp-sage', name: 'Sage', category: 'Earthen Hemp', image: '/images/visualizer/hemp-sage.jpg' },
+  { id: 'hemp-cream', name: 'Cream', category: 'Earthen Hemp', image: '/images/visualizer/hemp-cream.jpg' },
+  { id: 'hemp-mocha', name: 'Mocha', category: 'Earthen Hemp', image: '/images/visualizer/hemp-mocha.jpg' },
+  { id: 'hemp-lightsage', name: 'Light Sage', category: 'Earthen Hemp', image: '/images/visualizer/hemp-lightsage.jpg' },
+  { id: 'hemp-grey', name: 'Grey', category: 'Earthen Hemp', image: '/images/visualizer/hemp-grey.jpg' },
+  { id: 'hemp-white', name: 'White', category: 'Earthen Hemp', image: '/images/visualizer/hemp-white.jpg' },
   
   // Custom Finishes
-  { id: 'custom-fractured', name: 'Fractured', category: 'Custom', image: '/TEM--V2/images/visualizer/custom-fractured.png' },
-  { id: 'custom-volcanic', name: 'Volcanic', category: 'Custom', image: '/TEM--V2/images/visualizer/custom-volcanic.png' },
-  { id: 'custom-moroccan', name: 'Moroccan', category: 'Custom', image: '/TEM--V2/images/visualizer/custom-moroccan.png' },
-  { id: 'custom-decay', name: 'State of Decay', category: 'Custom', image: '/TEM--V2/images/visualizer/custom-decay.png' },
+  { id: 'custom-fractured', name: 'Fractured', category: 'Custom', image: '/images/visualizer/custom-fractured.png' },
+  { id: 'custom-volcanic', name: 'Volcanic', category: 'Custom', image: '/images/visualizer/custom-volcanic.png' },
+  { id: 'custom-moroccan', name: 'Moroccan', category: 'Custom', image: '/images/visualizer/custom-moroccan.png' },
+  { id: 'custom-decay', name: 'State of Decay', category: 'Custom', image: '/images/visualizer/custom-decay.png' },
 ];
 
 const textureCategories = ['All', 'Marbellino', 'Concretum', 'Rokka', 'Metallics', 'Tadelakt', 'Antique Stucco', 'Earthen Hemp', 'Custom'];
@@ -400,7 +400,7 @@ export default function FinishVisualizer() {
       }
 
       try {
-        const response = await fetch('/TEM--V2/api/auth/session', {
+        const response = await fetch('/api/auth/session', {
           headers: {
             'Authorization': `Bearer ${savedToken}`
           }
@@ -807,7 +807,7 @@ export default function FinishVisualizer() {
     setIsAuthLoading(true);
 
     try {
-      const response = await fetch('/TEM--V2/api/auth/register', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -844,7 +844,7 @@ export default function FinishVisualizer() {
     setIsAuthLoading(true);
 
     try {
-      const response = await fetch('/TEM--V2/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -1092,7 +1092,7 @@ export default function FinishVisualizer() {
           <p className="text-neutral-600 text-xs text-center mt-6">
             Access codes are provided to customers discussing projects with Troweled Earth.
             <br />
-            <a href="/TEM--V2/#contact" className="underline hover:text-neutral-400">Contact us</a> to request access.
+            <a href="/#contact" className="underline hover:text-neutral-400">Contact us</a> to request access.
           </p>
 
           {/* Preview Grid */}

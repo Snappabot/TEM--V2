@@ -2,12 +2,12 @@
 title: "Troweled Earth Marbellino Melbourne Workshop"
 date: 2026-01-15
 excerpt: "Join us in Melbourne for an immersive hands-on workshop learning the art of Marbellino polished plaster application. Perfect for plasterers, designers, and DIY enthusiasts."
-featuredImage: "/TEM--V2/images/blog/marbellino-workshop-1.jpg"
+featuredImage: "/images/blog/marbellino-workshop-1.jpg"
 author: "Troweled Earth"
 tags: ["workshop", "training", "marbellino", "melbourne"]
 ---
 
-![Marbellino finish example](/TEM--V2/images/blog/marbellino-workshop-1.jpg)
+![Marbellino finish example](/images/blog/marbellino-workshop-1.jpg)
 
 ## Master the Art of Marbellino
 
@@ -34,7 +34,7 @@ Over two intensive days, participants will gain practical experience in:
 - **Polishing techniques** — The art of burnishing to achieve that signature lustrous sheen
 - **Sealing and protection** — Ensuring your finish stands the test of time
 
-![Marbellino polished plaster application](/TEM--V2/images/blog/marbellino-workshop-2.jpg)
+![Marbellino polished plaster application](/images/blog/marbellino-workshop-2.jpg)
 
 ### Why Train With Us?
 

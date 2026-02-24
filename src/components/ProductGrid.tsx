@@ -8,7 +8,7 @@ const products = [
     slug: 'marbellino',
     tagline: 'Natural stone look without the stone price tag',
     description: 'Versatile acrylic-based venetian plaster. UV stable, suitable for internal and external walls including bathrooms. Endless colour options.',
-    image: '/TEM--V2/images/products/marbellino.png',
+    image: '/images/products/marbellino.png',
     color: '#8b7355'
   },
   { 
@@ -16,7 +16,7 @@ const products = [
     slug: 'concretum',
     tagline: 'Washed patina with perfect imperfections',
     description: 'Grey base pitted and trowelled, overlaid with black patina highlighting cracks for a natural, rugged industrial aesthetic.',
-    image: '/TEM--V2/images/products/concretum.png',
+    image: '/images/products/concretum.png',
     color: '#6b6b6b'
   },
   { 
@@ -24,7 +24,7 @@ const products = [
     slug: 'rokka',
     tagline: 'Micro cement, maximum durability',
     description: 'High cement content for extreme durability. 2-5mm thickness. Pitted, smooth or sand finish. Less shrinkage than traditional micro cement.',
-    image: '/TEM--V2/images/products/rokka.png',
+    image: '/images/products/rokka.png',
     color: '#a67c52'
   },
   { 
@@ -32,7 +32,7 @@ const products = [
     slug: 'tadelakt',
     tagline: 'Moroccan luxury, modern durability',
     description: 'Traditional Moroccan plastering reimagined. Water-resistant, UV stable acrylic-based formula. Smooth polished finish, internal and external.',
-    image: '/TEM--V2/images/products/tadelakt.png',
+    image: '/images/products/tadelakt.png',
     color: '#4a7c59'
   },
   { 
@@ -40,7 +40,7 @@ const products = [
     slug: 'antique-stucco',
     tagline: 'Southern European aged elegance',
     description: 'Smooth, subtle aged appearance like houses throughout Southern Europe. Natural product that continues to age with character and charm.',
-    image: '/TEM--V2/images/products/antique-stucco.png',
+    image: '/images/products/antique-stucco.png',
     color: '#c9b896'
   },
   { 
@@ -48,7 +48,7 @@ const products = [
     slug: 'metallics',
     tagline: 'True copper, steel, bronze, brass & rust',
     description: 'Premium range with real metal shavings. True Copper develops natural patina over time. Industrial luxury for statement walls.',
-    image: '/TEM--V2/images/products/metallics.png',
+    image: '/images/products/metallics.png',
     color: '#b87333'
   },
   { 
@@ -56,7 +56,7 @@ const products = [
     slug: 'earthen-renders',
     tagline: 'Hemp, lime, clay - sustainable textures',
     description: 'Natural beneficial plasters made with hemp, lime, clay and sustainable materials. Improve air quality while looking stunning.',
-    image: '/TEM--V2/images/products/earthen-renders.png',
+    image: '/images/products/earthen-renders.png',
     color: '#b8956b'
   },
   { 
@@ -64,7 +64,7 @@ const products = [
     slug: 'custom-finishes',
     tagline: 'Your vision, our craft',
     description: 'Bespoke finishes tailored to your project. Work directly with our team to create something truly unique.',
-    image: '/TEM--V2/images/products/custom-finishes.png',
+    image: '/images/products/custom-finishes.png',
     color: '#2d2d2d'
   },
 ];
@@ -75,7 +75,7 @@ function ProductCard({ product, index }: { product: typeof products[0], index: n
   
   return (
     <motion.a
-      href={`/TEM--V2/products/${product.slug}`}
+      href={`/products/${product.slug}`}
       ref={ref}
       initial={{ opacity: 0, y: 60 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}

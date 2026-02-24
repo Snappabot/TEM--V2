@@ -6,21 +6,21 @@ const projects = [
     title: 'THE QUIET HOUSE',
     location: 'Brighton, VIC',
     material: 'Marbellino',
-    image: '/TEM--V2/images/products/marbellino/Marbellino+entry.png',
+    image: '/images/products/marbellino/Marbellino+entry.png',
     year: '2024'
   },
   {
     title: 'PATINA',
     location: 'South Yarra, VIC',
     material: 'Concretum + Metals',
-    image: '/TEM--V2/images/products/metallics/Troweled+Metal+copper+4.png',
+    image: '/images/products/metallics/Troweled+Metal+copper+4.png',
     year: '2024'
   },
   {
     title: 'EARTHEN RETREAT',
     location: 'Claremont, WA',
     material: 'Rokka',
-    image: '/TEM--V2/images/products/rokka/Roka+ceiling+moody.png',
+    image: '/images/products/rokka/Roka+ceiling+moody.png',
     year: '2023'
   },
 ];
@@ -116,7 +116,7 @@ function ProjectCard({
   return (
     <motion.a
       ref={ref}
-      href="/TEM--V2/projects"
+      href="/projects"
       className={`group ${large ? 'md:col-span-7' : ''}`}
       initial={{ opacity: 0, y: 60 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}

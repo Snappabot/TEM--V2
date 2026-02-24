@@ -2,12 +2,12 @@
 title: "Discovering Tadelakt Polished Plaster"
 date: 2025-06-20
 excerpt: "Explore the ancient Moroccan art of Tadelakt — a waterproof lime plaster that brings organic beauty and functionality to bathrooms, kitchens, and beyond."
-featuredImage: "/TEM--V2/images/blog/tadelakt-1.jpg"
+featuredImage: "/images/blog/tadelakt-1.jpg"
 author: "Troweled Earth"
 tags: ["tadelakt", "moroccan", "bathroom", "waterproof", "lime plaster"]
 ---
 
-![Tadelakt bathroom finish](/TEM--V2/images/blog/tadelakt-1.jpg)
+![Tadelakt bathroom finish](/images/blog/tadelakt-1.jpg)
 
 ## The Ancient Art of Tadelakt
 

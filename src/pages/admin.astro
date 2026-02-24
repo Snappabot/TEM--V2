@@ -195,7 +195,7 @@ export const prerender = false;
       const note = codeNoteInput.value.trim();
 
       try {
-        const response = await fetch('/TEM--V2/api/admin/codes', {
+        const response = await fetch('/api/admin/codes', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ export const prerender = false;
       codesEmpty.classList.add('hidden');
 
       try {
-        const response = await fetch('/TEM--V2/api/admin/codes', {
+        const response = await fetch('/api/admin/codes', {
           headers: {
             'X-Admin-Password': adminPassword || ''
           }
@@ -333,7 +333,7 @@ export const prerender = false;
             }
 
             try {
-              const response = await fetch('/TEM--V2/api/admin/codes', {
+              const response = await fetch('/api/admin/codes', {
                 method: 'DELETE',
                 headers: {
                   'Content-Type': 'application/json',

@@ -106,7 +106,7 @@ export default function EditorialContact() {
             transition={{ delay: 0.5 }}
           >
             <img 
-              src="/TEM--V2/images/logo.png" 
+              src="/images/logo.png" 
               alt="Troweled Earth" 
               className="w-10 h-auto mb-4 md:ml-auto invert opacity-90"
             />

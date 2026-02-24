@@ -33,14 +33,14 @@ export default function AnimatedHero() {
           playsInline
           preload="auto"
           className="w-full h-full object-cover"
-          poster="/TEM--V2/images/hero-poster.jpg"
+          poster="/images/hero-poster.jpg"
           style={{ 
             transform: 'translateZ(0)', 
             backfaceVisibility: 'hidden',
             willChange: 'auto'
           }}
         >
-          <source src="/TEM--V2/videos/hero.mp4" type="video/mp4" />
+          <source src="/videos/hero.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/80" />
       </div>
