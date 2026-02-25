@@ -33,7 +33,6 @@ export default function AnimatedHero() {
           playsInline
           preload="auto"
           className="w-full h-full object-cover"
-          poster="/images/hero-poster.jpg"
           style={{ 
             transform: 'translateZ(0)', 
             backfaceVisibility: 'hidden',
