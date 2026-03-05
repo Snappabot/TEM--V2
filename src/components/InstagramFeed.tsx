@@ -14,11 +14,10 @@ const fallbackPosts = [
   { image: '/images/gallery/gallery-08.jpg', caption: 'Marbellino finish' },
 ];
 
-// Set BEHOLD_WIDGET_ID to enable live Instagram feed via behold.so
-// Get yours free at: https://behold.so → connect @troweled_earth_melbourne
-const BEHOLD_WIDGET_ID = import.meta.env.PUBLIC_BEHOLD_WIDGET_ID || '';
+// Behold.so live Instagram feed
+const BEHOLD_FEED_ID = 'kukf4pCxjEVWGXm3wGB0';
 
-function BeholdFeed({ widgetId }: { widgetId: string }) {
+function BeholdFeed() {
   useEffect(() => {
     // Load Behold widget script once
     if (!document.querySelector('script[src*="behold.so"]')) {
@@ -31,7 +30,8 @@ function BeholdFeed({ widgetId }: { widgetId: string }) {
 
   return (
     <div className="w-full">
-      <div id={`behold-widget-${widgetId}`} />
+      {/* @ts-ignore - behold-widget is a custom element */}
+      <behold-widget feed-id={BEHOLD_FEED_ID} />
     </div>
   );
 }
@@ -111,8 +111,8 @@ export default function InstagramFeed() {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          {BEHOLD_WIDGET_ID ? (
-            <BeholdFeed widgetId={BEHOLD_WIDGET_ID} />
+          {BEHOLD_FEED_ID ? (
+            <BeholdFeed />
           ) : (
             <FallbackGrid />
           )}
