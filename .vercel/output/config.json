@@ -1,0 +1,132 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^/_astro/(.*)$",
+			"headers": {
+				"cache-control": "public, max-age=31536000, immutable"
+			},
+			"continue": true
+		},
+		{
+			"src": "^/_server-islands/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/_image/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/404/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/admin/codes/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/auth/login/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/auth/register/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/auth/session/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/chat/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/visualize/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/applicators/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/blog/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/products/antique-stucco/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/products/concretum/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/products/custom-finishes/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/products/earthen-renders/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/products/marbellino/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/products/metallics/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/products/natural-plasters/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/products/rokka/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/products/tadelakt/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/products/tadelino/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/projects/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/story/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/suppliers/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/training/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/visualizer/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/.*$",
+			"dest": "_render",
+			"status": 404
+		}
+	]
+}

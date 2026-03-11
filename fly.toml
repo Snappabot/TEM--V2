@@ -1,5 +1,10 @@
-app = "troweled-earth-melbourne"
+app = "tem-website"
 primary_region = "syd"
+
+[env]
+  HOST = "0.0.0.0"
+  PORT = "4321"
+  NODE_ENV = "production"
 
 [build]
 

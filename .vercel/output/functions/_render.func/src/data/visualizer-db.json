@@ -1,0 +1,17 @@
+{
+  "accessCodes": [
+    {
+      "code": "TEM-DEMO-2026",
+      "email": null,
+      "password": null,
+      "maxGenerations": 10,
+      "usedGenerations": 0,
+      "createdAt": "2026-02-12",
+      "registeredAt": null,
+      "active": true,
+      "note": "Demo code for testing"
+    }
+  ],
+  "sessions": [],
+  "generationLog": []
+}

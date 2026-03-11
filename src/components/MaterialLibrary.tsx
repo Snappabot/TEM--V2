@@ -11,7 +11,7 @@ const materials = [
   { 
     name: 'CONCRETUM', 
     subtitle: 'Raw Concrete // Matte',
-    image: '/images/products/concretum/Concretum+stairs.png',
+    image: '/images/products/concretum/concretum-hero-hq.jpg',
     href: '/products/concretum'
   },
   { 
@@ -23,7 +23,7 @@ const materials = [
   { 
     name: 'ROKKA', 
     subtitle: 'Textured Stone // Natural',
-    image: '/images/products/rokka/Roka+pilbara.png',
+    image: '/images/products/rokka/rokka-hero-hq.jpg',
     href: '/products/rokka'
   },
   { 
