@@ -13,7 +13,7 @@ export default function EditorialStatement() {
   const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0.5]);
   const y = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [50, 0, 0, -30]);
 
-  const words = "A space is more than geometry. It is the atmosphere where moments accumulate. Our finishes don't alter form. They stir soul.".split(" ");
+  const words = "It's never just a home. We sculpt atmosphere. Our Finishes don't imitate time. They carry it.".split(" ");
 
   return (
     <section ref={containerRef} className="section-dark py-32 md:py-48 px-6 md:px-12 min-h-screen flex items-center">
