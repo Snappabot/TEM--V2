@@ -38,7 +38,7 @@ export default function ScrollZoomStatement() {
             className="font-serif text-3xl md:text-5xl lg:text-6xl text-[#FAF9F6] leading-tight mb-4 md:mb-6 italic"
             style={{ scale: scale2, opacity: opacity2 }}
           >
-            It is the atmosphere where moments accumulate — awakened by hand-crafted finishes that listens to time.
+            It is the atmosphere where moments accumulate.
           </motion.p>
           
           {/* Line 3 */}
