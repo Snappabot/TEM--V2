@@ -30,7 +30,7 @@ export default function ScrollZoomStatement() {
             className="font-serif text-3xl md:text-5xl lg:text-6xl text-[#FAF9F6] leading-tight mb-4 md:mb-6"
             style={{ scale: scale1, opacity: opacity1 }}
           >
-            We do not paint walls.
+            A space is more than geometry.
           </motion.p>
           
           {/* Line 2 */}
@@ -38,7 +38,7 @@ export default function ScrollZoomStatement() {
             className="font-serif text-3xl md:text-5xl lg:text-6xl text-[#FAF9F6] leading-tight mb-4 md:mb-6 italic"
             style={{ scale: scale2, opacity: opacity2 }}
           >
-            We sculpt atmosphere.
+            It is the atmosphere where moments accumulate — awakened by hand-crafted finishes that listens to time.
           </motion.p>
           
           {/* Line 3 */}
@@ -46,7 +46,7 @@ export default function ScrollZoomStatement() {
             className="font-serif text-xl md:text-2xl lg:text-3xl text-[#FAF9F6]/70 leading-relaxed max-w-3xl mx-auto"
             style={{ scale: scale3, opacity: opacity3 }}
           >
-            In a world of flat surfaces and digital noise, textural depth is the only true luxury.
+            Our finishes don't alter form. They stir soul.
           </motion.p>
         </div>
       </div>

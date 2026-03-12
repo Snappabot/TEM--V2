@@ -13,7 +13,7 @@ export default function EditorialStatement() {
   const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0.5]);
   const y = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [50, 0, 0, -30]);
 
-  const words = "We do not paint walls. We sculpt atmosphere. In a world of flat surfaces and digital noise, textural depth is the only true luxury. Our renders are born from the earth, troweled by hand, and cured to stone.".split(" ");
+  const words = "A space is more than geometry. It is the atmosphere where moments accumulate — awakened by hand-crafted finishes that listens to time. Our finishes don't alter form. They stir soul.".split(" ");
 
   return (
     <section ref={containerRef} className="section-dark py-32 md:py-48 px-6 md:px-12 min-h-screen flex items-center">
