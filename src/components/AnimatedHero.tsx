@@ -87,7 +87,7 @@ export default function AnimatedHero() {
               animate={isLoaded ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Raw.
+              Earthy.
             </motion.span>
             <br />
             <motion.span 
@@ -96,7 +96,7 @@ export default function AnimatedHero() {
               animate={isLoaded ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              Bold.
+              Natural.
             </motion.span>
             <br />
             <motion.span 
@@ -105,7 +105,7 @@ export default function AnimatedHero() {
               animate={isLoaded ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.8 }}
             >
-              Uncompromising.
+              Authentic.
             </motion.span>
           </h1>
         </motion.div>
