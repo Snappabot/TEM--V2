@@ -1589,7 +1589,7 @@ export default function FinishVisualizer() {
                                 </div>
                               )}
                               
-                              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1.5">
+                              <div className="absolute bottom-0 inset-x-0 bg-black/70 py-0.5 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <p className="text-[10px] text-white font-medium truncate">{texture.name}</p>
                               </div>
                             </button>
