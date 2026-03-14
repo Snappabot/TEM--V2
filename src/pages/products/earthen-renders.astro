@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import CustomCursor from '../../components/CustomCursor';
 import ScrollProgress from '../../components/ScrollProgress';
 import AnimatedFooter from '../../components/AnimatedFooter';
+import GalleryWithLightbox from '../../components/GalleryWithLightbox';
 
 const product = {
   name: 'Earthen Hemp Render',
@@ -95,26 +96,11 @@ const product = {
         <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Inspiration</span>
         <h2 class="text-4xl font-bold text-white">Project Gallery</h2>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div class="group relative aspect-square overflow-hidden bg-[#1a1a1a] md:col-span-2 md:row-span-2">
-          <img src="/images/products/earthen-renders/Hemp+commercial+counter.jpg" alt="Earthen Hemp Render — Commercial Bar Counter" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-            <span class="text-white font-medium">Commercial Bar — Pure White Hemp top, Yellow Dominant surround</span>
-          </div>
-        </div>
-        <div class="group relative aspect-square overflow-hidden bg-[#1a1a1a]">
-          <img src="/images/products/earthen-renders/Hemp+exterior+wall+night.jpg" alt="Earthen Hemp Render Grey — Exterior Wall at Night" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-            <span class="text-white font-medium">Grey — Exterior Wall at Night</span>
-          </div>
-        </div>
-        <div class="group relative aspect-square overflow-hidden bg-[#1a1a1a]">
-          <img src="/images/products/earthen-renders/Hemp+exterior+wall+night+2.jpg" alt="Earthen Hemp Render Grey — Exterior Landscaping" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-            <span class="text-white font-medium">Grey — Exterior with Rock Landscaping</span>
-          </div>
-        </div>
-      </div>
+      <GalleryWithLightbox client:load gallery={[
+        { src: '/images/products/earthen-renders/Hemp+commercial+counter.jpg', title: 'Commercial Bar — Pure White Hemp' },
+        { src: '/images/products/earthen-renders/Hemp+exterior+wall+night.jpg', title: 'Grey — Exterior Wall at Night' },
+        { src: '/images/products/earthen-renders/Hemp+exterior+wall+night+2.jpg', title: 'Grey — Exterior with Rock Landscaping' },
+      ]} />
     </div>
   </section>
 
