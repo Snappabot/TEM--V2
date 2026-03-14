@@ -1560,7 +1560,7 @@ export default function FinishVisualizer() {
                       </div>
 
                       {/* Texture Grid */}
-                      <div className="grid grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
+                      <div className="grid grid-cols-3 gap-0.5 max-h-[400px] overflow-y-auto">
                         {filteredTextures.map(texture => {
                           const isSelected = locationSelections[activeLocation] === texture.id;
                           
@@ -1568,7 +1568,7 @@ export default function FinishVisualizer() {
                             <button
                               key={texture.id}
                               onClick={() => selectTextureForLocation(texture.id)}
-                              className={`relative aspect-square rounded-lg overflow-hidden group transition-all ${
+                              className={`relative aspect-square rounded overflow-hidden group transition-all ${
                                 isSelected ? 'ring-2 ring-green-500 ring-offset-2 ring-offset-neutral-900' : ''
                               }`}
                             >
