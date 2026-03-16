@@ -4,16 +4,17 @@ import CustomCursor from '../../components/CustomCursor';
 import ScrollProgress from '../../components/ScrollProgress';
 import AnimatedFooter from '../../components/AnimatedFooter';
 import GalleryWithLightbox from '../../components/GalleryWithLightbox';
+import InfiniteZoomHemp from '../../components/InfiniteZoomHemp';
 
 const product = {
   name: 'Earthen Hemp Render',
   tagline: 'Sustainable Rammed Earth Aesthetic',
   description: 'High-performance decorative wall coating delivering modern, classic, or rustic rammed earth finishes. Contains sustainable hemp fibres for enhanced durability — perfect for creating authentic earthen aesthetics without traditional rammed earth construction.',
-  image: '/images/products/earthen-renders.png',
+  image: '/images/products/earthen-renders/hemp-hero.jpg',
   features: [
     'Authentic rammed earth aesthetic',
     'Sustainable hemp fibre content',
-    'Thick 3-5mm application for durability',
+    'Thick 3–5mm application for durability',
     'Interior and exterior walls, ceilings, outdoor features',
     'Suitable for bathrooms and high-traffic areas',
     'Low VOC — Green Star compliant',
@@ -28,6 +29,17 @@ const product = {
     'Suitable for hallways, stairways, living areas',
     'Interior and exterior versatility',
     'Made in Western Australia'
+  ],
+  gallery: [
+    { src: '/images/products/earthen-renders/hemp-commercial-corridor.jpg', title: 'Commercial Corridor' },
+    { src: '/images/products/earthen-renders/hemp-livingroom.jpg', title: 'Living Room Feature Wall' },
+    { src: '/images/products/earthen-renders/hemp-texture-closeup.jpg', title: 'Hemp Texture — Kitchen' },
+    { src: '/images/products/earthen-renders/hemp-beams.jpg', title: 'Rammed Earth with Beams' },
+    { src: '/images/products/earthen-renders/hemp-column.jpg', title: 'Commercial Column' },
+    { src: '/images/products/earthen-renders/hemp-sculptural-arch.jpg', title: 'Sculptural Arch' },
+    { src: '/images/products/earthen-renders/Hemp+commercial+counter.jpg', title: 'Commercial Bar Counter' },
+    { src: '/images/products/earthen-renders/Hemp+exterior+wall+night.jpg', title: 'Exterior Wall at Night' },
+    { src: '/images/products/earthen-renders/Hemp+exterior+wall+night+2.jpg', title: 'Exterior with Landscaping' },
   ]
 };
 ---
@@ -36,6 +48,7 @@ const product = {
   <CustomCursor client:load />
   <ScrollProgress client:load />
 
+  <!-- Hero -->
   <section class="relative h-[70vh] min-h-[500px] flex items-end bg-[#0a0a0a] overflow-hidden">
     <div class="absolute inset-0">
       <img src={product.image} alt={product.name} class="w-full h-full object-cover opacity-60" />
@@ -54,6 +67,10 @@ const product = {
     </div>
   </section>
 
+  <!-- Infinite Zoom — Deep into the grain -->
+  <InfiniteZoomHemp client:load />
+
+  <!-- Features & Benefits -->
   <section class="py-24 bg-[#f5f5f0]">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid lg:grid-cols-2 gap-16">
@@ -96,14 +113,11 @@ const product = {
         <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Inspiration</span>
         <h2 class="text-4xl font-bold text-white">Project Gallery</h2>
       </div>
-      <GalleryWithLightbox client:load gallery={[
-        { src: '/images/products/earthen-renders/Hemp+commercial+counter.jpg', title: 'Commercial Bar — Pure White Hemp' },
-        { src: '/images/products/earthen-renders/Hemp+exterior+wall+night.jpg', title: 'Grey — Exterior Wall at Night' },
-        { src: '/images/products/earthen-renders/Hemp+exterior+wall+night+2.jpg', title: 'Grey — Exterior with Rock Landscaping' },
-      ]} />
+      <GalleryWithLightbox client:load gallery={product.gallery} />
     </div>
   </section>
 
+  <!-- CTA -->
   <section class="py-24 bg-[#1a1a1a]">
     <div class="max-w-4xl mx-auto px-6 text-center">
       <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Interested in {product.name}?</h2>
