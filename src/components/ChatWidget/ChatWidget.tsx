@@ -91,9 +91,9 @@ export default function ChatWidget() {
 
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Show lead form after a few exchanges
-      if (messages.length >= 4 && !leadInfo.email) {
-        setTimeout(() => setShowLeadForm(true), 2000);
+      // Show lead form only when API signals it's the right time
+      if (data.promptContact && !leadInfo.email) {
+        setTimeout(() => setShowLeadForm(true), 1500);
       }
 
     } catch (error) {
