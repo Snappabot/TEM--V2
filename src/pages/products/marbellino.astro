@@ -4,6 +4,7 @@ import CustomCursor from '../../components/CustomCursor';
 import ScrollProgress from '../../components/ScrollProgress';
 import AnimatedFooter from '../../components/AnimatedFooter';
 import GalleryWithLightbox from '../../components/GalleryWithLightbox';
+import InfiniteZoom from '../../components/InfiniteZoom';
 
 const product = {
   name: 'Marbellino',
@@ -75,6 +76,9 @@ const product = {
       <p class="text-xl text-white/70 mt-6 max-w-2xl">{product.description}</p>
     </div>
   </section>
+
+  <!-- Infinite Zoom -->
+  <InfiniteZoom client:load />
 
   <!-- Features -->
   <section class="py-24 bg-[#f5f5f0]">
