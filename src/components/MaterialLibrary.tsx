@@ -39,6 +39,12 @@ const materials = [
     href: '/products/custom-finishes'
   },
   { 
+    name: 'EARTHEN HEMP',
+    subtitle: 'Sustainable // Rammed Earth',
+    image: '/images/products/earthen-renders/hemp-hero.jpg',
+    href: '/products/earthen-renders'
+  },
+  { 
     name: 'NATURAL', 
     subtitle: 'Hemp // Clay // Lime',
     image: '/images/arch-plaster-render.jpg',
