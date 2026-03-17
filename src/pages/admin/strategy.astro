@@ -128,12 +128,40 @@ export const prerender = false;
       .utm-output .url-text { font-size: 0.8rem; color: #9ca3af; word-break: break-all; font-family: 'Courier New', monospace; }
       .utm-output .copy-row { display: flex; justify-content: flex-end; margin-top: 0.75rem; }
 
+      /* Technical SEO Checklist */
+      .checklist-progress { margin-bottom: 1.25rem; }
+      .checklist-progress-bar-wrap { height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; margin-top: 0.35rem; }
+      .checklist-progress-bar { height: 100%; background: #8b7355; border-radius: 3px; transition: width 0.3s ease; }
+      .checklist-actions { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; }
+      .checklist-category { margin-bottom: 1.5rem; }
+      .checklist-category-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: #8b7355; margin-bottom: 0.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid #1a1a1a; }
+      .checklist-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.55rem 0; }
+      .checklist-item input[type=checkbox] { margin-top: 0.15rem; width: 1rem; height: 1rem; accent-color: #8b7355; cursor: pointer; flex-shrink: 0; }
+      .checklist-item label { font-size: 0.875rem; color: #9ca3af; cursor: pointer; line-height: 1.4; flex: 1; }
+      .checklist-item.checked label { color: #6b7280; text-decoration: line-through; }
+      .checklist-tooltip { display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem; border-radius: 50%; background: #1a1a1a; border: 1px solid #2a2a2a; color: #6b7280; font-size: 0.6rem; cursor: help; flex-shrink: 0; margin-top: 0.15rem; position: relative; }
+      .checklist-tooltip:hover::after { content: attr(data-tip); position: absolute; left: 1.5rem; top: -0.25rem; z-index: 10; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.75rem; color: #9ca3af; white-space: normal; width: 240px; line-height: 1.5; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+      .seo-checklist-panel .collapsible-body { display: none; }
+      .seo-checklist-panel.open .collapsible-body { display: block; }
+      .seo-checklist-panel .panel-header { cursor: pointer; user-select: none; }
+      .seo-checklist-panel .panel-header:hover h2 { color: #fff; }
+
       @media (max-width: 640px) {
         .dash-header { padding: 1rem; flex-wrap: wrap; gap: 0.75rem; }
         .dash-body { padding: 1rem; }
         .campaign-grid { grid-template-columns: 1fr; }
         .market-grid { grid-template-columns: repeat(2, 1fr); }
         .budget-grid { grid-template-columns: 1fr; }
+      }
+
+      @media print {
+        .dash-header, .dash-nav, #logout-btn, .checklist-actions, .panel:not(.seo-checklist-panel) { display: none !important; }
+        .seo-checklist-panel { border: none; padding: 0; }
+        .seo-checklist-panel .collapsible-body { display: block !important; }
+        body { background: #fff; color: #000; }
+        .checklist-category-title { color: #000; }
+        .checklist-item label { color: #333; }
+        .checklist-item.checked label { color: #999; }
       }
     </style>
   </head>
@@ -159,6 +187,7 @@ export const prerender = false;
           <nav class="dash-nav">
             <a href="/admin/campaigns">Campaigns</a>
             <a href="/admin/strategy" class="active">Strategy</a>
+            <a href="/admin/analytics">Analytics</a>
           </nav>
           <button class="btn-sm" id="logout-btn">Log out</button>
         </div>
@@ -694,6 +723,238 @@ export const prerender = false;
           </div>
         </div>
 
+        <!-- ── 7. TECHNICAL SEO HEALTH CHECKLIST ─────────────────── -->
+        <div class="panel seo-checklist-panel" id="seo-checklist-panel">
+          <div class="panel-header" id="seo-checklist-toggle">
+            <div>
+              <div class="section-heading" style="margin-bottom:0.25rem">Technical Audit</div>
+              <h2>Technical SEO Health Checklist</h2>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem">
+              <span id="checklist-pct-label" style="font-size:0.75rem;color:#8b7355;font-weight:600">0% complete</span>
+              <span class="chevron" id="seo-checklist-chevron" style="font-size:0.75rem;color:#4b5563;transition:transform 0.25s">▼</span>
+            </div>
+          </div>
+
+          <div class="collapsible-body">
+            <div class="checklist-progress">
+              <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#6b7280">
+                <span id="checklist-progress-text">0 of 34 items complete</span>
+              </div>
+              <div class="checklist-progress-bar-wrap">
+                <div class="checklist-progress-bar" id="checklist-progress-bar" style="width:0%"></div>
+              </div>
+            </div>
+
+            <div class="checklist-actions">
+              <button class="btn-sm" id="checklist-export-btn">Export as PDF</button>
+              <button class="btn-sm" id="checklist-reset-btn" style="color:#f87171">Reset All</button>
+              <span style="font-size:0.75rem;color:#4b5563">Progress saved automatically in your browser.</span>
+            </div>
+
+            <!-- Core Web Vitals -->
+            <div class="checklist-category">
+              <div class="checklist-category-title">Core Web Vitals</div>
+              <div class="checklist-item" data-id="cwv-lcp">
+                <input type="checkbox" id="cwv-lcp" />
+                <label for="cwv-lcp">LCP (Largest Contentful Paint) &lt; 2.5s — tested in PageSpeed Insights</label>
+                <span class="checklist-tooltip" data-tip="Run PageSpeed Insights on your homepage and key pages. Optimise large images (WebP, correct dimensions), reduce TTFB, and eliminate render-blocking resources.">i</span>
+              </div>
+              <div class="checklist-item" data-id="cwv-inp">
+                <input type="checkbox" id="cwv-inp" />
+                <label for="cwv-inp">INP (Interaction to Next Paint) &lt; 200ms</label>
+                <span class="checklist-tooltip" data-tip="Measure with Chrome DevTools → Performance panel. Reduce main-thread work: defer non-critical JS, break up long tasks, avoid excessive DOM size.">i</span>
+              </div>
+              <div class="checklist-item" data-id="cwv-cls">
+                <input type="checkbox" id="cwv-cls" />
+                <label for="cwv-cls">CLS (Cumulative Layout Shift) &lt; 0.1</label>
+                <span class="checklist-tooltip" data-tip="Set explicit width/height on all images and embeds. Avoid inserting content above existing content after load. Use CSS transform for animations instead of top/left.">i</span>
+              </div>
+              <div class="checklist-item" data-id="cwv-mobile-ps">
+                <input type="checkbox" id="cwv-mobile-ps" />
+                <label for="cwv-mobile-ps">Mobile PageSpeed score &gt; 85</label>
+                <span class="checklist-tooltip" data-tip="Test at pagespeed.web.dev. Focus on image compression (WebP/AVIF), eliminating render-blocking resources, and reducing unused CSS/JS.">i</span>
+              </div>
+              <div class="checklist-item" data-id="cwv-desktop-ps">
+                <input type="checkbox" id="cwv-desktop-ps" />
+                <label for="cwv-desktop-ps">Desktop PageSpeed score &gt; 90</label>
+                <span class="checklist-tooltip" data-tip="Desktop is generally easier to score. Focus on JS bundle size, unused CSS, and efficient cache policy for static assets.">i</span>
+              </div>
+            </div>
+
+            <!-- Crawlability & Indexation -->
+            <div class="checklist-category">
+              <div class="checklist-category-title">Crawlability &amp; Indexation</div>
+              <div class="checklist-item" data-id="crawl-robots">
+                <input type="checkbox" id="crawl-robots" />
+                <label for="crawl-robots">robots.txt present and correct ✓</label>
+                <span class="checklist-tooltip" data-tip="Already deployed. Verify at yourdomain.com/robots.txt. Ensure it allows Googlebot and doesn't accidentally block key pages.">i</span>
+              </div>
+              <div class="checklist-item" data-id="crawl-sitemap">
+                <input type="checkbox" id="crawl-sitemap" />
+                <label for="crawl-sitemap">sitemap.xml submitted to Google Search Console</label>
+                <span class="checklist-tooltip" data-tip="In GSC → Sitemaps → enter your sitemap URL (e.g. yourdomain.com/sitemap.xml) → Submit. Astro generates this automatically.">i</span>
+              </div>
+              <div class="checklist-item" data-id="crawl-errors">
+                <input type="checkbox" id="crawl-errors" />
+                <label for="crawl-errors">No crawl errors in GSC Coverage report</label>
+                <span class="checklist-tooltip" data-tip="GSC → Pages → check for Server errors (5xx), Redirect errors, or Submitted URLs with crawl issues. Fix broken URLs and remove deleted pages from sitemap.">i</span>
+              </div>
+              <div class="checklist-item" data-id="crawl-indexed">
+                <input type="checkbox" id="crawl-indexed" />
+                <label for="crawl-indexed">All key pages indexed (check GSC Index Coverage)</label>
+                <span class="checklist-tooltip" data-tip="Use site:yourdomain.com in Google Search to see indexed pages. For unindexed pages, use GSC → URL Inspection → Request Indexing.">i</span>
+              </div>
+              <div class="checklist-item" data-id="crawl-noindex">
+                <input type="checkbox" id="crawl-noindex" />
+                <label for="crawl-noindex">No accidental noindex tags on key pages</label>
+                <span class="checklist-tooltip" data-tip="Check source of each key page for: &lt;meta name='robots' content='noindex'&gt;. Also check X-Robots-Tag HTTP header in server responses.">i</span>
+              </div>
+            </div>
+
+            <!-- Schema Markup -->
+            <div class="checklist-category">
+              <div class="checklist-category-title">Schema Markup</div>
+              <div class="checklist-item" data-id="schema-localbusiness">
+                <input type="checkbox" id="schema-localbusiness" />
+                <label for="schema-localbusiness">LocalBusiness schema on homepage ✓</label>
+                <span class="checklist-tooltip" data-tip="Already implemented. Validate at search.google.com/test/rich-results. Ensure name, address, phone, url, and openingHours are accurate.">i</span>
+              </div>
+              <div class="checklist-item" data-id="schema-service">
+                <input type="checkbox" id="schema-service" />
+                <label for="schema-service">Service schema on each product/finish page</label>
+                <span class="checklist-tooltip" data-tip="Add Service schema with: name, description, provider (LocalBusiness), areaServed (Melbourne), and offers. Helps AI and rich result eligibility.">i</span>
+              </div>
+              <div class="checklist-item" data-id="schema-faq">
+                <input type="checkbox" id="schema-faq" />
+                <label for="schema-faq">FAQ schema on carbon claims / hemp render page</label>
+                <span class="checklist-tooltip" data-tip="Add FAQPage schema with Question/Answer pairs. Eligible for FAQ rich results in Google SERP and improves AI answer extraction. Validate at Rich Results Test.">i</span>
+              </div>
+              <div class="checklist-item" data-id="schema-breadcrumb">
+                <input type="checkbox" id="schema-breadcrumb" />
+                <label for="schema-breadcrumb">BreadcrumbList schema on deep pages</label>
+                <span class="checklist-tooltip" data-tip="Add BreadcrumbList schema to pages 2+ levels deep (e.g. /finishes/venetian-plaster). Enables breadcrumb display in Google search results.">i</span>
+              </div>
+              <div class="checklist-item" data-id="schema-validated">
+                <input type="checkbox" id="schema-validated" />
+                <label for="schema-validated">Validated with Google Rich Results Test</label>
+                <span class="checklist-tooltip" data-tip="Run every schema-marked page through search.google.com/test/rich-results. Fix any errors (red) — warnings (orange) are acceptable but worth addressing.">i</span>
+              </div>
+            </div>
+
+            <!-- On-Page SEO -->
+            <div class="checklist-category">
+              <div class="checklist-category-title">On-Page SEO</div>
+              <div class="checklist-item" data-id="onpage-titles">
+                <input type="checkbox" id="onpage-titles" />
+                <label for="onpage-titles">Unique title tag on every page (50–60 chars)</label>
+                <span class="checklist-tooltip" data-tip="Use Screaming Frog or Ahrefs Site Audit to check for duplicate or missing titles. Format: Primary Keyword | TEM Melbourne. Keep under 60 chars.">i</span>
+              </div>
+              <div class="checklist-item" data-id="onpage-meta">
+                <input type="checkbox" id="onpage-meta" />
+                <label for="onpage-meta">Unique meta description on every page (150–160 chars)</label>
+                <span class="checklist-tooltip" data-tip="Meta descriptions don't directly affect rankings but impact CTR. Each should be a unique, compelling summary including the primary keyword and a CTA.">i</span>
+              </div>
+              <div class="checklist-item" data-id="onpage-h1">
+                <input type="checkbox" id="onpage-h1" />
+                <label for="onpage-h1">H1 present and unique on every page</label>
+                <span class="checklist-tooltip" data-tip="Each page should have exactly one H1 containing the primary keyword. H1 should differ from the title tag but cover the same topic.">i</span>
+              </div>
+              <div class="checklist-item" data-id="onpage-alt">
+                <input type="checkbox" id="onpage-alt" />
+                <label for="onpage-alt">Images have descriptive alt text</label>
+                <span class="checklist-tooltip" data-tip="Every &lt;img&gt; should have an alt attribute describing what's in the image, including relevant keywords naturally. Decorative images can use empty alt=''.">i</span>
+              </div>
+              <div class="checklist-item" data-id="onpage-internal">
+                <input type="checkbox" id="onpage-internal" />
+                <label for="onpage-internal">Internal linking — each product page links to related pages</label>
+                <span class="checklist-tooltip" data-tip="Venetian plaster page should link to hemp render page, carbon negative render page, etc. Use descriptive anchor text with keywords. Minimum 3–5 internal links per page.">i</span>
+              </div>
+            </div>
+
+            <!-- Performance -->
+            <div class="checklist-category">
+              <div class="checklist-category-title">Performance</div>
+              <div class="checklist-item" data-id="perf-webp">
+                <input type="checkbox" id="perf-webp" />
+                <label for="perf-webp">Images served in WebP/AVIF format</label>
+                <span class="checklist-tooltip" data-tip="Astro's &lt;Image /&gt; component handles this automatically. Verify with DevTools → Network → filter by Img — file types should show webp or avif.">i</span>
+              </div>
+              <div class="checklist-item" data-id="perf-lazy">
+                <input type="checkbox" id="perf-lazy" />
+                <label for="perf-lazy">Lazy loading on below-fold images ✓</label>
+                <span class="checklist-tooltip" data-tip="Already implemented. Astro's Image component adds loading='lazy' by default. Above-fold hero images should have loading='eager' or fetchpriority='high'.">i</span>
+              </div>
+              <div class="checklist-item" data-id="perf-scripts">
+                <input type="checkbox" id="perf-scripts" />
+                <label for="perf-scripts">No render-blocking scripts</label>
+                <span class="checklist-tooltip" data-tip="Check PageSpeed Insights → 'Eliminate render-blocking resources'. Move scripts to end of body or add defer/async attributes. Third-party scripts (analytics, chat) are common culprits.">i</span>
+              </div>
+              <div class="checklist-item" data-id="perf-fonts">
+                <input type="checkbox" id="perf-fonts" />
+                <label for="perf-fonts">Font loading optimised (font-display: swap)</label>
+                <span class="checklist-tooltip" data-tip="Add font-display: swap to @font-face declarations. Preload critical fonts with &lt;link rel='preload' as='font'&gt;. Consider using system fonts for body text.">i</span>
+              </div>
+            </div>
+
+            <!-- Mobile & UX -->
+            <div class="checklist-category">
+              <div class="checklist-category-title">Mobile &amp; UX</div>
+              <div class="checklist-item" data-id="mobile-responsive">
+                <input type="checkbox" id="mobile-responsive" />
+                <label for="mobile-responsive">Fully responsive on all screen sizes</label>
+                <span class="checklist-tooltip" data-tip="Test in Chrome DevTools Device Mode at 320px, 375px, 414px, 768px. Use GSC → Mobile Usability report to catch issues Google has already flagged.">i</span>
+              </div>
+              <div class="checklist-item" data-id="mobile-nohscroll">
+                <input type="checkbox" id="mobile-nohscroll" />
+                <label for="mobile-nohscroll">No horizontal scroll on mobile</label>
+                <span class="checklist-tooltip" data-tip="Check overflow-x on body and all containers. Common culprits: wide tables, fixed-width elements, negative margins. Add overflow-x: hidden to body as a last resort.">i</span>
+              </div>
+              <div class="checklist-item" data-id="mobile-taptargets">
+                <input type="checkbox" id="mobile-taptargets" />
+                <label for="mobile-taptargets">Tap targets &ge; 48px</label>
+                <span class="checklist-tooltip" data-tip="Buttons and links should be at least 48×48px to be easily tappable. PageSpeed Insights flags tap targets that are too small or too close together.">i</span>
+              </div>
+              <div class="checklist-item" data-id="mobile-cta">
+                <input type="checkbox" id="mobile-cta" />
+                <label for="mobile-cta">Contact CTA visible above fold on mobile</label>
+                <span class="checklist-tooltip" data-tip="Users should see a phone number or 'Get a Quote' button without scrolling on a 375px screen. Test on real device or in Chrome DevTools at 375px × 812px.">i</span>
+              </div>
+            </div>
+
+            <!-- GEO / AI Visibility -->
+            <div class="checklist-category">
+              <div class="checklist-category-title">GEO / AI Visibility</div>
+              <div class="checklist-item" data-id="geo-llmstxt">
+                <input type="checkbox" id="geo-llmstxt" />
+                <label for="geo-llmstxt">llms.txt present ✓</label>
+                <span class="checklist-tooltip" data-tip="Already deployed. Verify at yourdomain.com/llms.txt. Ensure it accurately describes TEM's products, location, and key differentiators for AI consumption.">i</span>
+              </div>
+              <div class="checklist-item" data-id="geo-brand">
+                <input type="checkbox" id="geo-brand" />
+                <label for="geo-brand">Clear brand entity definition in homepage copy</label>
+                <span class="checklist-tooltip" data-tip="The homepage should clearly state: who TEM is, what they do (decorative plaster, hemp render, lime plaster), where they operate (Melbourne), and what makes them unique (carbon sequestration, natural materials).">i</span>
+              </div>
+              <div class="checklist-item" data-id="geo-faq">
+                <input type="checkbox" id="geo-faq" />
+                <label for="geo-faq">FAQ content present for key AI answer extraction</label>
+                <span class="checklist-tooltip" data-tip="Add FAQ sections or pages covering common questions: 'What is venetian plaster?', 'Is hemp render carbon negative?', 'How long does decorative plaster last?'. These are prime AI snippet candidates.">i</span>
+              </div>
+              <div class="checklist-item" data-id="geo-nap">
+                <input type="checkbox" id="geo-nap" />
+                <label for="geo-nap">Consistent NAP (Name/Address/Phone) across all pages</label>
+                <span class="checklist-tooltip" data-tip="Business name, address, and phone number must be identical everywhere online: website footer, GSC, Google Business Profile, social profiles, directory listings.">i</span>
+              </div>
+              <div class="checklist-item" data-id="geo-gbp">
+                <input type="checkbox" id="geo-gbp" />
+                <label for="geo-gbp">Google Business Profile claimed and optimised</label>
+                <span class="checklist-tooltip" data-tip="Claim at business.google.com. Complete all fields: description, services, photos (10+ high quality), opening hours, service areas. Respond to all reviews. Post weekly updates.">i</span>
+              </div>
+            </div>
+
+          </div><!-- /.collapsible-body -->
+        </div><!-- /.seo-checklist-panel -->
+
       </div><!-- /.dash-body -->
     </div><!-- /#dashboard-section -->
 
@@ -796,6 +1057,96 @@ export const prerender = false;
         const btn = document.getElementById('utm-copy-btn')!;
         btn.textContent = 'Copied!';
         setTimeout(() => btn.textContent = 'Copy URL', 2000);
+      });
+
+      // ── Technical SEO Checklist ───────────────────────────────────
+      const CHECKLIST_KEY = 'tem-seo-checklist';
+      const PRE_CHECKED = ['crawl-robots', 'schema-localbusiness', 'perf-lazy', 'geo-llmstxt'];
+      const ALL_IDS = [
+        'cwv-lcp','cwv-inp','cwv-cls','cwv-mobile-ps','cwv-desktop-ps',
+        'crawl-robots','crawl-sitemap','crawl-errors','crawl-indexed','crawl-noindex',
+        'schema-localbusiness','schema-service','schema-faq','schema-breadcrumb','schema-validated',
+        'onpage-titles','onpage-meta','onpage-h1','onpage-alt','onpage-internal',
+        'perf-webp','perf-lazy','perf-scripts','perf-fonts',
+        'mobile-responsive','mobile-nohscroll','mobile-taptargets','mobile-cta',
+        'geo-llmstxt','geo-brand','geo-faq','geo-nap','geo-gbp'
+      ];
+
+      // Load saved state or initialise with pre-checked defaults
+      let savedState: Record<string, boolean> = {};
+      try {
+        const stored = localStorage.getItem(CHECKLIST_KEY);
+        if (stored) {
+          savedState = JSON.parse(stored);
+        } else {
+          PRE_CHECKED.forEach(id => { savedState[id] = true; });
+        }
+      } catch { /* ignore */ }
+
+      function persistState() {
+        try { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(savedState)); } catch { /* ignore */ }
+      }
+
+      function updateProgress() {
+        const checked = ALL_IDS.filter(id => savedState[id]).length;
+        const total = ALL_IDS.length;
+        const pct = Math.round((checked / total) * 100);
+        const bar = document.getElementById('checklist-progress-bar') as HTMLElement;
+        const text = document.getElementById('checklist-progress-text') as HTMLElement;
+        const label = document.getElementById('checklist-pct-label') as HTMLElement;
+        if (bar) bar.style.width = pct + '%';
+        if (text) text.textContent = `${checked} of ${total} items complete`;
+        if (label) label.textContent = pct + '% complete';
+      }
+
+      // Initialise checkboxes
+      ALL_IDS.forEach(id => {
+        const cb = document.getElementById(id) as HTMLInputElement;
+        const item = cb?.closest('.checklist-item') as HTMLElement;
+        if (!cb) return;
+        cb.checked = !!savedState[id];
+        if (cb.checked) item?.classList.add('checked');
+
+        cb.addEventListener('change', () => {
+          savedState[id] = cb.checked;
+          if (cb.checked) item?.classList.add('checked');
+          else item?.classList.remove('checked');
+          persistState();
+          updateProgress();
+        });
+      });
+
+      updateProgress();
+
+      // Toggle panel open/close
+      const seoPanel = document.getElementById('seo-checklist-panel')!;
+      const seoChevron = document.getElementById('seo-checklist-chevron')!;
+      document.getElementById('seo-checklist-toggle')!.addEventListener('click', () => {
+        const isOpen = seoPanel.classList.toggle('open');
+        seoChevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+      });
+
+      // Export
+      document.getElementById('checklist-export-btn')!.addEventListener('click', () => {
+        if (!seoPanel.classList.contains('open')) seoPanel.classList.add('open');
+        window.print();
+      });
+
+      // Reset
+      document.getElementById('checklist-reset-btn')!.addEventListener('click', () => {
+        if (!confirm('Reset all checklist items to default? Pre-checked items will be restored.')) return;
+        savedState = {};
+        PRE_CHECKED.forEach(id => { savedState[id] = true; });
+        persistState();
+        ALL_IDS.forEach(id => {
+          const cb = document.getElementById(id) as HTMLInputElement;
+          const item = cb?.closest('.checklist-item') as HTMLElement;
+          if (!cb) return;
+          cb.checked = !!savedState[id];
+          if (cb.checked) item?.classList.add('checked');
+          else item?.classList.remove('checked');
+        });
+        updateProgress();
       });
     </script>
   </body>

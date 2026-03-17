@@ -1,0 +1,1263 @@
+---
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * SQL MIGRATIONS — Paste into Supabase SQL Editor (project: djtxbohjjpkhzhwlnrtu)
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * CREATE TABLE IF NOT EXISTS seo_metrics (
+ *   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+ *   recorded_date date NOT NULL,
+ *   organic_sessions int,
+ *   total_users int,
+ *   impressions int,
+ *   clicks int,
+ *   avg_ctr float,
+ *   avg_position float,
+ *   backlinks_total int,
+ *   referring_domains int,
+ *   notes text,
+ *   created_at timestamptz DEFAULT now()
+ * );
+ * ALTER TABLE seo_metrics ENABLE ROW LEVEL SECURITY;
+ * CREATE POLICY "admin_anon_seo" ON seo_metrics FOR ALL TO anon USING (true) WITH CHECK (true);
+ *
+ * CREATE TABLE IF NOT EXISTS keyword_rankings (
+ *   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+ *   keyword text NOT NULL,
+ *   current_position int,
+ *   previous_position int,
+ *   search_volume int,
+ *   target_page text,
+ *   recorded_date date,
+ *   created_at timestamptz DEFAULT now()
+ * );
+ * ALTER TABLE keyword_rankings ENABLE ROW LEVEL SECURITY;
+ * CREATE POLICY "admin_anon_kw" ON keyword_rankings FOR ALL TO anon USING (true) WITH CHECK (true);
+ *
+ * CREATE TABLE IF NOT EXISTS conversions (
+ *   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+ *   date date NOT NULL,
+ *   source text,
+ *   medium text,
+ *   campaign text,
+ *   conversion_type text,
+ *   count int DEFAULT 1,
+ *   notes text,
+ *   created_at timestamptz DEFAULT now()
+ * );
+ * ALTER TABLE conversions ENABLE ROW LEVEL SECURITY;
+ * CREATE POLICY "admin_anon_conv" ON conversions FOR ALL TO anon USING (true) WITH CHECK (true);
+ *
+ * CREATE TABLE IF NOT EXISTS backlinks (
+ *   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+ *   domain text NOT NULL,
+ *   page_url text,
+ *   anchor_text text,
+ *   first_seen date,
+ *   status text DEFAULT 'active',
+ *   notes text,
+ *   created_at timestamptz DEFAULT now()
+ * );
+ * ALTER TABLE backlinks ENABLE ROW LEVEL SECURITY;
+ * CREATE POLICY "admin_anon_bl" ON backlinks FOR ALL TO anon USING (true) WITH CHECK (true);
+ */
+
+export const prerender = false;
+const SB_URL = import.meta.env.PUBLIC_SUPABASE_URL ?? 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+const SB_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analytics Hub | Troweled Earth</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+      input, select, textarea, button { font-family: inherit; }
+
+      .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+      .login-card { width: 100%; max-width: 380px; }
+      .login-card h1 { font-size: 1.75rem; font-weight: 300; text-align: center; margin-bottom: 2rem; }
+      .login-card input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; }
+      .login-card input:focus { border-color: #8b7355; }
+      .btn-primary { display: block; width: 100%; padding: 0.875rem; margin-top: 0.75rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+      .btn-primary:hover { background: #a68b6a; }
+      .error-msg { color: #f87171; font-size: 0.8rem; margin-top: 0.5rem; }
+
+      .dash-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; border-bottom: 1px solid #1a1a1a; }
+      .dash-header h1 { font-size: 1.25rem; font-weight: 400; }
+      .dash-header .logo { color: #8b7355; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; }
+      .dash-nav { display: flex; gap: 0.5rem; align-items: center; }
+      .dash-nav a { padding: 0.4rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; text-decoration: none; transition: all 0.2s; }
+      .dash-nav a:hover { border-color: #8b7355; color: #fff; }
+      .dash-nav a.active { border-color: #8b7355; color: #8b7355; }
+      .btn-sm { padding: 0.5rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+      .btn-sm:hover { border-color: #8b7355; color: #fff; }
+
+      .dash-body { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+      .section-heading { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: #8b7355; margin-bottom: 1rem; }
+      .panel { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem; }
+      .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+      .panel-header h2 { font-size: 1rem; font-weight: 500; color: #e5e7eb; }
+
+      /* Stats cards */
+      .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+      .stat-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 8px; padding: 1.25rem; }
+      .stat-card .s-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-bottom: 0.5rem; }
+      .stat-card .s-value { font-size: 1.6rem; font-weight: 600; color: #fff; line-height: 1.2; }
+      .stat-card .s-sub { font-size: 0.75rem; color: #4b5563; margin-top: 0.35rem; }
+      .stat-card.placeholder { border-style: dashed; }
+      .stat-card.placeholder .s-value { color: #2a2a2a; font-size: 1rem; font-weight: 400; }
+
+      /* GA4 integration */
+      .looker-frame { position: relative; background: #0f0f0f; border: 1px dashed #2a2a2a; border-radius: 8px; height: 280px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; overflow: hidden; }
+      .looker-overlay { text-align: center; padding: 2rem; }
+      .looker-overlay h3 { font-size: 1rem; font-weight: 500; color: #e5e7eb; margin-bottom: 0.75rem; }
+      .looker-overlay p { font-size: 0.8rem; color: #6b7280; margin-bottom: 1rem; max-width: 480px; }
+      .looker-overlay .step { font-size: 0.75rem; color: #4b5563; margin-bottom: 0.35rem; text-align: left; padding-left: 1rem; border-left: 2px solid #2a2a2a; }
+      .cta-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+      .btn-google { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.25rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e7eb; font-size: 0.85rem; text-decoration: none; transition: all 0.2s; cursor: pointer; }
+      .btn-google:hover { border-color: #8b7355; color: #fff; }
+      .btn-google svg { width: 16px; height: 16px; }
+
+      /* Table */
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+      thead tr { border-bottom: 1px solid #1a1a1a; }
+      th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; white-space: nowrap; }
+      td { padding: 0.75rem 1rem; border-bottom: 1px solid #111; vertical-align: middle; }
+      tr:hover td { background: #0f0f0f; }
+
+      /* Forms */
+      .form-toggle { display: none; margin-bottom: 1.5rem; padding: 1.25rem; background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 8px; }
+      .form-toggle.open { display: block; }
+      .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; }
+      .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+      .form-group.full { grid-column: 1 / -1; }
+      .form-group label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em; }
+      .form-group input, .form-group select, .form-group textarea {
+        padding: 0.55rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a;
+        border-radius: 6px; color: #fff; font-size: 0.875rem; outline: none;
+      }
+      .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; }
+      .form-group select option { background: #1a1a1a; }
+      .form-group textarea { resize: vertical; min-height: 60px; }
+      .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+      .btn-save { padding: 0.55rem 1.25rem; background: #8b7355; color: #fff; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+      .btn-save:hover { background: #a68b6a; }
+      .btn-cancel { padding: 0.55rem 1rem; background: transparent; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+      .btn-cancel:hover { border-color: #4b5563; color: #fff; }
+
+      /* Keyword position badges */
+      .pos-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+      .pos-green { background: #14532d; color: #86efac; }
+      .pos-amber { background: #451a03; color: #fde68a; }
+      .pos-red { background: #450a0a; color: #fca5a5; }
+      .pos-none { background: #1a1a1a; color: #4b5563; }
+      .delta-up { color: #86efac; font-size: 0.75rem; }
+      .delta-down { color: #f87171; font-size: 0.75rem; }
+      .delta-same { color: #4b5563; font-size: 0.75rem; }
+
+      /* Conversion summary cards */
+      .conv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+      .conv-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 8px; padding: 1rem; }
+      .conv-card .c-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-bottom: 0.4rem; }
+      .conv-card .c-value { font-size: 1.75rem; font-weight: 600; color: #8b7355; }
+      .conv-card .c-sub { font-size: 0.7rem; color: #4b5563; margin-top: 0.2rem; }
+
+      /* Backlink status */
+      .bl-active { color: #86efac; }
+      .bl-lost { color: #f87171; }
+      tr.bl-lost-row td { background: #450a0a18; }
+
+      /* Change arrows */
+      .ch-up { color: #86efac; }
+      .ch-down { color: #f87171; }
+      .ch-neutral { color: #4b5563; }
+
+      /* Action buttons in table */
+      .tbl-btn { padding: 0.25rem 0.6rem; font-size: 0.75rem; border: 1px solid #2a2a2a; background: transparent; color: #9ca3af; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+      .tbl-btn:hover { border-color: #8b7355; color: #fff; }
+      .tbl-btn.del:hover { border-color: #f87171; color: #f87171; }
+      .tbl-actions { display: flex; gap: 0.4rem; }
+
+      /* Empty state */
+      .empty-state { text-align: center; padding: 2.5rem; color: #4b5563; font-size: 0.85rem; }
+      .loading-state { text-align: center; padding: 1.5rem; color: #4b5563; font-size: 0.85rem; }
+
+      /* Seed button */
+      .btn-seed { padding: 0.55rem 1.25rem; background: #1a1a1a; border: 1px solid #8b7355; border-radius: 6px; color: #8b7355; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+      .btn-seed:hover { background: #8b7355; color: #fff; }
+
+      @media (max-width: 640px) {
+        .dash-header { padding: 1rem; flex-wrap: wrap; gap: 0.75rem; }
+        .dash-body { padding: 1rem; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .cta-row { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- LOGIN GATE -->
+    <div id="login-section" class="login-wrap">
+      <div class="login-card">
+        <h1>Analytics Hub</h1>
+        <input type="password" id="admin-password" placeholder="Admin password" autocomplete="current-password" />
+        <p id="login-error" class="error-msg" style="display:none"></p>
+        <button class="btn-primary" id="login-btn">Enter</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" style="display:none">
+      <header class="dash-header">
+        <div>
+          <div class="logo">Troweled Earth Melbourne</div>
+          <h1>Performance Tracking &amp; Analytics Hub</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <nav class="dash-nav">
+            <a href="/admin/campaigns">Campaigns</a>
+            <a href="/admin/strategy">Strategy</a>
+            <a href="/admin/analytics" class="active">Analytics</a>
+          </nav>
+          <button class="btn-sm" id="logout-btn">Log out</button>
+        </div>
+      </header>
+
+      <div class="dash-body">
+
+        <!-- ── 1. GA4 + GSC INTEGRATION ──────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Google Integrations</div>
+          <div class="panel-header">
+            <h2>GA4 + Search Console Integration</h2>
+          </div>
+
+          <div class="cta-row">
+            <a href="https://analytics.google.com" target="_blank" rel="noopener" class="btn-google">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.545 10.239v3.821h5.445c-.712 2.315-2.647 3.972-5.445 3.972a6.033 6.033 0 110-12.064c1.498 0 2.866.549 3.921 1.453l2.814-2.814A9.969 9.969 0 0012.545 2C7.021 2 2.543 6.477 2.543 12s4.478 10 10.002 10c8.396 0 10.249-7.85 9.426-11.748l-9.426-.013z"/></svg>
+              Connect Google Analytics 4
+            </a>
+            <a href="https://search.google.com/search-console" target="_blank" rel="noopener" class="btn-google">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              Connect Search Console
+            </a>
+          </div>
+
+          <div class="looker-frame">
+            <div class="looker-overlay">
+              <h3>Connect your Looker Studio Report</h3>
+              <p>Embed a live GA4 + GSC Looker Studio report for real-time data visualisation.</p>
+              <div class="step">1. Open <strong>Looker Studio</strong> → create a report with GA4 + GSC data sources</div>
+              <div class="step" style="margin-top:0.35rem">2. Click File → Embed report → copy the embed URL</div>
+              <div class="step" style="margin-top:0.35rem">3. Paste the URL below and save to display your live report here</div>
+              <div style="display:flex;gap:0.5rem;margin-top:1rem">
+                <input id="looker-url-input" type="url" placeholder="https://lookerstudio.google.com/embed/reporting/..." style="flex:1;padding:0.55rem 0.75rem;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;color:#fff;font-size:0.8rem;outline:none" />
+                <button id="looker-save-btn" class="btn-sm" style="white-space:nowrap">Save &amp; Embed</button>
+              </div>
+            </div>
+          </div>
+          <div id="looker-embed" style="display:none;width:100%;height:500px;border-radius:8px;overflow:hidden">
+            <iframe id="looker-iframe" src="" style="width:100%;height:100%;border:none"></iframe>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card placeholder" id="ga-sessions-card">
+              <div class="s-label">Organic Sessions (this month)</div>
+              <div class="s-value">—</div>
+              <div class="s-sub">Connect GA4 to populate</div>
+            </div>
+            <div class="stat-card placeholder" id="ga-users-card">
+              <div class="s-label">Total Users (this month)</div>
+              <div class="s-value">—</div>
+              <div class="s-sub">Connect GA4 to populate</div>
+            </div>
+            <div class="stat-card placeholder" id="ga-bounce-card">
+              <div class="s-label">Bounce Rate</div>
+              <div class="s-value">—</div>
+              <div class="s-sub">Connect GA4 to populate</div>
+            </div>
+            <div class="stat-card placeholder" id="ga-ctr-card">
+              <div class="s-label">Avg. Click-Through Rate (GSC)</div>
+              <div class="s-value">—</div>
+              <div class="s-sub">Connect Search Console to populate</div>
+            </div>
+          </div>
+
+          <div style="margin-top:1.5rem">
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;margin-bottom:0.75rem">Top Landing Pages (GSC)</div>
+            <div class="empty-state" style="background:#0f0f0f;border:1px dashed #1a1a1a;border-radius:8px;padding:1.5rem">
+              Connect Google Search Console to view top landing pages, impressions, and clicks by URL.
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 2. SEO KPI TRACKER ─────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Manual Tracking</div>
+          <div class="panel-header">
+            <h2>SEO KPI Tracker</h2>
+            <button class="btn-sm" id="toggle-seo-form">+ Log Weekly Metrics</button>
+          </div>
+
+          <!-- Add/Edit Form -->
+          <div class="form-toggle" id="seo-form-wrap">
+            <div class="form-grid">
+              <input type="hidden" id="seo-edit-id" value="" />
+              <div class="form-group">
+                <label>Date *</label>
+                <input type="date" id="seo-date" />
+              </div>
+              <div class="form-group">
+                <label>Organic Sessions</label>
+                <input type="number" id="seo-sessions" min="0" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label>Total Users</label>
+                <input type="number" id="seo-users" min="0" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label>Impressions (GSC)</label>
+                <input type="number" id="seo-impressions" min="0" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label>Clicks (GSC)</label>
+                <input type="number" id="seo-clicks" min="0" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label>Avg CTR (%)</label>
+                <input type="number" id="seo-ctr" step="0.01" min="0" max="100" placeholder="0.00" />
+              </div>
+              <div class="form-group">
+                <label>Avg Position</label>
+                <input type="number" id="seo-position" step="0.1" min="0" placeholder="0.0" />
+              </div>
+              <div class="form-group">
+                <label>Total Backlinks</label>
+                <input type="number" id="seo-backlinks" min="0" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label>Referring Domains</label>
+                <input type="number" id="seo-referring" min="0" placeholder="0" />
+              </div>
+              <div class="form-group full">
+                <label>Notes</label>
+                <textarea id="seo-notes" placeholder="Key changes, events, observations..."></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-save" id="seo-save-btn">Save Entry</button>
+              <button class="btn-cancel" id="seo-cancel-btn">Cancel</button>
+            </div>
+            <p id="seo-form-error" style="color:#f87171;font-size:0.8rem;margin-top:0.5rem;display:none"></p>
+          </div>
+
+          <div id="seo-loading" class="loading-state">Loading metrics...</div>
+          <div id="seo-table-wrap" style="display:none">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Sessions</th>
+                    <th>Users</th>
+                    <th>Impressions</th>
+                    <th>Clicks</th>
+                    <th>CTR %</th>
+                    <th>Avg Pos</th>
+                    <th>Backlinks</th>
+                    <th>Ref Domains</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="seo-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="seo-empty" class="empty-state" style="display:none">No entries yet. Log your first weekly metrics above.</div>
+        </div>
+
+        <!-- ── 3. KEYWORD RANKINGS ────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Organic Search</div>
+          <div class="panel-header">
+            <h2>Keyword Rankings Tracker</h2>
+            <div style="display:flex;gap:0.5rem">
+              <button class="btn-seed" id="seed-keywords-btn" style="display:none">Seed TEM Keywords</button>
+              <button class="btn-sm" id="toggle-kw-form">+ Add Keyword</button>
+            </div>
+          </div>
+
+          <div class="form-toggle" id="kw-form-wrap">
+            <div class="form-grid">
+              <input type="hidden" id="kw-edit-id" value="" />
+              <div class="form-group" style="grid-column:span 2">
+                <label>Keyword *</label>
+                <input type="text" id="kw-keyword" placeholder="venetian plaster Melbourne" />
+              </div>
+              <div class="form-group">
+                <label>Current Position</label>
+                <input type="number" id="kw-current-pos" min="1" placeholder="—" />
+              </div>
+              <div class="form-group">
+                <label>Previous Position</label>
+                <input type="number" id="kw-prev-pos" min="1" placeholder="—" />
+              </div>
+              <div class="form-group">
+                <label>Search Volume / mo</label>
+                <input type="number" id="kw-volume" min="0" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label>Target Page URL</label>
+                <input type="text" id="kw-page" placeholder="https://..." />
+              </div>
+              <div class="form-group">
+                <label>Date Recorded</label>
+                <input type="date" id="kw-date" />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-save" id="kw-save-btn">Save Keyword</button>
+              <button class="btn-cancel" id="kw-cancel-btn">Cancel</button>
+            </div>
+            <p id="kw-form-error" style="color:#f87171;font-size:0.8rem;margin-top:0.5rem;display:none"></p>
+          </div>
+
+          <div id="kw-loading" class="loading-state">Loading keywords...</div>
+          <div id="kw-table-wrap" style="display:none">
+            <div style="display:flex;gap:1.5rem;margin-bottom:0.75rem;font-size:0.75rem;color:#6b7280">
+              <span><span class="pos-badge pos-green">1–9</span> Top 10</span>
+              <span><span class="pos-badge pos-amber">10–20</span> Page 1–2</span>
+              <span><span class="pos-badge pos-red">21+</span> Deep pages</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Keyword</th>
+                    <th>Current</th>
+                    <th>Previous</th>
+                    <th>Change</th>
+                    <th>Volume</th>
+                    <th>Target Page</th>
+                    <th>Updated</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="kw-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="kw-empty" class="empty-state" style="display:none">No keywords yet. Add your first keyword or seed TEM's default keyword set.</div>
+        </div>
+
+        <!-- ── 4. CONVERSION TRACKING ─────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Conversions</div>
+          <div class="panel-header">
+            <h2>Conversion Tracking</h2>
+            <button class="btn-sm" id="toggle-conv-form">+ Log Conversion</button>
+          </div>
+
+          <!-- Summary cards -->
+          <div class="conv-grid" id="conv-summary">
+            <div class="conv-card">
+              <div class="c-label">Quote Requests</div>
+              <div class="c-value" id="conv-quote">—</div>
+              <div class="c-sub">This month</div>
+            </div>
+            <div class="conv-card">
+              <div class="c-label">Course Sign-ups</div>
+              <div class="c-value" id="conv-course">—</div>
+              <div class="c-sub">This month</div>
+            </div>
+            <div class="conv-card">
+              <div class="c-label">Form Fills</div>
+              <div class="c-value" id="conv-form">—</div>
+              <div class="c-sub">This month</div>
+            </div>
+            <div class="conv-card">
+              <div class="c-label">Phone Calls</div>
+              <div class="c-value" id="conv-phone">—</div>
+              <div class="c-sub">This month</div>
+            </div>
+          </div>
+
+          <!-- Log Form -->
+          <div class="form-toggle" id="conv-form-wrap">
+            <div class="form-grid">
+              <input type="hidden" id="conv-edit-id" value="" />
+              <div class="form-group">
+                <label>Date *</label>
+                <input type="date" id="conv-date" />
+              </div>
+              <div class="form-group">
+                <label>Conversion Type *</label>
+                <select id="conv-type">
+                  <option value="">Select type…</option>
+                  <option value="quote_request">Quote Request</option>
+                  <option value="course_signup">Course Sign-up</option>
+                  <option value="form_fill">Form Fill</option>
+                  <option value="phone_call">Phone Call</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Count</label>
+                <input type="number" id="conv-count" min="1" value="1" />
+              </div>
+              <div class="form-group">
+                <label>Source</label>
+                <input type="text" id="conv-source" placeholder="google, instagram…" />
+              </div>
+              <div class="form-group">
+                <label>Medium</label>
+                <input type="text" id="conv-medium" placeholder="cpc, organic, email…" />
+              </div>
+              <div class="form-group">
+                <label>Campaign</label>
+                <input type="text" id="conv-campaign" placeholder="carbon-finish, melbourne-wall…" />
+              </div>
+              <div class="form-group full">
+                <label>Notes</label>
+                <textarea id="conv-notes" placeholder="Context, client name, project details..."></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-save" id="conv-save-btn">Log Conversion</button>
+              <button class="btn-cancel" id="conv-cancel-btn">Cancel</button>
+            </div>
+            <p id="conv-form-error" style="color:#f87171;font-size:0.8rem;margin-top:0.5rem;display:none"></p>
+          </div>
+
+          <div id="conv-loading" class="loading-state">Loading conversions...</div>
+          <div id="conv-table-wrap" style="display:none">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Count</th>
+                    <th>Source</th>
+                    <th>Medium</th>
+                    <th>Campaign</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="conv-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="conv-empty" class="empty-state" style="display:none">No conversions logged yet.</div>
+        </div>
+
+        <!-- ── 5. BACKLINK MONITOR ─────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Link Building</div>
+          <div class="panel-header">
+            <h2>Backlink Monitor</h2>
+            <button class="btn-sm" id="toggle-bl-form">+ Add Backlink</button>
+          </div>
+
+          <div class="form-toggle" id="bl-form-wrap">
+            <div class="form-grid">
+              <input type="hidden" id="bl-edit-id" value="" />
+              <div class="form-group">
+                <label>Domain *</label>
+                <input type="text" id="bl-domain" placeholder="architizer.com" />
+              </div>
+              <div class="form-group" style="grid-column:span 2">
+                <label>Page URL</label>
+                <input type="text" id="bl-url" placeholder="https://architizer.com/..." />
+              </div>
+              <div class="form-group">
+                <label>Anchor Text</label>
+                <input type="text" id="bl-anchor" placeholder="Troweled Earth Melbourne" />
+              </div>
+              <div class="form-group">
+                <label>First Seen</label>
+                <input type="date" id="bl-first-seen" />
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="bl-status">
+                  <option value="active">Active</option>
+                  <option value="lost">Lost</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label>Notes</label>
+                <textarea id="bl-notes" placeholder="How it was acquired, DA rating, etc."></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-save" id="bl-save-btn">Save Backlink</button>
+              <button class="btn-cancel" id="bl-cancel-btn">Cancel</button>
+            </div>
+            <p id="bl-form-error" style="color:#f87171;font-size:0.8rem;margin-top:0.5rem;display:none"></p>
+          </div>
+
+          <div id="bl-loading" class="loading-state">Loading backlinks...</div>
+          <div id="bl-table-wrap" style="display:none">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Domain</th>
+                    <th>Page URL</th>
+                    <th>Anchor Text</th>
+                    <th>First Seen</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="bl-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="bl-empty" class="empty-state" style="display:none">No backlinks tracked yet.</div>
+        </div>
+
+      </div><!-- /.dash-body -->
+    </div><!-- /#dashboard-section -->
+
+    <script define:vars={{ SB_URL, SB_KEY }}>
+      const ADMIN_PASSWORD = 'TEM-admin-2026!';
+      let pw = null;
+
+      // ── Auth ──────────────────────────────────────────────────────
+      const loginSection = document.getElementById('login-section');
+      const dashSection = document.getElementById('dashboard-section');
+      const loginError = document.getElementById('login-error');
+      const passwordInput = document.getElementById('admin-password');
+
+      const stored = sessionStorage.getItem('tem-admin-pw');
+      if (stored === ADMIN_PASSWORD) { pw = stored; showDash(); }
+
+      document.getElementById('login-btn').addEventListener('click', () => {
+        const val = passwordInput.value;
+        if (val === ADMIN_PASSWORD) {
+          pw = val;
+          sessionStorage.setItem('tem-admin-pw', val);
+          loginError.style.display = 'none';
+          showDash();
+        } else {
+          loginError.textContent = 'Invalid password';
+          loginError.style.display = 'block';
+        }
+      });
+      passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-btn').click(); });
+
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        pw = null;
+        sessionStorage.removeItem('tem-admin-pw');
+        loginSection.style.display = 'flex';
+        dashSection.style.display = 'none';
+      });
+
+      function showDash() {
+        loginSection.style.display = 'none';
+        dashSection.style.display = 'block';
+        initDashboard();
+      }
+
+      // ── Looker Studio embed ───────────────────────────────────────
+      const LOOKER_KEY = 'tem-looker-url';
+      const savedLooker = localStorage.getItem(LOOKER_KEY);
+      if (savedLooker) showLookerEmbed(savedLooker);
+
+      document.getElementById('looker-save-btn').addEventListener('click', () => {
+        const url = document.getElementById('looker-url-input').value.trim();
+        if (!url) return;
+        localStorage.setItem(LOOKER_KEY, url);
+        showLookerEmbed(url);
+      });
+
+      function showLookerEmbed(url) {
+        document.getElementById('looker-iframe').src = url;
+        document.getElementById('looker-embed').style.display = 'block';
+        document.getElementById('looker-url-input').value = url;
+      }
+
+      // ── Supabase helper ───────────────────────────────────────────
+      async function sbFetch(table, method = 'GET', query = '', body = null) {
+        const url = `${SB_URL}/rest/v1/${table}${query}`;
+        const headers = {
+          'apikey': SB_KEY,
+          'Authorization': `Bearer ${SB_KEY}`,
+          'Content-Type': 'application/json'
+        };
+        if (method === 'POST' || method === 'PATCH') {
+          headers['Prefer'] = 'return=representation';
+        }
+        const opts = { method, headers };
+        if (body) opts.body = JSON.stringify(body);
+        const res = await fetch(url, opts);
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt || `HTTP ${res.status}`);
+        }
+        if (res.status === 204 || method === 'DELETE') return null;
+        const text = await res.text();
+        return text ? JSON.parse(text) : null;
+      }
+
+      // ── Form toggle helper ────────────────────────────────────────
+      function toggleForm(formId, btnId) {
+        const form = document.getElementById(formId);
+        const btn = document.getElementById(btnId);
+        btn.addEventListener('click', () => {
+          const isOpen = form.classList.contains('open');
+          form.classList.toggle('open', !isOpen);
+          btn.textContent = isOpen ? '+ ' + btn.textContent.replace(/^[-+] /, '') : '− ' + btn.textContent.replace(/^[-+] /, '');
+        });
+      }
+
+      function closeForm(formId, btnId, originalLabel) {
+        const form = document.getElementById(formId);
+        const btn = document.getElementById(btnId);
+        form.classList.remove('open');
+        btn.textContent = '+ ' + originalLabel;
+      }
+
+      // ── Init Dashboard ────────────────────────────────────────────
+      function initDashboard() {
+        toggleForm('seo-form-wrap', 'toggle-seo-form');
+        toggleForm('kw-form-wrap', 'toggle-kw-form');
+        toggleForm('conv-form-wrap', 'toggle-conv-form');
+        toggleForm('bl-form-wrap', 'toggle-bl-form');
+
+        loadSeoMetrics();
+        loadKeywords();
+        loadConversions();
+        loadBacklinks();
+      }
+
+      // ────────────────────────────────────────────────────────────
+      // SEO METRICS
+      // ────────────────────────────────────────────────────────────
+      let seoEditId = null;
+
+      document.getElementById('seo-save-btn').addEventListener('click', saveSeoMetric);
+      document.getElementById('seo-cancel-btn').addEventListener('click', () => {
+        resetSeoForm();
+        closeForm('seo-form-wrap', 'toggle-seo-form', 'Log Weekly Metrics');
+      });
+
+      async function loadSeoMetrics() {
+        show('seo-loading'); hide('seo-table-wrap'); hide('seo-empty');
+        try {
+          const rows = await sbFetch('seo_metrics', 'GET', '?select=*&order=recorded_date.desc&limit=12');
+          hide('seo-loading');
+          if (!rows || rows.length === 0) { show('seo-empty'); return; }
+          renderSeoTable(rows);
+          show('seo-table-wrap');
+        } catch(e) {
+          hide('seo-loading');
+          document.getElementById('seo-tbody').innerHTML = `<tr><td colspan="11" style="color:#f87171;padding:1rem">${e.message}</td></tr>`;
+          show('seo-table-wrap');
+        }
+      }
+
+      function renderSeoTable(rows) {
+        const tbody = document.getElementById('seo-tbody');
+        tbody.innerHTML = rows.map((row, i) => {
+          const prev = rows[i + 1];
+          return `<tr>
+            <td style="color:#e5e7eb;white-space:nowrap">${row.recorded_date}</td>
+            <td>${fmtNum(row.organic_sessions)}${changeBadge(row.organic_sessions, prev?.organic_sessions, true)}</td>
+            <td>${fmtNum(row.total_users)}${changeBadge(row.total_users, prev?.total_users, true)}</td>
+            <td>${fmtNum(row.impressions)}${changeBadge(row.impressions, prev?.impressions, true)}</td>
+            <td>${fmtNum(row.clicks)}${changeBadge(row.clicks, prev?.clicks, true)}</td>
+            <td>${row.avg_ctr != null ? row.avg_ctr.toFixed(2) + '%' : '—'}${changeBadge(row.avg_ctr, prev?.avg_ctr, true)}</td>
+            <td>${row.avg_position != null ? row.avg_position.toFixed(1) : '—'}${changeBadge(row.avg_position, prev?.avg_position, false)}</td>
+            <td>${fmtNum(row.backlinks_total)}${changeBadge(row.backlinks_total, prev?.backlinks_total, true)}</td>
+            <td>${fmtNum(row.referring_domains)}${changeBadge(row.referring_domains, prev?.referring_domains, true)}</td>
+            <td style="color:#6b7280;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(row.notes || '')}">${row.notes || '—'}</td>
+            <td>
+              <div class="tbl-actions">
+                <button class="tbl-btn seo-edit-btn" data-id="${row.id}">Edit</button>
+                <button class="tbl-btn del seo-del-btn" data-id="${row.id}">Del</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+
+        tbody.querySelectorAll('.seo-edit-btn').forEach(btn => btn.addEventListener('click', () => editSeoMetric(btn.dataset.id, rows)));
+        tbody.querySelectorAll('.seo-del-btn').forEach(btn => btn.addEventListener('click', () => deleteSeoMetric(btn.dataset.id)));
+      }
+
+      function changeBadge(curr, prev, higherBetter) {
+        if (curr == null || prev == null) return '';
+        const diff = curr - prev;
+        if (diff === 0) return ' <span class="ch-neutral">→</span>';
+        const isGood = higherBetter ? diff > 0 : diff < 0;
+        const pct = prev !== 0 ? Math.abs((diff / prev) * 100).toFixed(0) : '';
+        const arrow = diff > 0 ? '▲' : '▼';
+        const cls = isGood ? 'ch-up' : 'ch-down';
+        return ` <span class="${cls}">${arrow}${pct ? pct + '%' : ''}</span>`;
+      }
+
+      function editSeoMetric(id, rows) {
+        const row = rows.find(r => r.id === id);
+        if (!row) return;
+        seoEditId = id;
+        setVal('seo-date', row.recorded_date);
+        setVal('seo-sessions', row.organic_sessions);
+        setVal('seo-users', row.total_users);
+        setVal('seo-impressions', row.impressions);
+        setVal('seo-clicks', row.clicks);
+        setVal('seo-ctr', row.avg_ctr);
+        setVal('seo-position', row.avg_position);
+        setVal('seo-backlinks', row.backlinks_total);
+        setVal('seo-referring', row.referring_domains);
+        setVal('seo-notes', row.notes);
+        document.getElementById('seo-form-wrap').classList.add('open');
+        document.getElementById('seo-save-btn').textContent = 'Update Entry';
+      }
+
+      async function deleteSeoMetric(id) {
+        if (!confirm('Delete this entry?')) return;
+        try {
+          await sbFetch('seo_metrics', 'DELETE', `?id=eq.${id}`);
+          loadSeoMetrics();
+        } catch(e) { alert(e.message); }
+      }
+
+      async function saveSeoMetric() {
+        const date = getVal('seo-date');
+        if (!date) { showErr('seo-form-error', 'Date is required'); return; }
+        hideErr('seo-form-error');
+
+        const payload = {
+          recorded_date: date,
+          organic_sessions: numOrNull('seo-sessions'),
+          total_users: numOrNull('seo-users'),
+          impressions: numOrNull('seo-impressions'),
+          clicks: numOrNull('seo-clicks'),
+          avg_ctr: floatOrNull('seo-ctr'),
+          avg_position: floatOrNull('seo-position'),
+          backlinks_total: numOrNull('seo-backlinks'),
+          referring_domains: numOrNull('seo-referring'),
+          notes: getVal('seo-notes') || null
+        };
+
+        try {
+          if (seoEditId) {
+            await sbFetch('seo_metrics', 'PATCH', `?id=eq.${seoEditId}`, payload);
+          } else {
+            await sbFetch('seo_metrics', 'POST', '', payload);
+          }
+          resetSeoForm();
+          closeForm('seo-form-wrap', 'toggle-seo-form', 'Log Weekly Metrics');
+          loadSeoMetrics();
+        } catch(e) { showErr('seo-form-error', e.message); }
+      }
+
+      function resetSeoForm() {
+        seoEditId = null;
+        ['seo-date','seo-sessions','seo-users','seo-impressions','seo-clicks','seo-ctr','seo-position','seo-backlinks','seo-referring','seo-notes'].forEach(id => setVal(id, ''));
+        document.getElementById('seo-save-btn').textContent = 'Save Entry';
+      }
+
+      // ────────────────────────────────────────────────────────────
+      // KEYWORD RANKINGS
+      // ────────────────────────────────────────────────────────────
+      const TEM_KEYWORDS = [
+        'venetian plaster Melbourne', 'decorative plaster Melbourne', 'natural render Melbourne',
+        'hemp render Melbourne', 'lime plaster Melbourne', 'marbellino plaster',
+        'concretum finish', 'plaster feature wall Melbourne', 'bathroom plaster finishes Melbourne',
+        'carbon negative render Australia', 'earthen hemp render', 'troweled earth Melbourne'
+      ];
+
+      let kwEditId = null;
+
+      document.getElementById('kw-save-btn').addEventListener('click', saveKeyword);
+      document.getElementById('kw-cancel-btn').addEventListener('click', () => {
+        resetKwForm();
+        closeForm('kw-form-wrap', 'toggle-kw-form', 'Add Keyword');
+      });
+      document.getElementById('seed-keywords-btn').addEventListener('click', seedKeywords);
+
+      async function loadKeywords() {
+        show('kw-loading'); hide('kw-table-wrap'); hide('kw-empty');
+        try {
+          const rows = await sbFetch('keyword_rankings', 'GET', '?select=*&order=current_position.asc.nullslast,keyword.asc');
+          hide('kw-loading');
+          if (!rows || rows.length === 0) {
+            show('kw-empty');
+            document.getElementById('seed-keywords-btn').style.display = 'inline-block';
+            return;
+          }
+          document.getElementById('seed-keywords-btn').style.display = 'none';
+          renderKwTable(rows);
+          show('kw-table-wrap');
+        } catch(e) {
+          hide('kw-loading');
+          document.getElementById('kw-tbody').innerHTML = `<tr><td colspan="8" style="color:#f87171;padding:1rem">${e.message}</td></tr>`;
+          show('kw-table-wrap');
+        }
+      }
+
+      function renderKwTable(rows) {
+        const tbody = document.getElementById('kw-tbody');
+        tbody.innerHTML = rows.map(row => {
+          const pos = row.current_position;
+          let posCls = 'pos-none';
+          if (pos != null) {
+            if (pos <= 9) posCls = 'pos-green';
+            else if (pos <= 20) posCls = 'pos-amber';
+            else posCls = 'pos-red';
+          }
+
+          let deltaTxt = '';
+          const cur = row.current_position;
+          const prv = row.previous_position;
+          if (cur != null && prv != null) {
+            const d = prv - cur; // positive = improved (lower number = better)
+            if (d > 0) deltaTxt = `<span class="delta-up">▲ ${d}</span>`;
+            else if (d < 0) deltaTxt = `<span class="delta-down">▼ ${Math.abs(d)}</span>`;
+            else deltaTxt = `<span class="delta-same">—</span>`;
+          }
+
+          const pageDisplay = row.target_page ? `<a href="${esc(row.target_page)}" target="_blank" rel="noopener" style="color:#8b7355;font-size:0.75rem;white-space:nowrap;overflow:hidden;display:block;max-width:140px;text-overflow:ellipsis">${esc(row.target_page.replace(/^https?:\/\/[^/]+/, ''))}</a>` : '—';
+
+          return `<tr>
+            <td style="color:#e5e7eb;font-weight:500">${esc(row.keyword)}</td>
+            <td><span class="pos-badge ${posCls}">${pos ?? '—'}</span></td>
+            <td style="color:#6b7280">${row.previous_position ?? '—'}</td>
+            <td>${deltaTxt}</td>
+            <td style="color:#9ca3af">${row.search_volume != null ? row.search_volume.toLocaleString() : '—'}</td>
+            <td>${pageDisplay}</td>
+            <td style="color:#4b5563;white-space:nowrap;font-size:0.75rem">${row.recorded_date ?? '—'}</td>
+            <td>
+              <div class="tbl-actions">
+                <button class="tbl-btn kw-edit-btn" data-id="${row.id}">Edit</button>
+                <button class="tbl-btn del kw-del-btn" data-id="${row.id}">Del</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+
+        tbody.querySelectorAll('.kw-edit-btn').forEach(btn => btn.addEventListener('click', () => editKeyword(btn.dataset.id, rows)));
+        tbody.querySelectorAll('.kw-del-btn').forEach(btn => btn.addEventListener('click', () => deleteKeyword(btn.dataset.id)));
+      }
+
+      function editKeyword(id, rows) {
+        const row = rows.find(r => r.id === id);
+        if (!row) return;
+        kwEditId = id;
+        setVal('kw-keyword', row.keyword);
+        setVal('kw-current-pos', row.current_position);
+        setVal('kw-prev-pos', row.previous_position);
+        setVal('kw-volume', row.search_volume);
+        setVal('kw-page', row.target_page);
+        setVal('kw-date', row.recorded_date);
+        document.getElementById('kw-form-wrap').classList.add('open');
+        document.getElementById('kw-save-btn').textContent = 'Update Keyword';
+      }
+
+      async function deleteKeyword(id) {
+        if (!confirm('Delete this keyword?')) return;
+        try {
+          await sbFetch('keyword_rankings', 'DELETE', `?id=eq.${id}`);
+          loadKeywords();
+        } catch(e) { alert(e.message); }
+      }
+
+      async function saveKeyword() {
+        const keyword = getVal('kw-keyword');
+        if (!keyword) { showErr('kw-form-error', 'Keyword is required'); return; }
+        hideErr('kw-form-error');
+
+        const payload = {
+          keyword,
+          current_position: numOrNull('kw-current-pos'),
+          previous_position: numOrNull('kw-prev-pos'),
+          search_volume: numOrNull('kw-volume'),
+          target_page: getVal('kw-page') || null,
+          recorded_date: getVal('kw-date') || null
+        };
+
+        try {
+          if (kwEditId) {
+            await sbFetch('keyword_rankings', 'PATCH', `?id=eq.${kwEditId}`, payload);
+          } else {
+            await sbFetch('keyword_rankings', 'POST', '', payload);
+          }
+          resetKwForm();
+          closeForm('kw-form-wrap', 'toggle-kw-form', 'Add Keyword');
+          loadKeywords();
+        } catch(e) { showErr('kw-form-error', e.message); }
+      }
+
+      function resetKwForm() {
+        kwEditId = null;
+        ['kw-keyword','kw-current-pos','kw-prev-pos','kw-volume','kw-page','kw-date'].forEach(id => setVal(id, ''));
+        document.getElementById('kw-save-btn').textContent = 'Save Keyword';
+      }
+
+      async function seedKeywords() {
+        const today = new Date().toISOString().slice(0, 10);
+        const rows = TEM_KEYWORDS.map(k => ({ keyword: k, recorded_date: today }));
+        try {
+          document.getElementById('seed-keywords-btn').textContent = 'Seeding...';
+          for (const row of rows) {
+            await sbFetch('keyword_rankings', 'POST', '', row);
+          }
+          loadKeywords();
+        } catch(e) {
+          alert('Seed error: ' + e.message);
+          document.getElementById('seed-keywords-btn').textContent = 'Seed TEM Keywords';
+        }
+      }
+
+      // ────────────────────────────────────────────────────────────
+      // CONVERSIONS
+      // ────────────────────────────────────────────────────────────
+      let convEditId = null;
+
+      document.getElementById('conv-save-btn').addEventListener('click', saveConversion);
+      document.getElementById('conv-cancel-btn').addEventListener('click', () => {
+        resetConvForm();
+        closeForm('conv-form-wrap', 'toggle-conv-form', 'Log Conversion');
+      });
+
+      async function loadConversions() {
+        show('conv-loading'); hide('conv-table-wrap'); hide('conv-empty');
+        try {
+          const rows = await sbFetch('conversions', 'GET', '?select=*&order=date.desc&limit=100');
+          hide('conv-loading');
+
+          // Summary cards for current month
+          const thisMonth = new Date().toISOString().slice(0, 7);
+          const monthRows = (rows || []).filter(r => r.date && r.date.slice(0, 7) === thisMonth);
+          const sumByType = type => monthRows.filter(r => r.conversion_type === type).reduce((s, r) => s + (r.count || 1), 0);
+          document.getElementById('conv-quote').textContent = sumByType('quote_request');
+          document.getElementById('conv-course').textContent = sumByType('course_signup');
+          document.getElementById('conv-form').textContent = sumByType('form_fill');
+          document.getElementById('conv-phone').textContent = sumByType('phone_call');
+
+          if (!rows || rows.length === 0) { show('conv-empty'); return; }
+          renderConvTable(rows);
+          show('conv-table-wrap');
+        } catch(e) {
+          hide('conv-loading');
+          document.getElementById('conv-tbody').innerHTML = `<tr><td colspan="8" style="color:#f87171;padding:1rem">${e.message}</td></tr>`;
+          show('conv-table-wrap');
+        }
+      }
+
+      const CONV_LABELS = { quote_request: 'Quote Request', course_signup: 'Course Sign-up', form_fill: 'Form Fill', phone_call: 'Phone Call' };
+
+      function renderConvTable(rows) {
+        const tbody = document.getElementById('conv-tbody');
+        tbody.innerHTML = rows.map(row => `<tr>
+          <td style="white-space:nowrap;color:#e5e7eb">${row.date}</td>
+          <td><span style="padding:0.2rem 0.5rem;border-radius:4px;background:#1a1a1a;border:1px solid #2a2a2a;font-size:0.75rem;color:#8b7355">${CONV_LABELS[row.conversion_type] || row.conversion_type}</span></td>
+          <td style="font-weight:600;color:#e5e7eb">${row.count ?? 1}</td>
+          <td style="color:#9ca3af">${row.source || '—'}</td>
+          <td style="color:#9ca3af">${row.medium || '—'}</td>
+          <td style="color:#9ca3af">${row.campaign || '—'}</td>
+          <td style="color:#6b7280;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(row.notes || '')}">${row.notes || '—'}</td>
+          <td>
+            <div class="tbl-actions">
+              <button class="tbl-btn conv-edit-btn" data-id="${row.id}">Edit</button>
+              <button class="tbl-btn del conv-del-btn" data-id="${row.id}">Del</button>
+            </div>
+          </td>
+        </tr>`).join('');
+
+        tbody.querySelectorAll('.conv-edit-btn').forEach(btn => btn.addEventListener('click', () => editConversion(btn.dataset.id, rows)));
+        tbody.querySelectorAll('.conv-del-btn').forEach(btn => btn.addEventListener('click', () => deleteConversion(btn.dataset.id)));
+      }
+
+      function editConversion(id, rows) {
+        const row = rows.find(r => r.id === id);
+        if (!row) return;
+        convEditId = id;
+        setVal('conv-date', row.date);
+        setVal('conv-type', row.conversion_type);
+        setVal('conv-count', row.count);
+        setVal('conv-source', row.source);
+        setVal('conv-medium', row.medium);
+        setVal('conv-campaign', row.campaign);
+        setVal('conv-notes', row.notes);
+        document.getElementById('conv-form-wrap').classList.add('open');
+        document.getElementById('conv-save-btn').textContent = 'Update Conversion';
+      }
+
+      async function deleteConversion(id) {
+        if (!confirm('Delete this conversion entry?')) return;
+        try {
+          await sbFetch('conversions', 'DELETE', `?id=eq.${id}`);
+          loadConversions();
+        } catch(e) { alert(e.message); }
+      }
+
+      async function saveConversion() {
+        const date = getVal('conv-date');
+        const type = getVal('conv-type');
+        if (!date || !type) { showErr('conv-form-error', 'Date and type are required'); return; }
+        hideErr('conv-form-error');
+
+        const payload = {
+          date,
+          conversion_type: type,
+          count: numOrNull('conv-count') ?? 1,
+          source: getVal('conv-source') || null,
+          medium: getVal('conv-medium') || null,
+          campaign: getVal('conv-campaign') || null,
+          notes: getVal('conv-notes') || null
+        };
+
+        try {
+          if (convEditId) {
+            await sbFetch('conversions', 'PATCH', `?id=eq.${convEditId}`, payload);
+          } else {
+            await sbFetch('conversions', 'POST', '', payload);
+          }
+          resetConvForm();
+          closeForm('conv-form-wrap', 'toggle-conv-form', 'Log Conversion');
+          loadConversions();
+        } catch(e) { showErr('conv-form-error', e.message); }
+      }
+
+      function resetConvForm() {
+        convEditId = null;
+        ['conv-date','conv-type','conv-source','conv-medium','conv-campaign','conv-notes'].forEach(id => setVal(id, ''));
+        setVal('conv-count', '1');
+        document.getElementById('conv-save-btn').textContent = 'Log Conversion';
+      }
+
+      // ────────────────────────────────────────────────────────────
+      // BACKLINKS
+      // ────────────────────────────────────────────────────────────
+      let blEditId = null;
+
+      document.getElementById('bl-save-btn').addEventListener('click', saveBacklink);
+      document.getElementById('bl-cancel-btn').addEventListener('click', () => {
+        resetBlForm();
+        closeForm('bl-form-wrap', 'toggle-bl-form', 'Add Backlink');
+      });
+
+      async function loadBacklinks() {
+        show('bl-loading'); hide('bl-table-wrap'); hide('bl-empty');
+        try {
+          const rows = await sbFetch('backlinks', 'GET', '?select=*&order=first_seen.desc');
+          hide('bl-loading');
+          if (!rows || rows.length === 0) { show('bl-empty'); return; }
+          renderBlTable(rows);
+          show('bl-table-wrap');
+        } catch(e) {
+          hide('bl-loading');
+          document.getElementById('bl-tbody').innerHTML = `<tr><td colspan="7" style="color:#f87171;padding:1rem">${e.message}</td></tr>`;
+          show('bl-table-wrap');
+        }
+      }
+
+      function renderBlTable(rows) {
+        const tbody = document.getElementById('bl-tbody');
+        tbody.innerHTML = rows.map(row => {
+          const isLost = row.status === 'lost';
+          return `<tr class="${isLost ? 'bl-lost-row' : ''}">
+            <td style="font-weight:500;color:#e5e7eb">${esc(row.domain)}</td>
+            <td style="max-width:180px;overflow:hidden"><a href="${esc(row.page_url || '#')}" target="_blank" rel="noopener" style="color:#8b7355;font-size:0.8rem;word-break:break-all">${esc(row.page_url || '—')}</a></td>
+            <td style="color:#9ca3af;font-style:italic">${esc(row.anchor_text || '—')}</td>
+            <td style="color:#6b7280;white-space:nowrap">${row.first_seen || '—'}</td>
+            <td><span class="${isLost ? 'bl-lost' : 'bl-active'}" style="font-weight:500">${row.status}</span></td>
+            <td style="color:#6b7280;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(row.notes || '')}">${row.notes || '—'}</td>
+            <td>
+              <div class="tbl-actions">
+                <button class="tbl-btn bl-edit-btn" data-id="${row.id}">Edit</button>
+                <button class="tbl-btn del bl-del-btn" data-id="${row.id}">Del</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+
+        tbody.querySelectorAll('.bl-edit-btn').forEach(btn => btn.addEventListener('click', () => editBacklink(btn.dataset.id, rows)));
+        tbody.querySelectorAll('.bl-del-btn').forEach(btn => btn.addEventListener('click', () => deleteBacklink(btn.dataset.id)));
+      }
+
+      function editBacklink(id, rows) {
+        const row = rows.find(r => r.id === id);
+        if (!row) return;
+        blEditId = id;
+        setVal('bl-domain', row.domain);
+        setVal('bl-url', row.page_url);
+        setVal('bl-anchor', row.anchor_text);
+        setVal('bl-first-seen', row.first_seen);
+        setVal('bl-status', row.status);
+        setVal('bl-notes', row.notes);
+        document.getElementById('bl-form-wrap').classList.add('open');
+        document.getElementById('bl-save-btn').textContent = 'Update Backlink';
+      }
+
+      async function deleteBacklink(id) {
+        if (!confirm('Delete this backlink?')) return;
+        try {
+          await sbFetch('backlinks', 'DELETE', `?id=eq.${id}`);
+          loadBacklinks();
+        } catch(e) { alert(e.message); }
+      }
+
+      async function saveBacklink() {
+        const domain = getVal('bl-domain');
+        if (!domain) { showErr('bl-form-error', 'Domain is required'); return; }
+        hideErr('bl-form-error');
+
+        const payload = {
+          domain,
+          page_url: getVal('bl-url') || null,
+          anchor_text: getVal('bl-anchor') || null,
+          first_seen: getVal('bl-first-seen') || null,
+          status: getVal('bl-status') || 'active',
+          notes: getVal('bl-notes') || null
+        };
+
+        try {
+          if (blEditId) {
+            await sbFetch('backlinks', 'PATCH', `?id=eq.${blEditId}`, payload);
+          } else {
+            await sbFetch('backlinks', 'POST', '', payload);
+          }
+          resetBlForm();
+          closeForm('bl-form-wrap', 'toggle-bl-form', 'Add Backlink');
+          loadBacklinks();
+        } catch(e) { showErr('bl-form-error', e.message); }
+      }
+
+      function resetBlForm() {
+        blEditId = null;
+        ['bl-domain','bl-url','bl-anchor','bl-first-seen','bl-notes'].forEach(id => setVal(id, ''));
+        setVal('bl-status', 'active');
+        document.getElementById('bl-save-btn').textContent = 'Save Backlink';
+      }
+
+      // ── Utilities ─────────────────────────────────────────────────
+      function show(id) { const el = document.getElementById(id); if (el) el.style.display = el.tagName === 'DIV' || el.tagName === 'TABLE' || el.tagName === 'THEAD' || el.tagName === 'TBODY' ? 'block' : 'flex'; }
+      function hide(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+      function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+      function setVal(id, val) { const el = document.getElementById(id); if (el) el.value = val ?? ''; }
+      function numOrNull(id) { const v = getVal(id); return v !== '' ? parseInt(v, 10) : null; }
+      function floatOrNull(id) { const v = getVal(id); return v !== '' ? parseFloat(v) : null; }
+      function showErr(id, msg) { const el = document.getElementById(id); if (el) { el.textContent = msg; el.style.display = 'block'; } }
+      function hideErr(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+      function fmtNum(n) { return n != null ? Number(n).toLocaleString() : '—'; }
+      function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    </script>
+
+  </body>
+</html>
