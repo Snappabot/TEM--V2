@@ -1,0 +1,1045 @@
+---
+export const prerender = false;
+---
+
+<!--
+  SQL MIGRATIONS — run in Supabase SQL editor before using this page:
+
+  create table if not exists content_pages (
+    id uuid primary key default gen_random_uuid(),
+    type text not null check (type in ('pillar','cluster')),
+    pillar_id uuid references content_pages(id) on delete cascade,
+    title text not null,
+    target_keyword text,
+    status text not null default 'Draft' check (status in ('Draft','In Progress','Published','Optimising')),
+    page_url text,
+    word_count int,
+    published_date date,
+    last_updated date,
+    notes text,
+    created_at timestamptz default now()
+  );
+
+  create table if not exists content_calendar (
+    id uuid primary key default gen_random_uuid(),
+    title text not null,
+    content_type text not null check (content_type in ('blog','reel','case_study','pr_release','social','email')),
+    channel text,
+    publish_date date not null,
+    status text not null default 'planned' check (status in ('planned','in_progress','review','published')),
+    assigned_to text,
+    notes text,
+    campaign_id text,
+    created_at timestamptz default now()
+  );
+
+  create table if not exists content_topics (
+    id uuid primary key default gen_random_uuid(),
+    question text not null,
+    intent text not null check (intent in ('informational','commercial','navigational')),
+    source text not null check (source in ('GSC','customer','competitor','manual')),
+    priority text not null default 'medium' check (priority in ('high','medium','low')),
+    assigned_to_content_id uuid,
+    notes text,
+    created_at timestamptz default now()
+  );
+-->
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Content Strategy Hub | Troweled Earth</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+      input, select, textarea { font-family: inherit; }
+
+      /* Login */
+      .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+      .login-card { width: 100%; max-width: 380px; }
+      .login-card h1 { font-size: 1.75rem; font-weight: 300; text-align: center; margin-bottom: 2rem; color: #fff; }
+      .login-card input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; }
+      .login-card input:focus { border-color: #8b7355; }
+      .btn-primary { display: block; width: 100%; padding: 0.875rem; margin-top: 0.75rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+      .btn-primary:hover { background: #a68b6a; }
+      .error-msg { color: #f87171; font-size: 0.8rem; margin-top: 0.5rem; }
+
+      /* Header */
+      .dash-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; border-bottom: 1px solid #1a1a1a; flex-wrap: wrap; gap: 0.75rem; }
+      .dash-header h1 { font-size: 1.25rem; font-weight: 400; }
+      .dash-header .logo { color: #8b7355; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; }
+      .dash-nav { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+      .dash-nav a { padding: 0.4rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; text-decoration: none; transition: all 0.2s; }
+      .dash-nav a:hover { border-color: #8b7355; color: #fff; }
+      .dash-nav a.active { border-color: #8b7355; color: #8b7355; }
+      .btn-sm { padding: 0.5rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+      .btn-sm:hover { border-color: #8b7355; color: #fff; }
+
+      .dash-body { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+      /* Panels */
+      .panel { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem; }
+      .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+      .panel-header h2 { font-size: 1rem; font-weight: 500; color: #e5e7eb; }
+      .section-heading { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: #8b7355; margin-bottom: 0.5rem; }
+
+      /* Forms */
+      .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+      .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+      .form-group.full { grid-column: 1 / -1; }
+      .form-group label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em; }
+      .form-group input, .form-group select, .form-group textarea { padding: 0.6rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none; }
+      .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; }
+      .form-group select option { background: #1a1a1a; }
+      .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+      .btn-add { padding: 0.5rem 1.25rem; background: #8b7355; border: none; border-radius: 6px; color: #fff; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+      .btn-add:hover { background: #a68b6a; }
+
+      /* Badges */
+      .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.65rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+      .badge-draft { background: #1a1a1a; color: #9ca3af; border: 1px solid #2a2a2a; }
+      .badge-in-progress { background: #1e3a5f; color: #93c5fd; }
+      .badge-published { background: #14532d; color: #86efac; }
+      .badge-optimising { background: #3a1a00; color: #fbbf24; }
+
+      /* Pillar/Cluster tree */
+      .pillar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.5rem; }
+      .pillar-card { background: #0f0f0f; border: 1px solid #8b7355; border-radius: 10px; overflow: hidden; }
+      .pillar-card-header { padding: 1.25rem; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+      .pillar-card-header:hover { background: #111; }
+      .pillar-icon { width: 2rem; height: 2rem; background: #8b735520; border: 1px solid #8b7355; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #8b7355; flex-shrink: 0; }
+      .pillar-info { flex: 1; }
+      .pillar-title { font-size: 0.95rem; font-weight: 600; color: #e5e7eb; }
+      .pillar-keyword { font-size: 0.75rem; color: #8b7355; margin-top: 0.2rem; font-style: italic; }
+      .pillar-meta { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; }
+      .pillar-chevron { font-size: 0.75rem; color: #4b5563; transition: transform 0.25s; flex-shrink: 0; }
+      .pillar-card.open .pillar-chevron { transform: rotate(180deg); }
+      .pillar-detail { display: none; border-top: 1px solid #1a1a1a; }
+      .pillar-card.open .pillar-detail { display: block; }
+      .pillar-fields { padding: 1rem 1.25rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; background: #111; }
+      .field-group { display: flex; flex-direction: column; gap: 0.3rem; }
+      .field-group label { font-size: 0.65rem; color: #4b5563; text-transform: uppercase; letter-spacing: 0.08em; }
+      .field-group input, .field-group select, .field-group textarea { padding: 0.45rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 5px; color: #fff; font-size: 0.82rem; outline: none; }
+      .field-group input:focus, .field-group select:focus, .field-group textarea:focus { border-color: #8b7355; }
+      .field-group.span2 { grid-column: 1 / -1; }
+      .cluster-list { padding: 0.75rem 1.25rem 1.25rem; background: #0f0f0f; }
+      .cluster-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #4b5563; margin-bottom: 0.75rem; }
+      .cluster-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.875rem; background: #111; border: 1px solid #1a1a1a; border-radius: 6px; margin-bottom: 0.5rem; cursor: pointer; transition: border-color 0.2s; }
+      .cluster-item:hover { border-color: #2a2a2a; }
+      .cluster-item.open { border-color: #8b735540; }
+      .cluster-dot { width: 6px; height: 6px; border-radius: 50%; background: #8b7355; flex-shrink: 0; }
+      .cluster-title { font-size: 0.85rem; color: #d1d5db; flex: 1; }
+      .cluster-expand { display: none; padding: 0.75rem 0.875rem 0.875rem; background: #0a0a0a; border: 1px solid #1a1a1a; border-top: none; border-radius: 0 0 6px 6px; margin-top: -0.5rem; margin-bottom: 0.5rem; }
+      .cluster-item.open + .cluster-expand { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+      .save-btn { padding: 0.3rem 0.75rem; background: #8b7355; border: none; border-radius: 4px; color: #fff; font-size: 0.75rem; cursor: pointer; margin-top: 0.5rem; }
+      .save-btn:hover { background: #a68b6a; }
+
+      /* Calendar */
+      .cal-nav { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+      .cal-nav button { padding: 0.35rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 5px; color: #9ca3af; cursor: pointer; font-size: 0.85rem; }
+      .cal-nav button:hover { border-color: #8b7355; color: #fff; }
+      .cal-month-title { font-size: 1rem; font-weight: 500; color: #e5e7eb; min-width: 160px; text-align: center; }
+      .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #1a1a1a; border: 1px solid #1a1a1a; border-radius: 8px; overflow: hidden; }
+      .cal-day-header { background: #0f0f0f; padding: 0.5rem; text-align: center; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; }
+      .cal-day { background: #0a0a0a; min-height: 90px; padding: 0.4rem; vertical-align: top; }
+      .cal-day.other-month { background: #080808; }
+      .cal-day.today { background: #0f1a0f; }
+      .cal-date { font-size: 0.7rem; color: #6b7280; margin-bottom: 0.3rem; }
+      .cal-day.today .cal-date { color: #86efac; font-weight: 600; }
+      .cal-item { margin-bottom: 2px; padding: 0.15rem 0.35rem; border-radius: 3px; font-size: 0.65rem; line-height: 1.3; cursor: pointer; }
+      .cal-item.blog { background: #1e3a5f; color: #93c5fd; }
+      .cal-item.reel { background: #3a1a3a; color: #d8b4fe; }
+      .cal-item.case_study { background: #14532d; color: #86efac; }
+      .cal-item.pr_release { background: #3a2a00; color: #fde68a; }
+      .cal-item.social { background: #1a3a3a; color: #67e8f9; }
+      .cal-item.email { background: #3a1a1a; color: #fca5a5; }
+      .cal-summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; padding: 0.875rem 1rem; background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 8px; }
+      .cal-sum-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; }
+      .cal-sum-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+      .cal-sum-dot.blog { background: #93c5fd; }
+      .cal-sum-dot.reel { background: #d8b4fe; }
+      .cal-sum-dot.case_study { background: #86efac; }
+      .cal-sum-dot.pr_release { background: #fde68a; }
+      .cal-sum-dot.social { background: #67e8f9; }
+      .cal-sum-dot.email { background: #fca5a5; }
+
+      /* Modal */
+      .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+      .modal { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+      .modal h3 { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; color: #e5e7eb; }
+      .modal-close { float: right; background: none; border: none; color: #6b7280; font-size: 1.25rem; cursor: pointer; line-height: 1; }
+
+      /* Checklists */
+      .checklist { display: flex; flex-direction: column; gap: 0.5rem; }
+      .check-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem 1rem; background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 6px; cursor: pointer; transition: border-color 0.2s; }
+      .check-item:hover { border-color: #2a2a2a; }
+      .check-item.checked { border-color: #14532d; background: #0a150a; }
+      .check-box { width: 18px; height: 18px; border: 1.5px solid #2a2a2a; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; transition: all 0.15s; }
+      .check-item.checked .check-box { background: #14532d; border-color: #14532d; }
+      .check-tick { display: none; color: #86efac; font-size: 0.7rem; }
+      .check-item.checked .check-tick { display: block; }
+      .check-text { font-size: 0.85rem; color: #9ca3af; line-height: 1.5; }
+      .check-item.checked .check-text { color: #4b5563; text-decoration: line-through; }
+      .checklist-progress { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+      .progress-bar { flex: 1; height: 4px; background: #1a1a1a; border-radius: 2px; overflow: hidden; }
+      .progress-fill { height: 100%; background: #8b7355; border-radius: 2px; transition: width 0.3s; }
+      .progress-label { font-size: 0.75rem; color: #6b7280; white-space: nowrap; }
+
+      /* Topics table */
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+      thead tr { border-bottom: 1px solid #1a1a1a; }
+      th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; white-space: nowrap; }
+      td { padding: 0.75rem 1rem; border-bottom: 1px solid #111; vertical-align: middle; }
+      tr:hover td { background: #0f0f0f; }
+      .badge-high { background: #3a0a0a; color: #fca5a5; border: 1px solid #7f1d1d; }
+      .badge-medium { background: #1e3a5f; color: #93c5fd; border: 1px solid #1e3a5f; }
+      .badge-low { background: #1a1a1a; color: #6b7280; border: 1px solid #2a2a2a; }
+      .badge-info { background: #14532d; color: #86efac; }
+      .badge-commercial { background: #3a1a00; color: #fbbf24; }
+      .badge-nav { background: #1a3a3a; color: #67e8f9; }
+      .empty-state { text-align: center; padding: 3rem; color: #4b5563; }
+      .filter-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+      .filter-btn { padding: 0.3rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 999px; color: #9ca3af; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
+      .filter-btn.active { border-color: #8b7355; color: #8b7355; }
+
+      @media (max-width: 640px) {
+        .dash-header { padding: 1rem; }
+        .dash-body { padding: 1rem; }
+        .pillar-grid { grid-template-columns: 1fr; }
+        .cal-grid { grid-template-columns: repeat(7, minmax(40px, 1fr)); font-size: 0.6rem; }
+        .cal-day { min-height: 60px; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- LOGIN GATE -->
+    <div id="login-section" class="login-wrap">
+      <div class="login-card">
+        <h1>Content Strategy Hub</h1>
+        <input type="password" id="admin-password" placeholder="Admin password" autocomplete="current-password" />
+        <p id="login-error" class="error-msg" style="display:none"></p>
+        <button class="btn-primary" id="login-btn">Enter</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" style="display:none">
+      <header class="dash-header">
+        <div>
+          <div class="logo">Troweled Earth Melbourne</div>
+          <h1>Content Strategy Hub</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+          <nav class="dash-nav">
+            <a href="/admin/campaigns">Campaigns</a>
+            <a href="/admin/strategy">Strategy</a>
+            <a href="/admin/content" class="active">Content</a>
+            <a href="/admin/links">Links</a>
+          </nav>
+          <button class="btn-sm" id="logout-btn">Log out</button>
+        </div>
+      </header>
+
+      <div class="dash-body">
+
+        <!-- ── 1. PILLAR & CLUSTER MAP ─────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Content Architecture</div>
+          <div class="panel-header">
+            <h2>Pillar &amp; Cluster Content Map</h2>
+            <button class="btn-sm" id="save-all-btn">Save All Changes</button>
+          </div>
+          <div class="pillar-grid" id="pillar-grid">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- ── 2. CONTENT CALENDAR ────────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Editorial Planning</div>
+          <div class="panel-header">
+            <h2>Content Calendar</h2>
+            <button class="btn-sm" id="add-cal-btn">+ Add Item</button>
+          </div>
+          <div class="cal-nav">
+            <button id="cal-prev">&#8592;</button>
+            <div class="cal-month-title" id="cal-title"></div>
+            <button id="cal-next">&#8594;</button>
+          </div>
+          <div class="cal-grid" id="cal-grid">
+            <!-- Rendered by JS -->
+          </div>
+          <div class="cal-summary" id="cal-summary"></div>
+        </div>
+
+        <!-- ── 3. E-E-A-T CHECKLIST ──────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Trust Signals</div>
+          <div class="panel-header">
+            <h2>E-E-A-T Checklist</h2>
+          </div>
+          <div class="checklist-progress">
+            <div class="progress-bar"><div class="progress-fill" id="eeat-fill" style="width:0%"></div></div>
+            <div class="progress-label" id="eeat-label">0 / 10</div>
+          </div>
+          <div class="checklist" id="eeat-list"></div>
+        </div>
+
+        <!-- ── 4. AI SEARCH CHECKLIST ────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">GEO / AIO</div>
+          <div class="panel-header">
+            <h2>AI Search Optimisation Checklist</h2>
+          </div>
+          <div class="checklist-progress">
+            <div class="progress-bar"><div class="progress-fill" id="aio-fill" style="width:0%"></div></div>
+            <div class="progress-label" id="aio-label">0 / 10</div>
+          </div>
+          <div class="checklist" id="aio-list"></div>
+        </div>
+
+        <!-- ── 5. TOPIC RESEARCH BANK ─────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Keyword Research</div>
+          <div class="panel-header">
+            <h2>Topic Research Bank</h2>
+            <button class="btn-sm" id="add-topic-btn">+ Add Topic</button>
+          </div>
+          <div class="filter-row" id="topic-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="high">High Priority</button>
+            <button class="filter-btn" data-filter="informational">Informational</button>
+            <button class="filter-btn" data-filter="commercial">Commercial</button>
+            <button class="filter-btn" data-filter="navigational">Navigational</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th>Intent</th>
+                  <th>Source</th>
+                  <th>Priority</th>
+                  <th>Assigned</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="topics-tbody"></tbody>
+            </table>
+          </div>
+          <div id="topics-empty" class="empty-state" style="display:none">No topics yet. Add some research questions above.</div>
+        </div>
+
+      </div><!-- /dash-body -->
+    </div><!-- /dashboard-section -->
+
+    <!-- CALENDAR ADD MODAL -->
+    <div id="cal-modal" class="modal-overlay" style="display:none">
+      <div class="modal">
+        <button class="modal-close" id="cal-modal-close">&#215;</button>
+        <h3 id="cal-modal-title">Add Calendar Item</h3>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Title</label>
+            <input id="cm-title" type="text" placeholder="Content title" />
+          </div>
+          <div class="form-group">
+            <label>Content Type</label>
+            <select id="cm-type">
+              <option value="blog">Blog Post</option>
+              <option value="reel">Instagram Reel</option>
+              <option value="case_study">Case Study</option>
+              <option value="pr_release">PR Release</option>
+              <option value="social">Social Post</option>
+              <option value="email">Email Newsletter</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Channel</label>
+            <input id="cm-channel" type="text" placeholder="e.g. Instagram, Blog" />
+          </div>
+          <div class="form-group">
+            <label>Publish Date</label>
+            <input id="cm-date" type="date" />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="cm-status">
+              <option value="planned">Planned</option>
+              <option value="in_progress">In Progress</option>
+              <option value="review">Review</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Assigned To</label>
+            <input id="cm-assigned" type="text" placeholder="e.g. Matt" />
+          </div>
+          <div class="form-group full">
+            <label>Notes</label>
+            <textarea id="cm-notes" rows="2" placeholder="Optional notes..."></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-add" id="cm-save">Save Item</button>
+          <button class="btn-sm" id="cm-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPIC ADD MODAL -->
+    <div id="topic-modal" class="modal-overlay" style="display:none">
+      <div class="modal">
+        <button class="modal-close" id="topic-modal-close">&#215;</button>
+        <h3>Add Topic</h3>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Question</label>
+            <textarea id="tm-question" rows="2" placeholder="Research question..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Intent</label>
+            <select id="tm-intent">
+              <option value="informational">Informational</option>
+              <option value="commercial">Commercial</option>
+              <option value="navigational">Navigational</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Source</label>
+            <select id="tm-source">
+              <option value="manual">Manual</option>
+              <option value="GSC">GSC</option>
+              <option value="customer">Customer</option>
+              <option value="competitor">Competitor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="tm-priority">
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label>Notes</label>
+            <textarea id="tm-notes" rows="2" placeholder="Optional notes..."></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-add" id="tm-save">Save Topic</button>
+          <button class="btn-sm" id="tm-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    const SUPABASE_URL = 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdHhib2hqanBraHpod2xucnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDgzMjEsImV4cCI6MjA4NjYyNDMyMX0.UWgOz-9ZAy0xxVH-VTTysFzvrbD1CX0a459rNC391Hw';
+    const ADMIN_PW = 'TEM-admin-2026!';
+
+    async function sbFetch(path, opts = {}) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': opts.prefer || 'return=representation',
+          ...opts.headers
+        },
+        ...opts
+      });
+      if (!res.ok && res.status !== 204) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || res.statusText);
+      }
+      return res.status === 204 ? null : res.json();
+    }
+
+    // ── AUTH ──────────────────────────────────────────────────────────
+    const loginSection = document.getElementById('login-section');
+    const dashSection  = document.getElementById('dashboard-section');
+    const pwInput      = document.getElementById('admin-password');
+    const loginErr     = document.getElementById('login-error');
+
+    function unlock() {
+      loginSection.style.display = 'none';
+      dashSection.style.display  = 'block';
+      initAll();
+    }
+
+    const stored = sessionStorage.getItem('tem-admin-pw');
+    if (stored === ADMIN_PW) unlock();
+
+    document.getElementById('login-btn').addEventListener('click', () => {
+      if (pwInput.value === ADMIN_PW) {
+        sessionStorage.setItem('tem-admin-pw', pwInput.value);
+        loginErr.style.display = 'none';
+        unlock();
+      } else {
+        loginErr.textContent = 'Incorrect password.';
+        loginErr.style.display = 'block';
+      }
+    });
+    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-btn').click(); });
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      sessionStorage.removeItem('tem-admin-pw');
+      location.reload();
+    });
+
+    // ── PILLAR DATA ──────────────────────────────────────────────────
+    const PILLAR_DATA = [
+      {
+        num: 1, title: 'Natural Plaster Finishes Melbourne', keyword: 'natural plaster finishes melbourne',
+        clusters: [
+          'Hemp Render Melbourne',
+          'Venetian Plaster for Bathrooms Melbourne',
+          'Lime Plaster for Period Homes Melbourne',
+          'Natural Render for Passive Houses',
+          'Marbellino Plaster Guide',
+          'Decorative Plaster vs Microcement'
+        ]
+      },
+      {
+        num: 2, title: 'Carbon-Negative Building Materials Australia', keyword: 'carbon-negative building materials australia',
+        clusters: [
+          'Hemp Lime Render Carbon Sequestration',
+          'Sustainable Wall Finishes Melbourne',
+          'Low Embodied Energy Renders',
+          'Hemp Render vs Cement Render: Environmental Comparison',
+          'Net Zero Renovation Guide Melbourne'
+        ]
+      },
+      {
+        num: 3, title: 'Plaster Training & Certification', keyword: 'plaster training certification melbourne',
+        clusters: [
+          'Decorative Plaster Courses Melbourne',
+          'How to Become a Certified Applicator',
+          'Earthen Hemp Render Training',
+          'Marbellino Plaster Technique Guide',
+          'Tadelakt Moroccan Plaster Workshop'
+        ]
+      }
+    ];
+
+    // ── INIT ──────────────────────────────────────────────────────────
+    let contentPages = [];
+    let calendarItems = [];
+    let topics = [];
+    let calYear, calMonth;
+
+    async function initAll() {
+      const now = new Date();
+      calYear = now.getFullYear();
+      calMonth = now.getMonth();
+
+      try {
+        contentPages = await sbFetch('content_pages?order=created_at.asc') || [];
+      } catch(e) { contentPages = []; }
+
+      try {
+        calendarItems = await sbFetch('content_calendar?order=publish_date.asc') || [];
+      } catch(e) { calendarItems = []; }
+
+      try {
+        topics = await sbFetch('content_topics?order=created_at.asc') || [];
+        if (topics.length === 0) await seedTopics();
+      } catch(e) { topics = []; }
+
+      renderPillars();
+      renderCalendar();
+      initChecklists();
+      renderTopics();
+    }
+
+    // ── PILLARS ───────────────────────────────────────────────────────
+    function getPageData(title, type) {
+      return contentPages.find(p => p.title === title && p.type === type) || {};
+    }
+
+    function statusBadge(status) {
+      const map = { 'Draft':'badge-draft','In Progress':'badge-in-progress','Published':'badge-published','Optimising':'badge-optimising' };
+      return `<span class="badge ${map[status] || 'badge-draft'}">${status || 'Draft'}</span>`;
+    }
+
+    function renderPillars() {
+      const grid = document.getElementById('pillar-grid');
+      grid.innerHTML = PILLAR_DATA.map(p => {
+        const pg = getPageData(p.title, 'pillar');
+        const status = pg.status || 'Draft';
+        return `
+        <div class="pillar-card" id="pillar-${p.num}">
+          <div class="pillar-card-header" onclick="togglePillar(${p.num})">
+            <div class="pillar-icon">P${p.num}</div>
+            <div class="pillar-info">
+              <div class="pillar-title">${p.title}</div>
+              <div class="pillar-keyword">${p.keyword}</div>
+              <div class="pillar-meta">${statusBadge(status)}<span style="font-size:0.7rem;color:#4b5563">${p.clusters.length} clusters</span></div>
+            </div>
+            <div class="pillar-chevron">&#9660;</div>
+          </div>
+          <div class="pillar-detail">
+            <div class="pillar-fields">
+              <div class="field-group">
+                <label>Status</label>
+                <select id="p${p.num}-status" onchange="updatePillarBadge(${p.num})">
+                  ${['Draft','In Progress','Published','Optimising'].map(s => `<option value="${s}" ${status===s?'selected':''}>${s}</option>`).join('')}
+                </select>
+              </div>
+              <div class="field-group">
+                <label>Word Count</label>
+                <input type="number" id="p${p.num}-wc" value="${pg.word_count||''}" placeholder="0" />
+              </div>
+              <div class="field-group span2">
+                <label>Page URL</label>
+                <input type="text" id="p${p.num}-url" value="${pg.page_url||''}" placeholder="/natural-plaster-finishes-melbourne" />
+              </div>
+              <div class="field-group span2">
+                <label>Notes</label>
+                <textarea id="p${p.num}-notes" rows="2" placeholder="Internal notes...">${pg.notes||''}</textarea>
+              </div>
+            </div>
+            <div class="cluster-list">
+              <div class="cluster-label">Cluster Pages (${p.clusters.length})</div>
+              ${p.clusters.map((c,i) => {
+                const cpg = getPageData(c, 'cluster');
+                const cs = cpg.status || 'Draft';
+                return `
+                <div class="cluster-item" id="ci-${p.num}-${i}" onclick="toggleCluster(${p.num},${i})">
+                  <div class="cluster-dot"></div>
+                  <div class="cluster-title">${c}</div>
+                  ${statusBadge(cs)}
+                  <div style="font-size:0.65rem;color:#4b5563;margin-left:auto">&#9660;</div>
+                </div>
+                <div class="cluster-expand" id="ce-${p.num}-${i}">
+                  <div class="field-group">
+                    <label>Status</label>
+                    <select id="c${p.num}-${i}-status">
+                      ${['Draft','In Progress','Published','Optimising'].map(s => `<option value="${s}" ${cs===s?'selected':''}>${s}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label>Word Count</label>
+                    <input type="number" id="c${p.num}-${i}-wc" value="${cpg.word_count||''}" placeholder="0" />
+                  </div>
+                  <div class="field-group span2">
+                    <label>Page URL</label>
+                    <input type="text" id="c${p.num}-${i}-url" value="${cpg.page_url||''}" placeholder="/cluster-page-url" />
+                  </div>
+                  <div class="field-group span2">
+                    <label>Notes</label>
+                    <input type="text" id="c${p.num}-${i}-notes" value="${cpg.notes||''}" placeholder="Notes..." />
+                  </div>
+                  <div style="grid-column:1/-1"><button class="save-btn" onclick="saveCluster(event,${p.num},${i},'${c.replace(/'/g,"\\'")}')">Save</button></div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function togglePillar(n) {
+      document.getElementById(`pillar-${n}`).classList.toggle('open');
+    }
+
+    function toggleCluster(p, i) {
+      const item = document.getElementById(`ci-${p}-${i}`);
+      const exp  = document.getElementById(`ce-${p}-${i}`);
+      item.classList.toggle('open');
+      exp.style.display = item.classList.contains('open') ? 'grid' : 'none';
+    }
+
+    function updatePillarBadge(n) {}
+
+    async function saveCluster(e, p, i, title) {
+      e.stopPropagation();
+      const status   = document.getElementById(`c${p}-${i}-status`).value;
+      const word_count = parseInt(document.getElementById(`c${p}-${i}-wc`).value) || null;
+      const page_url = document.getElementById(`c${p}-${i}-url`).value;
+      const notes    = document.getElementById(`c${p}-${i}-notes`).value;
+      const existing = getPageData(title, 'cluster');
+      try {
+        if (existing.id) {
+          await sbFetch(`content_pages?id=eq.${existing.id}`, { method: 'PATCH', body: JSON.stringify({ status, word_count, page_url, notes, last_updated: new Date().toISOString().split('T')[0] }) });
+        } else {
+          const rows = await sbFetch('content_pages', { method: 'POST', body: JSON.stringify({ type: 'cluster', title, target_keyword: title.toLowerCase(), status, word_count, page_url, notes }) });
+          if (rows && rows[0]) contentPages.push(rows[0]);
+        }
+      } catch(err) { alert('Save failed: ' + err.message); }
+    }
+
+    document.getElementById('save-all-btn').addEventListener('click', async () => {
+      for (const p of PILLAR_DATA) {
+        const status     = document.getElementById(`p${p.num}-status`).value;
+        const word_count = parseInt(document.getElementById(`p${p.num}-wc`).value) || null;
+        const page_url   = document.getElementById(`p${p.num}-url`).value;
+        const notes      = document.getElementById(`p${p.num}-notes`).value;
+        const existing   = getPageData(p.title, 'pillar');
+        try {
+          if (existing.id) {
+            await sbFetch(`content_pages?id=eq.${existing.id}`, { method: 'PATCH', body: JSON.stringify({ status, word_count, page_url, notes, last_updated: new Date().toISOString().split('T')[0] }) });
+          } else {
+            const rows = await sbFetch('content_pages', { method: 'POST', body: JSON.stringify({ type: 'pillar', title: p.title, target_keyword: p.keyword, status, word_count, page_url, notes }) });
+            if (rows && rows[0]) contentPages.push(rows[0]);
+          }
+        } catch(err) { console.error(err); }
+      }
+      alert('Saved!');
+    });
+
+    // ── CALENDAR ──────────────────────────────────────────────────────
+    const TYPE_LABELS = { blog:'Blog', reel:'Reel', case_study:'Case Study', pr_release:'PR Release', social:'Social', email:'Email' };
+    const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    // Seed calendar: 8-week launch starting from next Monday
+    function getNextMonday() {
+      const d = new Date();
+      const day = d.getDay();
+      const diff = day === 0 ? 1 : (8 - day) % 7 || 7;
+      d.setDate(d.getDate() + diff);
+      d.setHours(0,0,0,0);
+      return d;
+    }
+
+    function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+    function fmt(d) { return d.toISOString().split('T')[0]; }
+
+    async function seedCalendar() {
+      const w1 = getNextMonday();
+      const seed = [
+        { title: 'Ultimate Guide to Natural Plaster Finishes in Melbourne', content_type:'blog',     channel:'Blog',      publish_date: fmt(w1),         status:'planned', assigned_to:'Matt' },
+        { title: 'Carbon finish explainer',                                  content_type:'reel',     channel:'Instagram', publish_date: fmt(addDays(w1,3)),status:'planned', assigned_to:'Matt' },
+        { title: 'Hemp Render Carbon Sequestration: The Science',            content_type:'blog',     channel:'Blog',      publish_date: fmt(addDays(w1,7)),status:'planned', assigned_to:'Matt' },
+        { title: 'World Environment Day pitch draft',                         content_type:'pr_release',channel:'PR',      publish_date: fmt(addDays(w1,10)),status:'planned', assigned_to:'Matt' },
+        { title: 'Case Study: Recent Toorak project (hemp render)',          content_type:'case_study',channel:'Website',  publish_date: fmt(addDays(w1,14)),status:'planned', assigned_to:'Matt' },
+        { title: 'Before/after Marbellino project',                          content_type:'reel',     channel:'Instagram', publish_date: fmt(addDays(w1,17)),status:'planned', assigned_to:'Matt' },
+        { title: 'Venetian Plaster for Melbourne Bathrooms',                 content_type:'blog',     channel:'Blog',      publish_date: fmt(addDays(w1,21)),status:'planned', assigned_to:'Matt' },
+        { title: 'Q1 project round-up',                                      content_type:'email',    channel:'Email',     publish_date: fmt(addDays(w1,24)),status:'planned', assigned_to:'Matt' },
+        { title: 'Passive House Renders: Why Hemp Lime Wins',                content_type:'blog',     channel:'Blog',      publish_date: fmt(addDays(w1,28)),status:'planned', assigned_to:'Matt' },
+        { title: 'Application technique video',                              content_type:'reel',     channel:'Instagram', publish_date: fmt(addDays(w1,31)),status:'planned', assigned_to:'Matt' },
+        { title: 'Decorative Plaster vs Microcement: Which to Choose?',     content_type:'blog',     channel:'Blog',      publish_date: fmt(addDays(w1,35)),status:'planned', assigned_to:'Matt' },
+        { title: 'Carbon data stats',                                        content_type:'social',   channel:'LinkedIn',  publish_date: fmt(addDays(w1,38)),status:'planned', assigned_to:'Matt' },
+        { title: 'Case Study: Brunswick renovation',                         content_type:'case_study',channel:'Website',  publish_date: fmt(addDays(w1,42)),status:'planned', assigned_to:'Matt' },
+        { title: 'Natural Render in VIC: 2026 Guide',                       content_type:'blog',     channel:'Blog',      publish_date: fmt(addDays(w1,45)),status:'planned', assigned_to:'Matt' },
+        { title: 'DesignBUILD Expo preview',                                 content_type:'pr_release',channel:'PR',      publish_date: fmt(addDays(w1,49)),status:'planned', assigned_to:'Matt' },
+        { title: 'Earthian applicator recruitment',                          content_type:'email',    channel:'Email',     publish_date: fmt(addDays(w1,52)),status:'planned', assigned_to:'Matt' },
+      ];
+      try {
+        const rows = await sbFetch('content_calendar', { method: 'POST', body: JSON.stringify(seed) });
+        if (rows) calendarItems = rows;
+      } catch(e) { calendarItems = seed.map((s,i) => ({ ...s, id: 'seed-'+i })); }
+    }
+
+    function renderCalendar() {
+      const title = document.getElementById('cal-title');
+      const grid  = document.getElementById('cal-grid');
+      const sumEl = document.getElementById('cal-summary');
+
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      title.textContent = `${monthNames[calMonth]} ${calYear}`;
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+      const today = new Date();
+      const todayStr = fmt(today);
+
+      let html = DAYS.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+
+      for (let i = 0; i < firstDay; i++) {
+        const prevDate = new Date(calYear, calMonth, -firstDay + i + 1);
+        html += `<div class="cal-day other-month"><div class="cal-date">${prevDate.getDate()}</div></div>`;
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isToday = dateStr === todayStr;
+        const dayItems = calendarItems.filter(it => it.publish_date === dateStr);
+        html += `<div class="cal-day${isToday?' today':''}">
+          <div class="cal-date">${d}</div>
+          ${dayItems.map(it => `<div class="cal-item ${it.content_type}" title="${it.title}">${it.title.length > 22 ? it.title.slice(0,22)+'…' : it.title}</div>`).join('')}
+        </div>`;
+      }
+
+      const totalCells = firstDay + daysInMonth;
+      const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+      for (let i = 1; i <= remaining; i++) {
+        html += `<div class="cal-day other-month"><div class="cal-date">${i}</div></div>`;
+      }
+
+      grid.innerHTML = html;
+
+      // Summary
+      const monthItems = calendarItems.filter(it => {
+        const d = new Date(it.publish_date);
+        return d.getFullYear() === calYear && d.getMonth() === calMonth;
+      });
+      const counts = {};
+      monthItems.forEach(it => { counts[it.content_type] = (counts[it.content_type]||0)+1; });
+      sumEl.innerHTML = Object.entries(counts).length
+        ? Object.entries(counts).map(([type, cnt]) =>
+            `<div class="cal-sum-item"><div class="cal-sum-dot ${type}"></div><span style="color:#9ca3af">${TYPE_LABELS[type]||type}:</span><strong>${cnt}</strong></div>`
+          ).join('')
+        : '<span style="color:#4b5563;font-size:0.8rem">No items this month.</span>';
+    }
+
+    document.getElementById('cal-prev').addEventListener('click', () => {
+      calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar();
+    });
+    document.getElementById('cal-next').addEventListener('click', () => {
+      calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar();
+    });
+
+    // Calendar modal
+    const calModal = document.getElementById('cal-modal');
+    document.getElementById('add-cal-btn').addEventListener('click', () => { calModal.style.display = 'flex'; });
+    document.getElementById('cal-modal-close').addEventListener('click', () => { calModal.style.display = 'none'; });
+    document.getElementById('cm-cancel').addEventListener('click', () => { calModal.style.display = 'none'; });
+
+    document.getElementById('cm-save').addEventListener('click', async () => {
+      const item = {
+        title:        document.getElementById('cm-title').value.trim(),
+        content_type: document.getElementById('cm-type').value,
+        channel:      document.getElementById('cm-channel').value,
+        publish_date: document.getElementById('cm-date').value,
+        status:       document.getElementById('cm-status').value,
+        assigned_to:  document.getElementById('cm-assigned').value,
+        notes:        document.getElementById('cm-notes').value,
+      };
+      if (!item.title || !item.publish_date) return alert('Title and date required.');
+      try {
+        const rows = await sbFetch('content_calendar', { method: 'POST', body: JSON.stringify([item]) });
+        if (rows && rows[0]) calendarItems.push(rows[0]);
+        else calendarItems.push({ ...item, id: 'local-'+Date.now() });
+      } catch(e) { calendarItems.push({ ...item, id: 'local-'+Date.now() }); }
+      calModal.style.display = 'none';
+      renderCalendar();
+    });
+
+    // ── CHECKLISTS ────────────────────────────────────────────────────
+    const EEAT_ITEMS = [
+      'Author bio page created (Matt / Jarrad listed as experts)',
+      'Author bio linked from all blog posts',
+      'Carbon sequestration claims cite peer-reviewed sources',
+      'Hemp render CO\u2082 data sourced and linked (IEA/CSIRO/peer review)',
+      'Original project data published (sq metres completed, CO\u2082 stored estimates)',
+      'Business registered with Google Business Profile',
+      'Awards/accreditations mentioned on About page',
+      'Customer testimonials with full names on website',
+      '"As seen in" press mentions section (if any earned)',
+      'Wikipedia/Wikidata brand entity created (future)'
+    ];
+
+    const AIO_ITEMS = [
+      'Featured snippet targets identified (question-format H2s in blog posts)',
+      '"People Also Ask" questions embedded as H2/H3 in content',
+      'Direct, 40\u201360 word answer paragraph under each question (snippet bait)',
+      'FAQ schema on all blog posts and product pages',
+      'Hemp render page has direct answer: \u201cWhat is hemp render?\u201d above the fold',
+      'Carbon claims page answers: \u201cIs hemp render carbon negative?\u201d directly',
+      'AI Overview optimisation: structured intro paragraphs on all pages',
+      'llms.txt kept current with new pages \u2713',
+      'Brand mentioned consistently as \u201cTroweled Earth Melbourne\u201d (entity signal)',
+      'NAP consistent across homepage, footer, GBP, ArchiPro, Houzz'
+    ];
+
+    function initChecklists() {
+      renderChecklist('eeat', EEAT_ITEMS, 'eeat-fill', 'eeat-label');
+      renderChecklist('aio', AIO_ITEMS, 'aio-fill', 'aio-label');
+      // Pre-check llms.txt item (index 7 in AIO)
+      const aioKey = 'check-aio-7';
+      if (!localStorage.getItem(aioKey)) { localStorage.setItem(aioKey, '1'); }
+      refreshChecklist('aio', AIO_ITEMS, 'aio-fill', 'aio-label');
+    }
+
+    function renderChecklist(prefix, items, fillId, labelId) {
+      const list = document.getElementById(`${prefix}-list`);
+      list.innerHTML = items.map((text, i) => {
+        const checked = !!localStorage.getItem(`check-${prefix}-${i}`);
+        return `<div class="check-item${checked?' checked':''}" onclick="toggleCheck('${prefix}',${i},${items.length},'${fillId}','${labelId}')">
+          <div class="check-box"><span class="check-tick">&#10003;</span></div>
+          <div class="check-text">${text}</div>
+        </div>`;
+      }).join('');
+      updateProgress(prefix, items.length, fillId, labelId);
+    }
+
+    function refreshChecklist(prefix, items, fillId, labelId) {
+      const list = document.getElementById(`${prefix}-list`);
+      items.forEach((_, i) => {
+        const el = list.children[i];
+        if (!el) return;
+        const checked = !!localStorage.getItem(`check-${prefix}-${i}`);
+        el.classList.toggle('checked', checked);
+      });
+      updateProgress(prefix, items.length, fillId, labelId);
+    }
+
+    function toggleCheck(prefix, i, total, fillId, labelId) {
+      const key = `check-${prefix}-${i}`;
+      if (localStorage.getItem(key)) localStorage.removeItem(key);
+      else localStorage.setItem(key, '1');
+      const list = document.getElementById(`${prefix}-list`);
+      const el = list.children[i];
+      if (el) el.classList.toggle('checked', !!localStorage.getItem(key));
+      updateProgress(prefix, total, fillId, labelId);
+    }
+
+    function updateProgress(prefix, total, fillId, labelId) {
+      let done = 0;
+      for (let i = 0; i < total; i++) { if (localStorage.getItem(`check-${prefix}-${i}`)) done++; }
+      document.getElementById(fillId).style.width = `${(done/total)*100}%`;
+      document.getElementById(labelId).textContent = `${done} / ${total}`;
+    }
+
+    // ── TOPICS ────────────────────────────────────────────────────────
+    const SEED_TOPICS = [
+      { question: 'What is the best natural plaster finish for Melbourne homes?',   intent:'commercial',    source:'manual', priority:'high' },
+      { question: 'Is hemp render better than cement render?',                       intent:'informational', source:'manual', priority:'high' },
+      { question: 'How much does venetian plaster cost in Melbourne?',               intent:'commercial',    source:'manual', priority:'high' },
+      { question: 'What is marbellino plaster?',                                     intent:'informational', source:'manual', priority:'medium' },
+      { question: 'Can you use hemp render in a bathroom?',                          intent:'informational', source:'manual', priority:'medium' },
+      { question: 'What is carbon sequestering render?',                             intent:'informational', source:'manual', priority:'high' },
+      { question: 'How do I find a certified natural plaster applicator in Melbourne?', intent:'navigational', source:'manual', priority:'high' },
+      { question: 'What is the difference between lime render and cement render?',   intent:'informational', source:'manual', priority:'medium' },
+      { question: 'Is tadelakt suitable for Australian bathrooms?',                  intent:'informational', source:'manual', priority:'medium' },
+      { question: 'How long does decorative plaster last?',                          intent:'informational', source:'manual', priority:'medium' },
+      { question: 'What is the most breathable wall render?',                        intent:'informational', source:'manual', priority:'medium' },
+      { question: 'Can hemp render be used in new builds in Australia?',             intent:'informational', source:'manual', priority:'high' },
+      { question: 'What does NCC 2022 say about wall renders?',                      intent:'informational', source:'manual', priority:'medium' },
+      { question: 'How do I maintain venetian plaster walls?',                       intent:'informational', source:'manual', priority:'low' },
+      { question: 'What plaster finishes are best for passive houses?',              intent:'commercial',    source:'manual', priority:'high' },
+      { question: 'How much CO\u2082 does hemp render sequester?',                   intent:'informational', source:'manual', priority:'high' },
+      { question: 'What is concretum finish?',                                       intent:'informational', source:'manual', priority:'low' },
+      { question: 'How do I choose between microcement and plaster?',                intent:'commercial',    source:'manual', priority:'medium' },
+      { question: 'Where can I see hemp render examples in Melbourne?',              intent:'navigational',  source:'manual', priority:'medium' },
+      { question: 'What training is available for natural plaster finishes?',        intent:'commercial',    source:'manual', priority:'medium' },
+    ];
+
+    async function seedTopics() {
+      try {
+        const rows = await sbFetch('content_topics', { method: 'POST', body: JSON.stringify(SEED_TOPICS) });
+        topics = rows || SEED_TOPICS.map((s,i) => ({ ...s, id: 'seed-'+i }));
+      } catch(e) { topics = SEED_TOPICS.map((s,i) => ({ ...s, id: 'seed-'+i })); }
+    }
+
+    let topicFilter = 'all';
+    function renderTopics() {
+      const tbody = document.getElementById('topics-tbody');
+      const empty = document.getElementById('topics-empty');
+      let filtered = topics;
+      if (topicFilter === 'high') filtered = topics.filter(t => t.priority === 'high');
+      else if (['informational','commercial','navigational'].includes(topicFilter)) {
+        filtered = topics.filter(t => t.intent === topicFilter);
+      }
+
+      const intentBadge = i => {
+        const map = { informational:'badge-info', commercial:'badge-commercial', navigational:'badge-nav' };
+        return `<span class="badge ${map[i]||'badge-draft'}">${i}</span>`;
+      };
+      const prioBadge = p => {
+        const map = { high:'badge-high', medium:'badge-medium', low:'badge-low' };
+        return `<span class="badge ${map[p]||'badge-draft'}">${p}</span>`;
+      };
+
+      if (!filtered.length) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      tbody.innerHTML = filtered.map(t => `
+        <tr>
+          <td style="max-width:320px;color:#e5e7eb">${t.question}</td>
+          <td>${intentBadge(t.intent)}</td>
+          <td style="color:#6b7280;font-size:0.8rem">${t.source}</td>
+          <td>${prioBadge(t.priority)}</td>
+          <td style="color:#6b7280;font-size:0.8rem">${t.assigned_to_content_id ? '<span style="color:#86efac">&#10003; Assigned</span>' : '—'}</td>
+          <td><button class="btn-sm" onclick="deleteTopic('${t.id}')">Delete</button></td>
+        </tr>`).join('');
+    }
+
+    document.getElementById('topic-filters').addEventListener('click', e => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      topicFilter = btn.dataset.filter;
+      renderTopics();
+    });
+
+    async function deleteTopic(id) {
+      if (!confirm('Delete this topic?')) return;
+      try {
+        await sbFetch(`content_topics?id=eq.${id}`, { method: 'DELETE', prefer: 'return=minimal' });
+        topics = topics.filter(t => t.id !== id);
+      } catch(e) { topics = topics.filter(t => t.id !== id); }
+      renderTopics();
+    }
+
+    const topicModal = document.getElementById('topic-modal');
+    document.getElementById('add-topic-btn').addEventListener('click', () => { topicModal.style.display = 'flex'; });
+    document.getElementById('topic-modal-close').addEventListener('click', () => { topicModal.style.display = 'none'; });
+    document.getElementById('tm-cancel').addEventListener('click', () => { topicModal.style.display = 'none'; });
+
+    document.getElementById('tm-save').addEventListener('click', async () => {
+      const topic = {
+        question: document.getElementById('tm-question').value.trim(),
+        intent:   document.getElementById('tm-intent').value,
+        source:   document.getElementById('tm-source').value,
+        priority: document.getElementById('tm-priority').value,
+        notes:    document.getElementById('tm-notes').value,
+      };
+      if (!topic.question) return alert('Question required.');
+      try {
+        const rows = await sbFetch('content_topics', { method: 'POST', body: JSON.stringify([topic]) });
+        topics.push(rows && rows[0] ? rows[0] : { ...topic, id: 'local-'+Date.now() });
+      } catch(e) { topics.push({ ...topic, id: 'local-'+Date.now() }); }
+      topicModal.style.display = 'none';
+      renderTopics();
+    });
+
+    // Seed calendar if empty
+    (async () => {
+      if (typeof initAll === 'function') return; // deferred to initAll
+    })();
+
+    // Override initAll to check cal seed
+    const _origInit = initAll;
+    window.initAll = async function() {
+      const now = new Date();
+      calYear = now.getFullYear();
+      calMonth = now.getMonth();
+
+      try { contentPages = await sbFetch('content_pages?order=created_at.asc') || []; } catch(e) { contentPages = []; }
+
+      try {
+        calendarItems = await sbFetch('content_calendar?order=publish_date.asc') || [];
+        if (calendarItems.length === 0) await seedCalendar();
+      } catch(e) { await seedCalendar().catch(() => {}); }
+
+      try {
+        topics = await sbFetch('content_topics?order=created_at.asc') || [];
+        if (topics.length === 0) await seedTopics();
+      } catch(e) { topics = []; await seedTopics().catch(() => {}); }
+
+      renderPillars();
+      renderCalendar();
+      initChecklists();
+      renderTopics();
+    };
+
+    window.togglePillar  = togglePillar;
+    window.toggleCluster = toggleCluster;
+    window.saveCluster   = saveCluster;
+    window.toggleCheck   = toggleCheck;
+    window.deleteTopic   = deleteTopic;
+    </script>
+  </body>
+</html>

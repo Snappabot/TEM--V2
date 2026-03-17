@@ -1,0 +1,806 @@
+---
+export const prerender = false;
+---
+
+<!--
+  SQL MIGRATIONS — run in Supabase SQL editor before using this page:
+
+  create table if not exists link_outreach (
+    id uuid primary key default gen_random_uuid(),
+    target_site text not null,
+    site_url text,
+    da_dr int,
+    contact_name text,
+    contact_email text,
+    pitch_type text check (pitch_type in ('guest_post','pr_mention','directory','partnership','resource_link')),
+    pitch_date date,
+    status text not null default 'planned' check (status in ('planned','sent','follow_up','won','lost','no_reply')),
+    notes text,
+    created_at timestamptz default now()
+  );
+
+  create table if not exists directory_submissions (
+    id uuid primary key default gen_random_uuid(),
+    directory_name text not null,
+    url text,
+    category text,
+    submitted_date date,
+    status text not null default 'not_submitted' check (status in ('not_submitted','pending','live')),
+    listing_url text,
+    notes text,
+    created_at timestamptz default now()
+  );
+
+  -- backlinks table (shared with analytics page):
+  create table if not exists backlinks (
+    id uuid primary key default gen_random_uuid(),
+    source_url text not null,
+    target_url text,
+    anchor_text text,
+    da_dr int,
+    first_seen date,
+    last_checked date,
+    status text default 'active' check (status in ('active','lost','pending')),
+    notes text,
+    created_at timestamptz default now()
+  );
+-->
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Link Building Tracker | Troweled Earth</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+      input, select, textarea { font-family: inherit; }
+
+      /* Login */
+      .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+      .login-card { width: 100%; max-width: 380px; }
+      .login-card h1 { font-size: 1.75rem; font-weight: 300; text-align: center; margin-bottom: 2rem; color: #fff; }
+      .login-card input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; }
+      .login-card input:focus { border-color: #8b7355; }
+      .btn-primary { display: block; width: 100%; padding: 0.875rem; margin-top: 0.75rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+      .btn-primary:hover { background: #a68b6a; }
+      .error-msg { color: #f87171; font-size: 0.8rem; margin-top: 0.5rem; }
+
+      /* Header */
+      .dash-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; border-bottom: 1px solid #1a1a1a; flex-wrap: wrap; gap: 0.75rem; }
+      .dash-header h1 { font-size: 1.25rem; font-weight: 400; }
+      .dash-header .logo { color: #8b7355; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; }
+      .dash-nav { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+      .dash-nav a { padding: 0.4rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; text-decoration: none; transition: all 0.2s; }
+      .dash-nav a:hover { border-color: #8b7355; color: #fff; }
+      .dash-nav a.active { border-color: #8b7355; color: #8b7355; }
+      .btn-sm { padding: 0.5rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+      .btn-sm:hover { border-color: #8b7355; color: #fff; }
+      .btn-add { padding: 0.5rem 1.25rem; background: #8b7355; border: none; border-radius: 6px; color: #fff; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+      .btn-add:hover { background: #a68b6a; }
+      .btn-danger { padding: 0.3rem 0.6rem; background: transparent; border: 1px solid #7f1d1d; border-radius: 4px; color: #f87171; font-size: 0.75rem; cursor: pointer; }
+      .btn-danger:hover { background: #7f1d1d; color: #fff; }
+
+      .dash-body { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+      /* Panels */
+      .panel { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem; }
+      .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+      .panel-header h2 { font-size: 1rem; font-weight: 500; color: #e5e7eb; }
+      .section-heading { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: #8b7355; margin-bottom: 0.5rem; }
+
+      /* Goal dashboard */
+      .goal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+      .goal-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 8px; padding: 1.25rem; }
+      .goal-card .g-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-bottom: 0.5rem; }
+      .goal-card .g-value { font-size: 1.75rem; font-weight: 600; color: #fff; }
+      .goal-card .g-sub { font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem; }
+      .goal-card.highlight { border-color: #8b7355; }
+      .goal-card.highlight .g-value { color: #8b7355; }
+      .progress-bar { width: 100%; height: 6px; background: #1a1a1a; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+      .progress-fill { height: 100%; background: #8b7355; border-radius: 3px; transition: width 0.4s; }
+      .editable-goal { display: flex; align-items: center; gap: 0.5rem; }
+      .editable-goal input { width: 60px; padding: 0.3rem 0.5rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #fff; font-size: 1rem; font-weight: 600; outline: none; }
+      .editable-goal input:focus { border-color: #8b7355; }
+
+      /* Forms */
+      .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+      .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+      .form-group.full { grid-column: 1 / -1; }
+      .form-group label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em; }
+      .form-group input, .form-group select, .form-group textarea { padding: 0.6rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none; }
+      .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; }
+      .form-group select option { background: #1a1a1a; }
+      .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+
+      /* Kanban */
+      .kanban { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+      .kanban-col { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 8px; overflow: hidden; }
+      .kanban-col-header { padding: 0.75rem 1rem; border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
+      .kanban-col-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+      .kanban-col-count { font-size: 0.7rem; color: #6b7280; background: #1a1a1a; border-radius: 999px; padding: 0.1rem 0.4rem; }
+      .kanban-cards { padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; min-height: 60px; }
+      .kanban-card { background: #111; border: 1px solid #1a1a1a; border-radius: 6px; padding: 0.75rem; cursor: pointer; transition: border-color 0.2s; }
+      .kanban-card:hover { border-color: #2a2a2a; }
+      .kc-site { font-size: 0.85rem; font-weight: 500; color: #e5e7eb; }
+      .kc-meta { font-size: 0.72rem; color: #6b7280; margin-top: 0.25rem; }
+      .kc-type { display: inline-block; margin-top: 0.35rem; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.65rem; background: #1a1a1a; border: 1px solid #2a2a2a; color: #9ca3af; }
+      .col-planned .kanban-col-header { border-top: 2px solid #4b5563; }
+      .col-sent .kanban-col-header { border-top: 2px solid #1e3a5f; }
+      .col-follow_up .kanban-col-header { border-top: 2px solid #3a2a00; }
+      .col-won .kanban-col-header { border-top: 2px solid #14532d; }
+      .col-lost .kanban-col-header { border-top: 2px solid #7f1d1d; }
+      .col-no_reply .kanban-col-header { border-top: 2px solid #374151; }
+      .col-planned .kanban-col-title { color: #9ca3af; }
+      .col-sent .kanban-col-title { color: #93c5fd; }
+      .col-follow_up .kanban-col-title { color: #fde68a; }
+      .col-won .kanban-col-title { color: #86efac; }
+      .col-lost .kanban-col-title { color: #fca5a5; }
+      .col-no_reply .kanban-col-title { color: #6b7280; }
+
+      /* Directory table */
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+      thead tr { border-bottom: 1px solid #1a1a1a; }
+      th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; white-space: nowrap; }
+      td { padding: 0.75rem 1rem; border-bottom: 1px solid #111; vertical-align: middle; }
+      tr:hover td { background: #0f0f0f; }
+      .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+      .badge-not_submitted { background: #1a1a1a; color: #6b7280; border: 1px solid #2a2a2a; }
+      .badge-pending { background: #3a2a00; color: #fde68a; }
+      .badge-live { background: #14532d; color: #86efac; }
+      .empty-state { text-align: center; padding: 3rem; color: #4b5563; }
+
+      /* Chart */
+      .chart-wrap { position: relative; height: 220px; }
+
+      /* Modal */
+      .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+      .modal { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; }
+      .modal h3 { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; color: #e5e7eb; }
+      .modal-close { float: right; background: none; border: none; color: #6b7280; font-size: 1.25rem; cursor: pointer; line-height: 1; }
+
+      @media (max-width: 640px) {
+        .dash-header { padding: 1rem; }
+        .dash-body { padding: 1rem; }
+        .kanban { grid-template-columns: 1fr; }
+        .goal-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- LOGIN GATE -->
+    <div id="login-section" class="login-wrap">
+      <div class="login-card">
+        <h1>Link Building Tracker</h1>
+        <input type="password" id="admin-password" placeholder="Admin password" autocomplete="current-password" />
+        <p id="login-error" class="error-msg" style="display:none"></p>
+        <button class="btn-primary" id="login-btn">Enter</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" style="display:none">
+      <header class="dash-header">
+        <div>
+          <div class="logo">Troweled Earth Melbourne</div>
+          <h1>Link Building &amp; Off-Page SEO</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+          <nav class="dash-nav">
+            <a href="/admin/campaigns">Campaigns</a>
+            <a href="/admin/strategy">Strategy</a>
+            <a href="/admin/content">Content</a>
+            <a href="/admin/links" class="active">Links</a>
+          </nav>
+          <button class="btn-sm" id="logout-btn">Log out</button>
+        </div>
+      </header>
+
+      <div class="dash-body">
+
+        <!-- ── 1. BACKLINK GOALS ───────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Off-Page KPIs</div>
+          <div class="panel-header">
+            <h2>Backlink Goals Dashboard</h2>
+            <button class="btn-sm" onclick="document.getElementById('add-outreach-modal').style.display='flex'">+ Add Outreach</button>
+          </div>
+          <div class="goal-grid">
+            <div class="goal-card highlight">
+              <div class="g-label">Quarterly Goal</div>
+              <div class="editable-goal">
+                <input type="number" id="goal-target" value="5" min="1" max="99" onchange="updateGoal()" />
+                <span style="color:#6b7280;font-size:0.85rem">high-DA links</span>
+              </div>
+              <div class="g-sub">Target per quarter</div>
+            </div>
+            <div class="goal-card">
+              <div class="g-label">Earned This Quarter</div>
+              <div class="g-value" id="goal-earned">0</div>
+              <div class="g-sub">Won outreach entries</div>
+              <div class="progress-bar"><div class="progress-fill" id="goal-bar" style="width:0%"></div></div>
+            </div>
+            <div class="goal-card">
+              <div class="g-label">Total Outreach</div>
+              <div class="g-value" id="goal-total-outreach">0</div>
+              <div class="g-sub">All prospects logged</div>
+            </div>
+            <div class="goal-card">
+              <div class="g-label">Response Rate</div>
+              <div class="g-value" id="goal-response-rate">—</div>
+              <div class="g-sub">Won + Lost / Sent</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 2. OUTREACH KANBAN ─────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Prospect Pipeline</div>
+          <div class="panel-header">
+            <h2>Outreach Log</h2>
+          </div>
+          <div class="kanban" id="kanban-board">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- ── 3. DIRECTORY SUBMISSIONS ──────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Citation Building</div>
+          <div class="panel-header">
+            <h2>Directory Submissions Tracker</h2>
+            <button class="btn-sm" onclick="document.getElementById('add-dir-modal').style.display='flex'">+ Add Directory</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Directory</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  <th>Listing URL</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dir-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── 4. LINK VELOCITY CHART ─────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Link Acquisition</div>
+          <div class="panel-header">
+            <h2>Link Velocity</h2>
+            <span style="font-size:0.78rem;color:#6b7280">Links gained/lost per month from backlinks table</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="velocity-chart"></canvas>
+          </div>
+          <div id="chart-empty" class="empty-state" style="display:none">No backlink data yet. Add backlinks to see velocity chart.</div>
+        </div>
+
+      </div><!-- /dash-body -->
+    </div><!-- /dashboard-section -->
+
+    <!-- ADD OUTREACH MODAL -->
+    <div id="add-outreach-modal" class="modal-overlay" style="display:none">
+      <div class="modal">
+        <button class="modal-close" onclick="document.getElementById('add-outreach-modal').style.display='none'">&#215;</button>
+        <h3>Add Outreach Prospect</h3>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Target Site</label>
+            <input id="or-site" type="text" placeholder="Sanctuary Magazine" />
+          </div>
+          <div class="form-group full">
+            <label>Site URL</label>
+            <input id="or-url" type="text" placeholder="https://..." />
+          </div>
+          <div class="form-group">
+            <label>DA/DR Estimate</label>
+            <input id="or-da" type="number" placeholder="50" min="0" max="100" />
+          </div>
+          <div class="form-group">
+            <label>Pitch Type</label>
+            <select id="or-pitch-type">
+              <option value="guest_post">Guest Post</option>
+              <option value="pr_mention">PR Mention</option>
+              <option value="directory">Directory</option>
+              <option value="partnership">Partnership</option>
+              <option value="resource_link">Resource Link</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Contact Name</label>
+            <input id="or-contact-name" type="text" placeholder="Editor name" />
+          </div>
+          <div class="form-group">
+            <label>Contact Email</label>
+            <input id="or-contact-email" type="email" placeholder="editor@site.com" />
+          </div>
+          <div class="form-group">
+            <label>Pitch Date</label>
+            <input id="or-date" type="date" />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="or-status">
+              <option value="planned">Planned</option>
+              <option value="sent">Sent</option>
+              <option value="follow_up">Follow Up</option>
+              <option value="won">Won</option>
+              <option value="lost">Lost</option>
+              <option value="no_reply">No Reply</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label>Notes</label>
+            <textarea id="or-notes" rows="2" placeholder="Pitch angle, contact context..."></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-add" id="or-save">Save Prospect</button>
+          <button class="btn-sm" onclick="document.getElementById('add-outreach-modal').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT STATUS MODAL -->
+    <div id="edit-outreach-modal" class="modal-overlay" style="display:none">
+      <div class="modal">
+        <button class="modal-close" onclick="document.getElementById('edit-outreach-modal').style.display='none'">&#215;</button>
+        <h3 id="edit-or-title">Edit Outreach</h3>
+        <input type="hidden" id="edit-or-id" />
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Status</label>
+            <select id="edit-or-status">
+              <option value="planned">Planned</option>
+              <option value="sent">Sent</option>
+              <option value="follow_up">Follow Up</option>
+              <option value="won">Won</option>
+              <option value="lost">Lost</option>
+              <option value="no_reply">No Reply</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>DA/DR</label>
+            <input type="number" id="edit-or-da" placeholder="50" min="0" max="100" />
+          </div>
+          <div class="form-group full">
+            <label>Notes</label>
+            <textarea id="edit-or-notes" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-add" id="edit-or-save">Update</button>
+          <button class="btn-danger" id="edit-or-delete">Delete</button>
+          <button class="btn-sm" onclick="document.getElementById('edit-outreach-modal').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD DIRECTORY MODAL -->
+    <div id="add-dir-modal" class="modal-overlay" style="display:none">
+      <div class="modal">
+        <button class="modal-close" onclick="document.getElementById('add-dir-modal').style.display='none'">&#215;</button>
+        <h3>Add Directory</h3>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Directory Name</label>
+            <input id="dir-name" type="text" placeholder="Directory name" />
+          </div>
+          <div class="form-group full">
+            <label>URL</label>
+            <input id="dir-url" type="text" placeholder="https://..." />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <input id="dir-category" type="text" placeholder="e.g. Trade Directory" />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="dir-status">
+              <option value="not_submitted">Not Submitted</option>
+              <option value="pending">Pending</option>
+              <option value="live">Live</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Submitted Date</label>
+            <input id="dir-submitted-date" type="date" />
+          </div>
+          <div class="form-group full">
+            <label>Listing URL (once live)</label>
+            <input id="dir-listing-url" type="text" placeholder="https://..." />
+          </div>
+          <div class="form-group full">
+            <label>Notes</label>
+            <textarea id="dir-notes" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-add" id="dir-save">Save Directory</button>
+          <button class="btn-sm" onclick="document.getElementById('add-dir-modal').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    const SUPABASE_URL = 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdHhib2hqanBraHpod2xucnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDgzMjEsImV4cCI6MjA4NjYyNDMyMX0.UWgOz-9ZAy0xxVH-VTTysFzvrbD1CX0a459rNC391Hw';
+    const ADMIN_PW = 'TEM-admin-2026!';
+
+    async function sbFetch(path, opts = {}) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': opts.prefer || 'return=representation',
+          ...opts.headers
+        },
+        ...opts
+      });
+      if (!res.ok && res.status !== 204) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || res.statusText);
+      }
+      return res.status === 204 ? null : res.json();
+    }
+
+    // ── AUTH ──────────────────────────────────────────────────────────
+    const loginSection = document.getElementById('login-section');
+    const dashSection  = document.getElementById('dashboard-section');
+    const pwInput      = document.getElementById('admin-password');
+    const loginErr     = document.getElementById('login-error');
+
+    function unlock() {
+      loginSection.style.display = 'none';
+      dashSection.style.display  = 'block';
+      initAll();
+    }
+
+    const stored = sessionStorage.getItem('tem-admin-pw');
+    if (stored === ADMIN_PW) unlock();
+
+    document.getElementById('login-btn').addEventListener('click', () => {
+      if (pwInput.value === ADMIN_PW) {
+        sessionStorage.setItem('tem-admin-pw', pwInput.value);
+        loginErr.style.display = 'none';
+        unlock();
+      } else {
+        loginErr.textContent = 'Incorrect password.';
+        loginErr.style.display = 'block';
+      }
+    });
+    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-btn').click(); });
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      sessionStorage.removeItem('tem-admin-pw');
+      location.reload();
+    });
+
+    // ── DATA ──────────────────────────────────────────────────────────
+    let outreachData = [];
+    let dirData = [];
+    let backlinkData = [];
+    let velocityChart = null;
+
+    const SEED_OUTREACH = [
+      { target_site:'Sanctuary Magazine',                             site_url:'https://www.sanctuarymagazine.org.au', da_dr:45, pitch_type:'pr_mention',   status:'planned', notes:'Sustainability/eco homes editorial mention' },
+      { target_site:'ArchDaily Australia',                            site_url:'https://www.archdaily.com',            da_dr:87, pitch_type:'guest_post',   status:'planned', notes:'Product feature / project case study' },
+      { target_site:'Architecture & Design AU',                       site_url:'https://www.architectureanddesign.com.au', da_dr:55, pitch_type:'pr_mention', status:'planned', notes:'Editorial pitch' },
+      { target_site:'ArchiPro AU',                                    site_url:'https://archipro.com.au',              da_dr:48, pitch_type:'directory',     status:'planned', notes:'Business listing + project portfolio' },
+      { target_site:'Houzz AU',                                       site_url:'https://www.houzz.com.au',             da_dr:82, pitch_type:'directory',     status:'planned', notes:'Business listing + project photos' },
+      { target_site:'The Fifth Estate',                               site_url:'https://thefifthestate.com.au',        da_dr:52, pitch_type:'pr_mention',   status:'planned', notes:'Sustainable building news mention' },
+      { target_site:'Green Building Council Australia',               site_url:'https://www.gbca.org.au',              da_dr:68, pitch_type:'directory',     status:'planned', notes:'Member directory / mention' },
+      { target_site:'Renew Magazine',                                 site_url:'https://renew.org.au',                 da_dr:49, pitch_type:'guest_post',   status:'planned', notes:'Hemp render feature article' },
+      { target_site:'HIA (Housing Industry Association)',             site_url:'https://hia.com.au',                   da_dr:61, pitch_type:'directory',     status:'planned', notes:'Member directory' },
+      { target_site:'Realestate.com.au Renovations',                 site_url:'https://www.realestate.com.au',        da_dr:90, pitch_type:'resource_link', status:'planned', notes:'Project feature' },
+    ];
+
+    const SEED_DIRS = [
+      { directory_name:'ArchiPro AU',                url:'https://archipro.com.au',             category:'Architectural Products', status:'not_submitted' },
+      { directory_name:'Houzz AU',                   url:'https://www.houzz.com.au',             category:'Home Improvement',       status:'not_submitted' },
+      { directory_name:'Google Business Profile',    url:'https://business.google.com',          category:'Local Business',         status:'not_submitted' },
+      { directory_name:'True Local',                 url:'https://www.truelocal.com.au',         category:'Local Business',         status:'not_submitted' },
+      { directory_name:'hipages',                    url:'https://hipages.com.au',               category:'Trade Services',         status:'not_submitted' },
+      { directory_name:'Seek a Trade',               url:'https://www.seekatrade.com.au',        category:'Trade Services',         status:'not_submitted' },
+      { directory_name:'Product Review',             url:'https://www.productreview.com.au',     category:'Reviews',                status:'not_submitted' },
+      { directory_name:'Yellow Pages AU',            url:'https://www.yellowpages.com.au',       category:'General Business',       status:'not_submitted' },
+      { directory_name:'Yelp AU',                    url:'https://www.yelp.com.au',              category:'General Business',       status:'not_submitted' },
+      { directory_name:'GBCA Member Directory',      url:'https://new.gbca.org.au',              category:'Industry Association',   status:'not_submitted' },
+      { directory_name:'HIA Member Directory',       url:'https://hia.com.au',                   category:'Industry Association',   status:'not_submitted' },
+      { directory_name:'Master Builders AU',         url:'https://www.masterbuilders.com.au',    category:'Industry Association',   status:'not_submitted' },
+    ];
+
+    async function initAll() {
+      try {
+        outreachData = await sbFetch('link_outreach?order=created_at.asc') || [];
+        if (outreachData.length === 0) await seedOutreach();
+      } catch(e) { await seedOutreach().catch(() => { outreachData = SEED_OUTREACH.map((s,i)=>({...s,id:'seed-'+i})); }); }
+
+      try {
+        dirData = await sbFetch('directory_submissions?order=created_at.asc') || [];
+        if (dirData.length === 0) await seedDirs();
+      } catch(e) { await seedDirs().catch(() => { dirData = SEED_DIRS.map((s,i)=>({...s,id:'seed-'+i})); }); }
+
+      try {
+        backlinkData = await sbFetch('backlinks?order=first_seen.asc') || [];
+      } catch(e) { backlinkData = []; }
+
+      renderGoals();
+      renderKanban();
+      renderDirs();
+      renderChart();
+    }
+
+    async function seedOutreach() {
+      try {
+        const rows = await sbFetch('link_outreach', { method:'POST', body: JSON.stringify(SEED_OUTREACH) });
+        outreachData = rows || SEED_OUTREACH.map((s,i)=>({...s,id:'seed-'+i}));
+      } catch(e) { outreachData = SEED_OUTREACH.map((s,i)=>({...s,id:'seed-'+i})); }
+    }
+
+    async function seedDirs() {
+      try {
+        const rows = await sbFetch('directory_submissions', { method:'POST', body: JSON.stringify(SEED_DIRS) });
+        dirData = rows || SEED_DIRS.map((s,i)=>({...s,id:'seed-'+i}));
+      } catch(e) { dirData = SEED_DIRS.map((s,i)=>({...s,id:'seed-'+i})); }
+    }
+
+    // ── GOALS ─────────────────────────────────────────────────────────
+    function getQuarterStart() {
+      const now = new Date();
+      const q = Math.floor(now.getMonth() / 3);
+      return new Date(now.getFullYear(), q * 3, 1);
+    }
+
+    function renderGoals() {
+      const target = parseInt(document.getElementById('goal-target').value) || 5;
+      const qStart = getQuarterStart();
+      const earned = outreachData.filter(o => {
+        if (o.status !== 'won') return false;
+        if (!o.pitch_date) return true;
+        return new Date(o.pitch_date) >= qStart;
+      }).length;
+      const total  = outreachData.length;
+      const sent   = outreachData.filter(o => ['sent','follow_up','won','lost'].includes(o.status)).length;
+      const replied = outreachData.filter(o => ['won','lost'].includes(o.status)).length;
+      const rate = sent > 0 ? Math.round((replied / sent) * 100) + '%' : '—';
+
+      document.getElementById('goal-earned').textContent = earned;
+      document.getElementById('goal-total-outreach').textContent = total;
+      document.getElementById('goal-response-rate').textContent = rate;
+      document.getElementById('goal-bar').style.width = `${Math.min((earned/target)*100,100)}%`;
+    }
+
+    function updateGoal() { renderGoals(); }
+    window.updateGoal = updateGoal;
+
+    // ── KANBAN ────────────────────────────────────────────────────────
+    const KANBAN_COLS = [
+      { key:'planned',   label:'Planned' },
+      { key:'sent',      label:'Sent' },
+      { key:'follow_up', label:'Follow Up' },
+      { key:'won',       label:'Won' },
+      { key:'lost',      label:'Lost' },
+      { key:'no_reply',  label:'No Reply' },
+    ];
+
+    const PITCH_LABELS = { guest_post:'Guest Post', pr_mention:'PR Mention', directory:'Directory', partnership:'Partnership', resource_link:'Resource Link' };
+
+    function renderKanban() {
+      const board = document.getElementById('kanban-board');
+      board.innerHTML = KANBAN_COLS.map(col => {
+        const cards = outreachData.filter(o => o.status === col.key);
+        return `<div class="kanban-col col-${col.key}">
+          <div class="kanban-col-header">
+            <span class="kanban-col-title">${col.label}</span>
+            <span class="kanban-col-count">${cards.length}</span>
+          </div>
+          <div class="kanban-cards">
+            ${cards.map(o => `
+              <div class="kanban-card" onclick="openEditOutreach('${o.id}')">
+                <div class="kc-site">${o.target_site}</div>
+                ${o.da_dr ? `<div class="kc-meta">DA/DR ~${o.da_dr}</div>` : ''}
+                <div><span class="kc-type">${PITCH_LABELS[o.pitch_type]||o.pitch_type||'—'}</span></div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function openEditOutreach(id) {
+      const o = outreachData.find(x => x.id === id);
+      if (!o) return;
+      document.getElementById('edit-or-id').value    = id;
+      document.getElementById('edit-or-title').textContent = o.target_site;
+      document.getElementById('edit-or-status').value = o.status;
+      document.getElementById('edit-or-da').value     = o.da_dr || '';
+      document.getElementById('edit-or-notes').value  = o.notes || '';
+      document.getElementById('edit-outreach-modal').style.display = 'flex';
+    }
+    window.openEditOutreach = openEditOutreach;
+
+    document.getElementById('edit-or-save').addEventListener('click', async () => {
+      const id     = document.getElementById('edit-or-id').value;
+      const status = document.getElementById('edit-or-status').value;
+      const da_dr  = parseInt(document.getElementById('edit-or-da').value) || null;
+      const notes  = document.getElementById('edit-or-notes').value;
+      try {
+        await sbFetch(`link_outreach?id=eq.${id}`, { method:'PATCH', body: JSON.stringify({ status, da_dr, notes }) });
+        const idx = outreachData.findIndex(o => o.id === id);
+        if (idx !== -1) outreachData[idx] = { ...outreachData[idx], status, da_dr, notes };
+      } catch(e) {
+        const idx = outreachData.findIndex(o => o.id === id);
+        if (idx !== -1) outreachData[idx] = { ...outreachData[idx], status, da_dr, notes };
+      }
+      document.getElementById('edit-outreach-modal').style.display = 'none';
+      renderGoals(); renderKanban();
+    });
+
+    document.getElementById('edit-or-delete').addEventListener('click', async () => {
+      const id = document.getElementById('edit-or-id').value;
+      if (!confirm('Delete this prospect?')) return;
+      try { await sbFetch(`link_outreach?id=eq.${id}`, { method:'DELETE', prefer:'return=minimal' }); } catch(e) {}
+      outreachData = outreachData.filter(o => o.id !== id);
+      document.getElementById('edit-outreach-modal').style.display = 'none';
+      renderGoals(); renderKanban();
+    });
+
+    document.getElementById('or-save').addEventListener('click', async () => {
+      const item = {
+        target_site:   document.getElementById('or-site').value.trim(),
+        site_url:      document.getElementById('or-url').value,
+        da_dr:         parseInt(document.getElementById('or-da').value) || null,
+        pitch_type:    document.getElementById('or-pitch-type').value,
+        contact_name:  document.getElementById('or-contact-name').value,
+        contact_email: document.getElementById('or-contact-email').value,
+        pitch_date:    document.getElementById('or-date').value || null,
+        status:        document.getElementById('or-status').value,
+        notes:         document.getElementById('or-notes').value,
+      };
+      if (!item.target_site) return alert('Target site required.');
+      try {
+        const rows = await sbFetch('link_outreach', { method:'POST', body: JSON.stringify([item]) });
+        outreachData.push(rows && rows[0] ? rows[0] : { ...item, id:'local-'+Date.now() });
+      } catch(e) { outreachData.push({ ...item, id:'local-'+Date.now() }); }
+      document.getElementById('add-outreach-modal').style.display = 'none';
+      renderGoals(); renderKanban();
+    });
+
+    // ── DIRECTORIES ───────────────────────────────────────────────────
+    function renderDirs() {
+      const tbody = document.getElementById('dir-tbody');
+      const statusBadge = s => {
+        const map = { not_submitted:'badge-not_submitted', pending:'badge-pending', live:'badge-live' };
+        const label = { not_submitted:'Not Submitted', pending:'Pending', live:'Live' };
+        return `<span class="badge ${map[s]||'badge-not_submitted'}">${label[s]||s}</span>`;
+      };
+      tbody.innerHTML = dirData.map(d => `
+        <tr>
+          <td style="color:#e5e7eb;font-weight:500">${d.directory_name}</td>
+          <td style="color:#6b7280;font-size:0.8rem">${d.category||'—'}</td>
+          <td>
+            <select style="padding:0.2rem 0.4rem;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;color:#fff;font-size:0.8rem;outline:none"
+              onchange="updateDirStatus('${d.id}',this.value)">
+              <option value="not_submitted" ${d.status==='not_submitted'?'selected':''}>Not Submitted</option>
+              <option value="pending" ${d.status==='pending'?'selected':''}>Pending</option>
+              <option value="live" ${d.status==='live'?'selected':''}>Live</option>
+            </select>
+          </td>
+          <td style="color:#6b7280;font-size:0.8rem">${d.submitted_date||'—'}</td>
+          <td style="font-size:0.8rem">${d.listing_url ? `<a href="${d.listing_url}" target="_blank" style="color:#8b7355">${d.listing_url.replace('https://','').slice(0,30)}…</a>` : '—'}</td>
+          <td><button class="btn-danger" onclick="deleteDir('${d.id}')">Delete</button></td>
+        </tr>`).join('');
+    }
+
+    async function updateDirStatus(id, status) {
+      const today = new Date().toISOString().split('T')[0];
+      const patch = { status, ...(status !== 'not_submitted' ? { submitted_date: today } : {}) };
+      try { await sbFetch(`directory_submissions?id=eq.${id}`, { method:'PATCH', body: JSON.stringify(patch) }); } catch(e) {}
+      const idx = dirData.findIndex(d => d.id === id);
+      if (idx !== -1) dirData[idx] = { ...dirData[idx], ...patch };
+    }
+    window.updateDirStatus = updateDirStatus;
+
+    async function deleteDir(id) {
+      if (!confirm('Remove this directory?')) return;
+      try { await sbFetch(`directory_submissions?id=eq.${id}`, { method:'DELETE', prefer:'return=minimal' }); } catch(e) {}
+      dirData = dirData.filter(d => d.id !== id);
+      renderDirs();
+    }
+    window.deleteDir = deleteDir;
+
+    document.getElementById('dir-save').addEventListener('click', async () => {
+      const item = {
+        directory_name: document.getElementById('dir-name').value.trim(),
+        url:            document.getElementById('dir-url').value,
+        category:       document.getElementById('dir-category').value,
+        status:         document.getElementById('dir-status').value,
+        submitted_date: document.getElementById('dir-submitted-date').value || null,
+        listing_url:    document.getElementById('dir-listing-url').value,
+        notes:          document.getElementById('dir-notes').value,
+      };
+      if (!item.directory_name) return alert('Directory name required.');
+      try {
+        const rows = await sbFetch('directory_submissions', { method:'POST', body: JSON.stringify([item]) });
+        dirData.push(rows && rows[0] ? rows[0] : { ...item, id:'local-'+Date.now() });
+      } catch(e) { dirData.push({ ...item, id:'local-'+Date.now() }); }
+      document.getElementById('add-dir-modal').style.display = 'none';
+      renderDirs();
+    });
+
+    // ── CHART ─────────────────────────────────────────────────────────
+    function renderChart() {
+      const canvas = document.getElementById('velocity-chart');
+      const empty  = document.getElementById('chart-empty');
+
+      if (!backlinkData.length) {
+        canvas.style.display = 'none';
+        empty.style.display  = 'block';
+        return;
+      }
+
+      const monthMap = {};
+      const lostMap  = {};
+      backlinkData.forEach(b => {
+        if (b.first_seen) {
+          const m = b.first_seen.slice(0, 7);
+          monthMap[m] = (monthMap[m]||0) + 1;
+        }
+        if (b.status === 'lost' && b.last_checked) {
+          const m = b.last_checked.slice(0, 7);
+          lostMap[m] = (lostMap[m]||0) + 1;
+        }
+      });
+
+      const allMonths = [...new Set([...Object.keys(monthMap), ...Object.keys(lostMap)])].sort();
+      if (!allMonths.length) { canvas.style.display='none'; empty.style.display='block'; return; }
+
+      if (velocityChart) velocityChart.destroy();
+      velocityChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: allMonths,
+          datasets: [
+            {
+              label: 'Links Gained',
+              data: allMonths.map(m => monthMap[m]||0),
+              backgroundColor: '#8b735580',
+              borderColor: '#8b7355',
+              borderWidth: 1,
+            },
+            {
+              label: 'Links Lost',
+              data: allMonths.map(m => -(lostMap[m]||0)),
+              backgroundColor: '#7f1d1d80',
+              borderColor: '#ef4444',
+              borderWidth: 1,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { color:'#6b7280', font:{size:11} }, grid: { color:'#1a1a1a' } },
+            y: { ticks: { color:'#6b7280', font:{size:11} }, grid: { color:'#1a1a1a' } }
+          },
+          plugins: {
+            legend: { labels: { color:'#9ca3af', font:{size:12} } }
+          }
+        }
+      });
+    }
+    </script>
+  </body>
+</html>
