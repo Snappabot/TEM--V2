@@ -1,0 +1,802 @@
+---
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campaign Strategy Hub | Troweled Earth</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+      input, select, textarea { font-family: inherit; }
+
+      /* Login */
+      .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+      .login-card { width: 100%; max-width: 380px; }
+      .login-card h1 { font-size: 1.75rem; font-weight: 300; text-align: center; margin-bottom: 2rem; color: #fff; }
+      .login-card input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; }
+      .login-card input:focus { border-color: #8b7355; }
+      .btn-primary { display: block; width: 100%; padding: 0.875rem; margin-top: 0.75rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+      .btn-primary:hover { background: #a68b6a; }
+      .error-msg { color: #f87171; font-size: 0.8rem; margin-top: 0.5rem; }
+
+      /* Dashboard header */
+      .dash-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; border-bottom: 1px solid #1a1a1a; }
+      .dash-header h1 { font-size: 1.25rem; font-weight: 400; }
+      .dash-header .logo { color: #8b7355; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; }
+      .dash-nav { display: flex; gap: 0.5rem; align-items: center; }
+      .dash-nav a { padding: 0.4rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; text-decoration: none; transition: all 0.2s; }
+      .dash-nav a:hover { border-color: #8b7355; color: #fff; }
+      .dash-nav a.active { border-color: #8b7355; color: #8b7355; }
+      .btn-sm { padding: 0.5rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+      .btn-sm:hover { border-color: #8b7355; color: #fff; }
+
+      .dash-body { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+      /* Section headings */
+      .section-heading { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: #8b7355; margin-bottom: 1rem; }
+      .section-title { font-size: 1.1rem; font-weight: 500; color: #e5e7eb; margin-bottom: 0.4rem; }
+
+      /* Panels */
+      .panel { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem; }
+      .panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+      .panel-header h2 { font-size: 1rem; font-weight: 500; color: #e5e7eb; }
+
+      /* Market cards */
+      .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+      .market-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 8px; padding: 1.25rem; }
+      .market-card .m-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-bottom: 0.5rem; }
+      .market-card .m-value { font-size: 1.6rem; font-weight: 600; color: #fff; line-height: 1.2; }
+      .market-card .m-growth { font-size: 0.8rem; color: #86efac; margin-top: 0.35rem; }
+      .market-card.highlight { border-color: #8b7355; }
+      .market-card.highlight .m-value { color: #8b7355; }
+      .market-card.highlight .m-label { color: #a68b6a; }
+
+      /* Campaign cards */
+      .campaign-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
+      .campaign-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 10px; overflow: hidden; transition: border-color 0.2s; }
+      .campaign-card:hover { border-color: #2a2a2a; }
+      .campaign-card-header { padding: 1.25rem 1.25rem 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+      .campaign-card-header:hover { background: #111; }
+      .campaign-letter { width: 2rem; height: 2rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; color: #8b7355; flex-shrink: 0; }
+      .campaign-title-wrap { flex: 1; }
+      .campaign-name { font-size: 0.95rem; font-weight: 500; color: #e5e7eb; }
+      .campaign-tagline { font-size: 0.78rem; color: #6b7280; margin-top: 0.2rem; font-style: italic; }
+      .campaign-meta { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
+      .campaign-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.65rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+      .badge-budget { background: #14532d; color: #86efac; }
+      .badge-kpi { background: #1e3a5f; color: #93c5fd; }
+      .chevron { font-size: 0.75rem; color: #4b5563; transition: transform 0.25s; margin-top: 0.2rem; flex-shrink: 0; }
+      .campaign-card.open .chevron { transform: rotate(180deg); }
+      .campaign-details { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid #1a1a1a; margin-top: 0; }
+      .campaign-card.open .campaign-details { display: block; }
+      .detail-section { margin-top: 1rem; }
+      .detail-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #4b5563; margin-bottom: 0.4rem; }
+      .detail-content { font-size: 0.82rem; color: #9ca3af; line-height: 1.6; }
+      .detail-content ul { padding-left: 1rem; }
+      .detail-content li { margin-bottom: 0.2rem; }
+      .channels-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.35rem; }
+      .ch-badge { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; background: #1a1a1a; border: 1px solid #2a2a2a; color: #9ca3af; }
+
+      /* Events */
+      .events-list { display: flex; flex-direction: column; gap: 0.75rem; }
+      .event-row { display: flex; gap: 1rem; align-items: flex-start; padding: 0.875rem 1rem; background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 8px; }
+      .event-date { min-width: 6rem; font-size: 0.75rem; color: #8b7355; font-variant-numeric: tabular-nums; padding-top: 0.05rem; }
+      .event-name { font-size: 0.9rem; font-weight: 500; color: #e5e7eb; }
+      .event-note { font-size: 0.75rem; color: #6b7280; margin-top: 0.15rem; }
+      .event-hook { display: inline-block; margin-top: 0.3rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; background: #3a1a1a; color: #fca5a5; border: 1px solid #7f1d1d; }
+
+      /* Table */
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+      thead tr { border-bottom: 1px solid #1a1a1a; }
+      th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; white-space: nowrap; }
+      td { padding: 0.875rem 1rem; border-bottom: 1px solid #111; vertical-align: middle; }
+      tr:hover td { background: #0f0f0f; }
+      tr.gap-row td { background: #14532d18; border-top: 1px solid #14532d; border-bottom: 1px solid #14532d; }
+      tr.gap-row td:first-child { color: #86efac; font-weight: 600; }
+
+      /* Budget */
+      .budget-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+      .budget-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 8px; padding: 1.25rem; }
+      .budget-card .phase-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: #8b7355; margin-bottom: 0.4rem; }
+      .budget-card .phase-period { font-size: 1rem; font-weight: 500; color: #fff; margin-bottom: 0.25rem; }
+      .budget-card .phase-amount { font-size: 1.4rem; font-weight: 600; color: #fff; margin-bottom: 0.75rem; }
+      .budget-card .phase-campaigns { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+      .budget-card .phase-note { font-size: 0.75rem; color: #6b7280; }
+      .budget-annual { margin-top: 1.25rem; padding: 1rem; background: #1a1a1a; border-radius: 8px; border: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; }
+      .budget-annual .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; }
+      .budget-annual .value { font-size: 1.25rem; font-weight: 600; color: #8b7355; }
+
+      /* UTM builder */
+      .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+      .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+      .form-group.full { grid-column: 1 / -1; }
+      .form-group label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em; }
+      .form-group input,
+      .form-group select { padding: 0.6rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none; }
+      .form-group input:focus,
+      .form-group select:focus { border-color: #8b7355; }
+      .form-group select option { background: #1a1a1a; }
+      .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+      .utm-output { margin-top: 1rem; padding: 1rem; background: #1a1a1a; border-radius: 6px; border: 1px solid #2a2a2a; }
+      .utm-output .url-text { font-size: 0.8rem; color: #9ca3af; word-break: break-all; font-family: 'Courier New', monospace; }
+      .utm-output .copy-row { display: flex; justify-content: flex-end; margin-top: 0.75rem; }
+
+      @media (max-width: 640px) {
+        .dash-header { padding: 1rem; flex-wrap: wrap; gap: 0.75rem; }
+        .dash-body { padding: 1rem; }
+        .campaign-grid { grid-template-columns: 1fr; }
+        .market-grid { grid-template-columns: repeat(2, 1fr); }
+        .budget-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- LOGIN GATE -->
+    <div id="login-section" class="login-wrap">
+      <div class="login-card">
+        <h1>Strategy Hub</h1>
+        <input type="password" id="admin-password" placeholder="Admin password" autocomplete="current-password" />
+        <p id="login-error" class="error-msg" style="display:none"></p>
+        <button class="btn-primary" id="login-btn">Enter</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" style="display:none">
+      <header class="dash-header">
+        <div>
+          <div class="logo">Troweled Earth Melbourne</div>
+          <h1>Campaign Strategy Hub</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <nav class="dash-nav">
+            <a href="/admin/campaigns">Campaigns</a>
+            <a href="/admin/strategy" class="active">Strategy</a>
+          </nav>
+          <button class="btn-sm" id="logout-btn">Log out</button>
+        </div>
+      </header>
+
+      <div class="dash-body">
+
+        <!-- ── 1. MARKET OVERVIEW ───────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Market Intelligence</div>
+          <div class="panel-header">
+            <h2>AU Market Overview 2026</h2>
+          </div>
+          <div class="market-grid">
+            <div class="market-card">
+              <div class="m-label">AU Decorative Plaster Market</div>
+              <div class="m-value">~$380M</div>
+              <div class="m-growth">+8–9% YoY growth</div>
+            </div>
+            <div class="market-card">
+              <div class="m-label">Natural / Bio-Based Renders</div>
+              <div class="m-value">~$45M</div>
+              <div class="m-growth">+18–22% YoY growth</div>
+            </div>
+            <div class="market-card">
+              <div class="m-label">Luxury Interior Plaster</div>
+              <div class="m-value">~$90M</div>
+              <div class="m-growth">+11% YoY growth</div>
+            </div>
+            <div class="market-card highlight">
+              <div class="m-label">TEM Total Addressable Market</div>
+              <div class="m-value">~$425M</div>
+              <div class="m-growth" style="color:#a68b6a">Combined TAM across all segments</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 2. CAMPAIGN CARDS ───────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Campaign Briefs</div>
+          <div class="panel-header">
+            <h2>6 Strategic Campaigns</h2>
+            <span style="font-size:0.75rem;color:#4b5563">Click any card to expand</span>
+          </div>
+          <div class="campaign-grid">
+
+            <!-- Campaign A -->
+            <div class="campaign-card" data-campaign="a">
+              <div class="campaign-card-header">
+                <div class="campaign-letter">A</div>
+                <div class="campaign-title-wrap">
+                  <div class="campaign-name">The Carbon Finish 🌿</div>
+                  <div class="campaign-tagline">"The only wall finish that stores carbon while you live in it"</div>
+                  <div class="campaign-meta">
+                    <span class="campaign-badge badge-budget">$2.5k–$4k/mo</span>
+                    <span class="campaign-badge badge-kpi">Avg job $8k+</span>
+                  </div>
+                </div>
+                <div class="chevron">▼</div>
+              </div>
+              <div class="campaign-details">
+                <div class="detail-section">
+                  <div class="detail-label">Channels</div>
+                  <div class="channels-row">
+                    <span class="ch-badge">Meta Ads</span>
+                    <span class="ch-badge">Google Search</span>
+                    <span class="ch-badge">LinkedIn</span>
+                    <span class="ch-badge">PR</span>
+                  </div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Key Claims</div>
+                  <div class="detail-content">
+                    <ul>
+                      <li>Hemp shiv sequesters ~2.6 kg CO₂ per bucket</li>
+                      <li>Lime re-absorbs CO₂ over time as it carbonates</li>
+                      <li>Carbon sink vs cement (net emitter)</li>
+                      <li>NCC-compliant, biogenic building material</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Target Audience</div>
+                  <div class="detail-content">Eco-luxury homeowners, passive house architects, NCC-compliance renovators</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">KPIs</div>
+                  <div class="detail-content">Architect enquiries, avg job value $8k+, carbon-angle press mentions</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Campaign B -->
+            <div class="campaign-card" data-campaign="b">
+              <div class="campaign-card-header">
+                <div class="campaign-letter">B</div>
+                <div class="campaign-title-wrap">
+                  <div class="campaign-name">Finish Different 💎</div>
+                  <div class="campaign-tagline">"While everyone tiles, you plaster"</div>
+                  <div class="campaign-meta">
+                    <span class="campaign-badge badge-budget">$3k–$5k/mo</span>
+                    <span class="campaign-badge badge-kpi">Avg job $12k+</span>
+                  </div>
+                </div>
+                <div class="chevron">▼</div>
+              </div>
+              <div class="campaign-details">
+                <div class="detail-section">
+                  <div class="detail-label">Channels</div>
+                  <div class="channels-row">
+                    <span class="ch-badge">Instagram Paid</span>
+                    <span class="ch-badge">Pinterest</span>
+                    <span class="ch-badge">ArchiPro</span>
+                    <span class="ch-badge">ArchDaily</span>
+                  </div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Target Audience</div>
+                  <div class="detail-content">High-end renovators ($800k+ projects), interior designers, custom builders seeking differentiation</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Creative Direction</div>
+                  <div class="detail-content">Aspirational lifestyle imagery, before/after transformations, product texture close-ups. Positioning TEM as the luxury alternative to ubiquitous tile.</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">KPIs</div>
+                  <div class="detail-content">Interior designer partnerships, project referrals, avg job value $12k+</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Campaign C -->
+            <div class="campaign-card" data-campaign="c">
+              <div class="campaign-card-header">
+                <div class="campaign-letter">C</div>
+                <div class="campaign-title-wrap">
+                  <div class="campaign-name">Earthian Certifier 🏗️</div>
+                  <div class="campaign-tagline">"Become a certified Earthian applicator"</div>
+                  <div class="campaign-meta">
+                    <span class="campaign-badge badge-budget">$1.5k–$2.5k/mo</span>
+                    <span class="campaign-badge badge-kpi">Course enrolments</span>
+                  </div>
+                </div>
+                <div class="chevron">▼</div>
+              </div>
+              <div class="campaign-details">
+                <div class="detail-section">
+                  <div class="detail-label">Channels</div>
+                  <div class="channels-row">
+                    <span class="ch-badge">Facebook (trades)</span>
+                    <span class="ch-badge">Google Search</span>
+                    <span class="ch-badge">HIA Publications</span>
+                    <span class="ch-badge">MBA Publications</span>
+                  </div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Target Audience</div>
+                  <div class="detail-content">Plasterers and renderers in VIC / NSW / QLD looking to upskill, add premium services, and command higher rates</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Value Proposition</div>
+                  <div class="detail-content">Earn TEM certification, access a growing spec-in architect pipeline, charge premium rates for bio-based finishes</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">KPIs</div>
+                  <div class="detail-content">Course enquiries, certification enrolments, certified applicator network growth</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Campaign D -->
+            <div class="campaign-card" data-campaign="d">
+              <div class="campaign-card-header">
+                <div class="campaign-letter">D</div>
+                <div class="campaign-title-wrap">
+                  <div class="campaign-name">Sequester This 🌍</div>
+                  <div class="campaign-tagline">"Flips the script on cement: from net emitter to net storer"</div>
+                  <div class="campaign-meta">
+                    <span class="campaign-badge badge-budget">$500–$1.5k/mo</span>
+                    <span class="campaign-badge badge-kpi">Press & backlinks</span>
+                  </div>
+                </div>
+                <div class="chevron">▼</div>
+              </div>
+              <div class="campaign-details">
+                <div class="detail-section">
+                  <div class="detail-label">Channels</div>
+                  <div class="channels-row">
+                    <span class="ch-badge">PR / Editorial</span>
+                    <span class="ch-badge">LinkedIn</span>
+                    <span class="ch-badge">Instagram Reel</span>
+                    <span class="ch-badge">YouTube</span>
+                  </div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Target Audience</div>
+                  <div class="detail-content">Media, architects, GBCA community, sustainability press, green building influencers</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Content Approach</div>
+                  <div class="detail-content">Data-led editorial content: embodied carbon comparisons, third-party LCA data, architect opinion pieces, media pitching</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">KPIs</div>
+                  <div class="detail-content">Press mentions, high-DA backlinks, brand search lift, GBCA speaking opportunities</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Campaign E -->
+            <div class="campaign-card" data-campaign="e">
+              <div class="campaign-card-header">
+                <div class="campaign-letter">E</div>
+                <div class="campaign-title-wrap">
+                  <div class="campaign-name">Melbourne Wall 📍</div>
+                  <div class="campaign-tagline">"Dominate every local search for every finish type"</div>
+                  <div class="campaign-meta">
+                    <span class="campaign-badge badge-budget">$2k–$3.5k/mo</span>
+                    <span class="campaign-badge badge-kpi">CPL &lt;$80</span>
+                  </div>
+                </div>
+                <div class="chevron">▼</div>
+              </div>
+              <div class="campaign-details">
+                <div class="detail-section">
+                  <div class="detail-label">Channels</div>
+                  <div class="channels-row">
+                    <span class="ch-badge">Google Search Ads</span>
+                    <span class="ch-badge">Google Business Profile</span>
+                    <span class="ch-badge">SEO Blog</span>
+                  </div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Target Keywords</div>
+                  <div class="detail-content">
+                    <ul>
+                      <li>venetian plaster Melbourne</li>
+                      <li>natural render Melbourne</li>
+                      <li>hemp render Melbourne</li>
+                      <li>marbellino plaster Melbourne</li>
+                      <li>lime render contractor Melbourne</li>
+                      <li>marmorino plaster Melbourne</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Target Audience</div>
+                  <div class="detail-content">Melbourne homeowners and builders actively searching for premium plaster and render services</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">KPIs</div>
+                  <div class="detail-content">Cost per lead under $80, quote request volume, Google Business Profile views</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Campaign F -->
+            <div class="campaign-card" data-campaign="f">
+              <div class="campaign-card-header">
+                <div class="campaign-letter">F</div>
+                <div class="campaign-title-wrap">
+                  <div class="campaign-name">Show House 📸</div>
+                  <div class="campaign-tagline">"Turn every job into a campaign asset"</div>
+                  <div class="campaign-meta">
+                    <span class="campaign-badge badge-budget">$300–$600/mo</span>
+                    <span class="campaign-badge badge-kpi">Organic growth</span>
+                  </div>
+                </div>
+                <div class="chevron">▼</div>
+              </div>
+              <div class="campaign-details">
+                <div class="detail-section">
+                  <div class="detail-label">Channels</div>
+                  <div class="channels-row">
+                    <span class="ch-badge">Instagram Reel</span>
+                    <span class="ch-badge">SEO Blog</span>
+                    <span class="ch-badge">ArchiPro</span>
+                    <span class="ch-badge">Houzz</span>
+                    <span class="ch-badge">Email Newsletter</span>
+                  </div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Content Process</div>
+                  <div class="detail-content">
+                    <ul>
+                      <li>Photograph every completed job</li>
+                      <li>Edit into 30–60s Instagram Reel</li>
+                      <li>Write SEO blog post (location + finish type)</li>
+                      <li>Upload to ArchiPro + Houzz project listing</li>
+                      <li>Feature in monthly email newsletter</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">KPIs</div>
+                  <div class="detail-content">Organic traffic growth MoM, Houzz / ArchiPro enquiries, email open rates, portfolio page views</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 3. EVENTS CALENDAR ─────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Key Dates</div>
+          <div class="panel-header">
+            <h2>AU Industry Events 2026</h2>
+          </div>
+          <div class="events-list">
+            <div class="event-row">
+              <div class="event-date">May 2026</div>
+              <div>
+                <div class="event-name">DesignBUILD Expo</div>
+                <div class="event-note">Melbourne Convention Centre</div>
+                <span class="event-hook">PR + booth opportunity</span>
+              </div>
+            </div>
+            <div class="event-row">
+              <div class="event-date">5 Jun 2026</div>
+              <div>
+                <div class="event-name">World Environment Day</div>
+                <div class="event-note">United Nations observance — global reach</div>
+                <span class="event-hook">Campaign D PR hook</span>
+              </div>
+            </div>
+            <div class="event-row">
+              <div class="event-date">Sept 2026</div>
+              <div>
+                <div class="event-name">Sustainable House Day</div>
+                <div class="event-note">Australia-wide open home events</div>
+                <span class="event-hook">Campaign A + F content</span>
+              </div>
+            </div>
+            <div class="event-row">
+              <div class="event-date">Mid 2026</div>
+              <div>
+                <div class="event-name">GBCA Green Star Conference</div>
+                <div class="event-note">Green Building Council of Australia</div>
+                <span class="event-hook">Campaign D speaking / sponsorship</span>
+              </div>
+            </div>
+            <div class="event-row">
+              <div class="event-date">Oct 2026</div>
+              <div>
+                <div class="event-name">Melbourne Design Week</div>
+                <div class="event-note">NGV + citywide design events</div>
+                <span class="event-hook">Campaign B + F showcase</span>
+              </div>
+            </div>
+            <div class="event-row">
+              <div class="event-date">Oct 2026</div>
+              <div>
+                <div class="event-name">ASBEC Summit</div>
+                <div class="event-note">Australian Sustainable Built Environment Council</div>
+                <span class="event-hook">Campaign D thought leadership</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 4. COMPETITOR INTEL ─────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Competitive Landscape</div>
+          <div class="panel-header">
+            <h2>Competitor Intelligence</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Competitor</th>
+                  <th>Paid Activity</th>
+                  <th>Organic / Content</th>
+                  <th>Eco Angle</th>
+                  <th>Weakness</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:500;color:#e5e7eb">Parlour Studio</td>
+                  <td style="color:#6b7280">None</td>
+                  <td style="color:#9ca3af">Basic organic, no blog</td>
+                  <td style="color:#6b7280">None</td>
+                  <td style="color:#9ca3af">No lead capture, no eco narrative</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500;color:#e5e7eb">Rockcote</td>
+                  <td style="color:#9ca3af">Google Search (generic render KWs)</td>
+                  <td style="color:#9ca3af">Product pages only</td>
+                  <td style="color:#6b7280">None</td>
+                  <td style="color:#9ca3af">No consumer or eco story</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500;color:#e5e7eb">Murobond</td>
+                  <td style="color:#9ca3af">Instagram boosted posts (IDs)</td>
+                  <td style="color:#9ca3af">Some portfolio content</td>
+                  <td style="color:#6b7280">None</td>
+                  <td style="color:#9ca3af">No differentiation beyond colour range</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500;color:#e5e7eb">Hempcrete.com.au</td>
+                  <td style="color:#6b7280">None</td>
+                  <td style="color:#9ca3af">Niche organic only</td>
+                  <td style="color:#86efac">Strong eco focus</td>
+                  <td style="color:#9ca3af">No design appeal, trade-only feel</td>
+                </tr>
+                <tr class="gap-row">
+                  <td>TEM owns</td>
+                  <td colspan="4" style="color:#86efac;font-size:0.82rem">
+                    Luxury finish + carbon sequestration + applied plaster expertise — <strong>nobody else holds this combination</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── 5. BUDGET PLANNER ──────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Investment Plan</div>
+          <div class="panel-header">
+            <h2>Phased Budget Planner</h2>
+          </div>
+          <div class="budget-grid">
+            <div class="budget-card">
+              <div class="phase-label">Phase 1</div>
+              <div class="phase-period">Apr – May 2026</div>
+              <div class="phase-amount">$5,000–$6,000 <span style="font-size:0.75rem;font-weight:400;color:#6b7280">/ mo</span></div>
+              <div class="phase-campaigns">
+                <span class="campaign-badge" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#8b7355">E: Melbourne Wall</span>
+                <span class="campaign-badge" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#8b7355">F: Show House</span>
+                <span class="campaign-badge" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#8b7355">A: Carbon Finish</span>
+              </div>
+              <div class="phase-note">Foundation: local search dominance + organic asset flywheel + eco brand positioning</div>
+            </div>
+            <div class="budget-card">
+              <div class="phase-label">Phase 2</div>
+              <div class="phase-period">Jun – Jul 2026</div>
+              <div class="phase-amount">$7,000–$9,000 <span style="font-size:0.75rem;font-weight:400;color:#6b7280">/ mo</span></div>
+              <div class="phase-campaigns">
+                <span class="campaign-badge" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#8b7355">+ B: Finish Different</span>
+                <span class="campaign-badge" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#8b7355">+ C: Earthian</span>
+                <span class="campaign-badge" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#8b7355">+ D: Sequester This</span>
+              </div>
+              <div class="phase-note">Expand to trade certification pipeline, luxury design segment, and PR/media outreach</div>
+            </div>
+            <div class="budget-card" style="border-color:#8b7355">
+              <div class="phase-label" style="color:#a68b6a">Phase 3</div>
+              <div class="phase-period">Aug 2026+</div>
+              <div class="phase-amount" style="color:#8b7355">$9,000–$12,000 <span style="font-size:0.75rem;font-weight:400;color:#6b7280">/ mo</span></div>
+              <div class="phase-campaigns">
+                <span class="campaign-badge" style="background:#1a1a1a;border:1px solid #8b7355;color:#8b7355">All 6 campaigns</span>
+              </div>
+              <div class="phase-note">Full deployment — optimise by ROAS, scale top performers, build retargeting audiences</div>
+            </div>
+          </div>
+          <div class="budget-annual">
+            <div>
+              <div class="label">Annual Investment Estimate</div>
+              <div style="font-size:0.75rem;color:#4b5563;margin-top:0.2rem">All 6 campaigns, phased ramp-up</div>
+            </div>
+            <div class="value">$75,000–$110,000</div>
+          </div>
+        </div>
+
+        <!-- ── 6. UTM BUILDER ─────────────────────────────────────── -->
+        <div class="panel">
+          <div class="section-heading">Tracking</div>
+          <div class="panel-header">
+            <h2>UTM Link Builder</h2>
+          </div>
+          <p style="font-size:0.8rem;color:#6b7280;margin-bottom:1.25rem">Generate trackable campaign URLs. Fill in the fields below and click Build URL.</p>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Base URL *</label>
+              <input type="url" id="utm-url" value="https://troweledearthmelbourne.com.au/" placeholder="https://troweledearthmelbourne.com.au/" />
+            </div>
+            <div class="form-group">
+              <label>Campaign *</label>
+              <select id="utm-campaign-select">
+                <option value="">Select campaign…</option>
+                <option value="carbon-finish">A – The Carbon Finish</option>
+                <option value="finish-different">B – Finish Different</option>
+                <option value="earthian-certifier">C – Earthian Certifier</option>
+                <option value="sequester-this">D – Sequester This</option>
+                <option value="melbourne-wall">E – Melbourne Wall</option>
+                <option value="show-house">F – Show House</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Source *</label>
+              <select id="utm-source">
+                <option value="">Select source…</option>
+                <option value="google">google</option>
+                <option value="instagram">instagram</option>
+                <option value="facebook">facebook</option>
+                <option value="linkedin">linkedin</option>
+                <option value="email">email</option>
+                <option value="pr">pr</option>
+                <option value="pinterest">pinterest</option>
+                <option value="archipro">archipro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Medium *</label>
+              <select id="utm-medium">
+                <option value="">Select medium…</option>
+                <option value="cpc">cpc</option>
+                <option value="paid_social">paid_social</option>
+                <option value="organic">organic</option>
+                <option value="email">email</option>
+                <option value="editorial">editorial</option>
+                <option value="social">social</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Content (optional)</label>
+              <input type="text" id="utm-content" placeholder="e.g. hero-banner, reel-v1" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" style="width:auto;padding:0.6rem 1.5rem" id="utm-build-btn">Build URL</button>
+            <button class="btn-sm" id="utm-clear-btn">Clear</button>
+          </div>
+
+          <div class="utm-output" id="utm-output" style="display:none">
+            <div style="font-size:0.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem">Generated URL</div>
+            <div class="url-text" id="utm-result"></div>
+            <div class="copy-row">
+              <button class="btn-sm" id="utm-copy-btn">Copy URL</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /.dash-body -->
+    </div><!-- /#dashboard-section -->
+
+    <script>
+      const ADMIN_PASSWORD = 'TEM-admin-2026!';
+      let pw: string | null = null;
+
+      // ── Auth ──────────────────────────────────────────────────────
+      const loginSection = document.getElementById('login-section')!;
+      const dashSection = document.getElementById('dashboard-section')!;
+      const loginError = document.getElementById('login-error')!;
+      const passwordInput = document.getElementById('admin-password') as HTMLInputElement;
+
+      const stored = sessionStorage.getItem('tem-admin-pw');
+      if (stored === ADMIN_PASSWORD) { pw = stored; showDash(); }
+
+      document.getElementById('login-btn')!.addEventListener('click', () => {
+        const val = passwordInput.value;
+        if (val === ADMIN_PASSWORD) {
+          pw = val;
+          sessionStorage.setItem('tem-admin-pw', val);
+          loginError.style.display = 'none';
+          showDash();
+        } else {
+          loginError.textContent = 'Invalid password';
+          loginError.style.display = 'block';
+        }
+      });
+
+      passwordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('login-btn')!.click();
+      });
+
+      document.getElementById('logout-btn')!.addEventListener('click', () => {
+        pw = null;
+        sessionStorage.removeItem('tem-admin-pw');
+        loginSection.style.display = 'flex';
+        dashSection.style.display = 'none';
+      });
+
+      function showDash() {
+        loginSection.style.display = 'none';
+        dashSection.style.display = 'block';
+      }
+
+      // ── Campaign card expand/collapse ─────────────────────────────
+      document.querySelectorAll<HTMLElement>('.campaign-card').forEach(card => {
+        const header = card.querySelector<HTMLElement>('.campaign-card-header');
+        if (header) {
+          header.addEventListener('click', () => {
+            card.classList.toggle('open');
+          });
+        }
+      });
+
+      // ── UTM Builder ───────────────────────────────────────────────
+      function buildUTM() {
+        const base = (document.getElementById('utm-url') as HTMLInputElement).value.trim();
+        const campaign = (document.getElementById('utm-campaign-select') as HTMLSelectElement).value;
+        const source = (document.getElementById('utm-source') as HTMLSelectElement).value;
+        const medium = (document.getElementById('utm-medium') as HTMLSelectElement).value;
+        const content = (document.getElementById('utm-content') as HTMLInputElement).value.trim();
+
+        if (!base || !campaign || !source || !medium) {
+          alert('Base URL, campaign, source, and medium are all required.');
+          return;
+        }
+
+        let url: URL;
+        try {
+          url = new URL(base);
+        } catch {
+          alert('Please enter a valid URL including https://');
+          return;
+        }
+
+        url.searchParams.set('utm_source', source);
+        url.searchParams.set('utm_medium', medium);
+        url.searchParams.set('utm_campaign', campaign);
+        if (content) url.searchParams.set('utm_content', content);
+
+        document.getElementById('utm-result')!.textContent = url.toString();
+        document.getElementById('utm-output')!.style.display = 'block';
+      }
+
+      document.getElementById('utm-build-btn')!.addEventListener('click', buildUTM);
+
+      document.getElementById('utm-clear-btn')!.addEventListener('click', () => {
+        (document.getElementById('utm-url') as HTMLInputElement).value = 'https://troweledearthmelbourne.com.au/';
+        (document.getElementById('utm-campaign-select') as HTMLSelectElement).value = '';
+        (document.getElementById('utm-source') as HTMLSelectElement).value = '';
+        (document.getElementById('utm-medium') as HTMLSelectElement).value = '';
+        (document.getElementById('utm-content') as HTMLInputElement).value = '';
+        document.getElementById('utm-output')!.style.display = 'none';
+      });
+
+      document.getElementById('utm-copy-btn')!.addEventListener('click', () => {
+        const text = document.getElementById('utm-result')!.textContent || '';
+        navigator.clipboard.writeText(text);
+        const btn = document.getElementById('utm-copy-btn')!;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy URL', 2000);
+      });
+    </script>
+  </body>
+</html>
