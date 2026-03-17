@@ -7,11 +7,86 @@ import ChatWidget from '../components/ChatWidget/ChatWidget';
 interface Props {
   title: string;
   description?: string;
+  image?: string;
+  canonical?: string;
+  type?: 'website' | 'article';
   hideHeader?: boolean;
   hideChat?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const { title, description = "Raw. Bold. Brutal. Melbourne's artisan plaster finishes, born from the earth, troweled by hand.", hideHeader = false, hideChat = false } = Astro.props;
+const {
+  title,
+  description = "Raw. Bold. Brutal. Melbourne's artisan plaster finishes, born from the earth, troweled by hand.",
+  image = '/images/hero-poster.jpg',
+  canonical,
+  type = 'website',
+  hideHeader = false,
+  hideChat = false,
+  jsonLd,
+} = Astro.props;
+
+const SITE = 'https://www.troweledearthmelbourne.com.au';
+const canonicalURL = canonical
+  ? `${SITE}${canonical}`
+  : `${SITE}${Astro.url.pathname}`;
+const ogImage = image.startsWith('http') ? image : `${SITE}${image}`;
+
+// Default LocalBusiness schema always present
+const localBusinessSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  '@id': `${SITE}/#business`,
+  name: 'Troweled Earth Melbourne',
+  alternateName: 'TEM',
+  description:
+    "Melbourne's premier artisan plaster finishes studio. Specialists in Venetian plaster, Tadelakt, Concretum, and natural renders — applied by hand.",
+  url: SITE,
+  telephone: '+61-XXX-XXX-XXX',
+  email: 'matt@troweledearthmelbourne.com.au',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Melbourne',
+    addressRegion: 'VIC',
+    addressCountry: 'AU',
+  },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: -37.8136,
+    longitude: 144.9631,
+  },
+  areaServed: [
+    { '@type': 'City', name: 'Melbourne' },
+    { '@type': 'State', name: 'Victoria' },
+  ],
+  priceRange: '$$$$',
+  openingHoursSpecification: {
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    opens: '08:00',
+    closes: '17:00',
+  },
+  sameAs: [
+    'https://www.instagram.com/troweledearthmelbourne',
+  ],
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: 'Artisan Plaster Finishes',
+    itemListElement: [
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Marbellino Venetian Plaster' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Tadelakt Moroccan Plaster' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Concretum Industrial Finish' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Earthen Hemp Renders' } },
+    ],
+  },
+};
+
+// Merge page-level JSON-LD with the always-present LocalBusiness
+const schemas: Record<string, unknown>[] = [localBusinessSchema];
+if (jsonLd) {
+  if (Array.isArray(jsonLd)) schemas.push(...jsonLd);
+  else schemas.push(jsonLd);
+}
 ---
 
 <!doctype html>
@@ -19,23 +94,62 @@ const { title, description = "Raw. Bold. Brutal. Melbourne's artisan plaster fin
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    
+
+    <!-- Primary SEO -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="Troweled Earth Melbourne" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+    <meta property="og:locale" content="en_AU" />
+
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Geo tags -->
+    <meta name="geo.region" content="AU-VIC" />
+    <meta name="geo.placename" content="Melbourne" />
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Google Analytics 4 — replace GA_MEASUREMENT_ID with actual ID -->
+    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'GA_MEASUREMENT_ID');
+    </script> -->
+
+    <!-- JSON-LD Structured Data -->
+    {schemas.map(schema => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
+
     <ViewTransitions />
-    
-    <title>{title}</title>
   </head>
   <body class="antialiased scroll-smooth w-full min-w-full bg-black text-white">
     {!hideHeader && <Header client:load />}

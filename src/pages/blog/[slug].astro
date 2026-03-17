@@ -40,7 +40,26 @@ function formatDate(date: Date): string {
 }
 ---
 
-<Layout title={`${post.data.title} | Troweled Earth Melbourne`} description={post.data.excerpt}>
+<Layout
+  title={`${post.data.title} | Troweled Earth Melbourne`}
+  description={post.data.excerpt}
+  type="article"
+  canonical={`/blog/${post.slug}/`}
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.data.title,
+    description: post.data.excerpt,
+    author: { '@type': 'Person', name: post.data.author },
+    datePublished: post.data.date.toISOString(),
+    publisher: {
+      '@type': 'Organization',
+      name: 'Troweled Earth Melbourne',
+      url: 'https://www.troweledearthmelbourne.com.au',
+    },
+    mainEntityOfPage: `https://www.troweledearthmelbourne.com.au/blog/${post.slug}/`,
+  }}
+>
   <Header client:load />
 
   <!-- Hero Section -->

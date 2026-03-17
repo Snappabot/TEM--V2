@@ -1,0 +1,688 @@
+---
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campaign Dashboard | Troweled Earth</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+      input, select, textarea { font-family: inherit; }
+
+      /* Login */
+      .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+      .login-card { width: 100%; max-width: 380px; }
+      .login-card h1 { font-size: 1.75rem; font-weight: 300; text-align: center; margin-bottom: 2rem; color: #fff; }
+      .login-card input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; }
+      .login-card input:focus { border-color: #8b7355; }
+      .btn-primary { display: block; width: 100%; padding: 0.875rem; margin-top: 0.75rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+      .btn-primary:hover { background: #a68b6a; }
+      .error-msg { color: #f87171; font-size: 0.8rem; margin-top: 0.5rem; }
+
+      /* Dashboard */
+      .dash-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; border-bottom: 1px solid #1a1a1a; }
+      .dash-header h1 { font-size: 1.25rem; font-weight: 400; }
+      .dash-header .logo { color: #8b7355; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; }
+      .btn-sm { padding: 0.5rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+      .btn-sm:hover { border-color: #8b7355; color: #fff; }
+      .btn-danger { background: transparent; border-color: #7f1d1d; color: #f87171; }
+      .btn-danger:hover { background: #7f1d1d; border-color: #7f1d1d; color: #fff; }
+      .btn-edit { border-color: #1d3a7f; color: #93c5fd; }
+      .btn-edit:hover { background: #1d3a7f; color: #fff; }
+
+      .dash-body { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+      /* Stats row */
+      .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+      .stat-card { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.25rem; }
+      .stat-card .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-bottom: 0.5rem; }
+      .stat-card .value { font-size: 1.75rem; font-weight: 600; color: #fff; }
+      .stat-card .sub { font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem; }
+
+      /* Tabs */
+      .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid #1a1a1a; padding-bottom: 0; }
+      .tab { padding: 0.6rem 1rem; font-size: 0.85rem; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.2s; background: none; border-top: none; border-left: none; border-right: none; }
+      .tab.active { color: #8b7355; border-bottom-color: #8b7355; }
+
+      /* Forms */
+      .panel { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+      .panel h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; color: #e5e7eb; }
+      .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+      .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+      .form-group.full { grid-column: 1 / -1; }
+      .form-group label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em; }
+      .form-group input,
+      .form-group select,
+      .form-group textarea { padding: 0.6rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none; }
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus { border-color: #8b7355; }
+      .form-group select option { background: #1a1a1a; }
+      .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+
+      /* Table */
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+      thead tr { border-bottom: 1px solid #1a1a1a; }
+      th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; white-space: nowrap; }
+      td { padding: 0.9rem 1rem; border-bottom: 1px solid #111; vertical-align: middle; }
+      tr:hover td { background: #0f0f0f; }
+      .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+      .badge-active { background: #14532d; color: #86efac; }
+      .badge-paused { background: #713f12; color: #fde68a; }
+      .badge-completed { background: #1e3a5f; color: #93c5fd; }
+      .badge-draft { background: #1a1a1a; color: #9ca3af; }
+      .badge-google { background: #1a3a1a; color: #86efac; }
+      .badge-meta { background: #1a2f5a; color: #93c5fd; }
+      .badge-email { background: #3a1a3a; color: #d8b4fe; }
+      .badge-organic { background: #1a3a3a; color: #67e8f9; }
+      .badge-other { background: #1a1a1a; color: #9ca3af; }
+      .metric { font-variant-numeric: tabular-nums; }
+      .metric-good { color: #86efac; }
+      .metric-zero { color: #374151; }
+      .empty-state { text-align: center; padding: 3rem; color: #4b5563; }
+
+      /* UTM builder */
+      .utm-output { margin-top: 1rem; padding: 1rem; background: #1a1a1a; border-radius: 6px; border: 1px solid #2a2a2a; }
+      .utm-output .url-text { font-size: 0.8rem; color: #9ca3af; word-break: break-all; font-family: 'Courier New', monospace; }
+      .utm-output .copy-row { display: flex; justify-content: flex-end; margin-top: 0.75rem; }
+
+      /* Modal */
+      .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+      .modal { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+      .modal h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; }
+      .modal-close { float: right; background: none; border: none; color: #6b7280; font-size: 1.25rem; cursor: pointer; line-height: 1; }
+
+      @media (max-width: 640px) {
+        .dash-header { padding: 1rem; }
+        .dash-body { padding: 1rem; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- LOGIN GATE -->
+    <div id="login-section" class="login-wrap">
+      <div class="login-card">
+        <h1>Campaign Dashboard</h1>
+        <input type="password" id="admin-password" placeholder="Admin password" autocomplete="current-password" />
+        <p id="login-error" class="error-msg" style="display:none"></p>
+        <button class="btn-primary" id="login-btn">Enter</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" style="display:none">
+      <header class="dash-header">
+        <div>
+          <div class="logo">Troweled Earth Melbourne</div>
+          <h1>Campaign Tracker</h1>
+        </div>
+        <button class="btn-sm" id="logout-btn">Log out</button>
+      </header>
+
+      <div class="dash-body">
+        <!-- Stats -->
+        <div class="stats-grid" id="stats-row">
+          <div class="stat-card"><div class="label">Total Campaigns</div><div class="value" id="stat-total">—</div></div>
+          <div class="stat-card"><div class="label">Active</div><div class="value" id="stat-active">—</div></div>
+          <div class="stat-card"><div class="label">Total Clicks</div><div class="value" id="stat-clicks">—</div></div>
+          <div class="stat-card"><div class="label">Total Leads</div><div class="value" id="stat-leads">—</div></div>
+          <div class="stat-card"><div class="label">Conversions</div><div class="value" id="stat-conv">—</div></div>
+          <div class="stat-card"><div class="label">Total Budget</div><div class="value" id="stat-budget">—</div><div class="sub" id="stat-spend"></div></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab active" data-tab="campaigns">Campaigns</button>
+          <button class="tab" data-tab="add">+ New Campaign</button>
+          <button class="tab" data-tab="utm">UTM Builder</button>
+        </div>
+
+        <!-- Tab: Campaign List -->
+        <div id="tab-campaigns">
+          <div class="panel">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+              <h2 style="margin:0">All Campaigns</h2>
+              <button class="btn-sm" id="refresh-btn">↻ Refresh</button>
+            </div>
+            <div id="campaigns-loading" style="text-align:center;padding:2rem;color:#6b7280">Loading…</div>
+            <div class="table-wrap" id="campaigns-table" style="display:none">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Campaign</th>
+                    <th>Channel</th>
+                    <th>Status</th>
+                    <th>Budget</th>
+                    <th>Spend</th>
+                    <th>Clicks</th>
+                    <th>Leads</th>
+                    <th>Conv.</th>
+                    <th>Dates</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="campaigns-tbody"></tbody>
+              </table>
+            </div>
+            <div id="campaigns-empty" class="empty-state" style="display:none">
+              No campaigns yet. Create your first campaign above.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Add Campaign -->
+        <div id="tab-add" style="display:none">
+          <div class="panel">
+            <h2 id="form-title">New Campaign</h2>
+            <form id="campaign-form">
+              <input type="hidden" id="edit-id" />
+              <div class="form-grid">
+                <div class="form-group full">
+                  <label>Campaign Name *</label>
+                  <input type="text" id="f-name" placeholder="e.g. Spring Marbellino Push" required />
+                </div>
+                <div class="form-group">
+                  <label>Channel *</label>
+                  <select id="f-channel" required>
+                    <option value="">Select channel</option>
+                    <option>Google Ads</option>
+                    <option>Meta Ads</option>
+                    <option>Organic</option>
+                    <option>Email</option>
+                    <option>Referral</option>
+                    <option>Direct</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Status</label>
+                  <select id="f-status">
+                    <option value="draft">Draft</option>
+                    <option value="active" selected>Active</option>
+                    <option value="paused">Paused</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Budget (AUD)</label>
+                  <input type="number" id="f-budget" placeholder="0.00" step="0.01" min="0" />
+                </div>
+                <div class="form-group">
+                  <label>Spend (AUD)</label>
+                  <input type="number" id="f-spend" placeholder="0.00" step="0.01" min="0" />
+                </div>
+                <div class="form-group">
+                  <label>Start Date</label>
+                  <input type="date" id="f-start" />
+                </div>
+                <div class="form-group">
+                  <label>End Date</label>
+                  <input type="date" id="f-end" />
+                </div>
+
+                <!-- Divider -->
+                <div class="form-group full" style="border-top:1px solid #1a1a1a;padding-top:1rem;margin-top:0.5rem">
+                  <label style="font-size:0.65rem;color:#4b5563;letter-spacing:0.15em">UTM PARAMETERS (optional — or use UTM Builder tab)</label>
+                </div>
+
+                <div class="form-group">
+                  <label>UTM Source</label>
+                  <input type="text" id="f-utm-source" placeholder="e.g. google" />
+                </div>
+                <div class="form-group">
+                  <label>UTM Medium</label>
+                  <input type="text" id="f-utm-medium" placeholder="e.g. cpc" />
+                </div>
+                <div class="form-group">
+                  <label>UTM Campaign</label>
+                  <input type="text" id="f-utm-campaign" placeholder="e.g. spring-marbellino" />
+                </div>
+                <div class="form-group">
+                  <label>UTM Content</label>
+                  <input type="text" id="f-utm-content" placeholder="e.g. hero-banner" />
+                </div>
+                <div class="form-group">
+                  <label>UTM Term</label>
+                  <input type="text" id="f-utm-term" placeholder="e.g. venetian+plaster" />
+                </div>
+
+                <!-- Divider -->
+                <div class="form-group full" style="border-top:1px solid #1a1a1a;padding-top:1rem;margin-top:0.5rem">
+                  <label style="font-size:0.65rem;color:#4b5563;letter-spacing:0.15em">RESULTS (update manually or import)</label>
+                </div>
+
+                <div class="form-group">
+                  <label>Impressions</label>
+                  <input type="number" id="f-impressions" placeholder="0" min="0" />
+                </div>
+                <div class="form-group">
+                  <label>Clicks</label>
+                  <input type="number" id="f-clicks" placeholder="0" min="0" />
+                </div>
+                <div class="form-group">
+                  <label>Leads</label>
+                  <input type="number" id="f-leads" placeholder="0" min="0" />
+                </div>
+                <div class="form-group">
+                  <label>Conversions</label>
+                  <input type="number" id="f-conversions" placeholder="0" min="0" />
+                </div>
+                <div class="form-group full">
+                  <label>Notes</label>
+                  <textarea id="f-notes" rows="2" placeholder="Any notes about this campaign…" style="resize:vertical"></textarea>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-primary" style="width:auto;padding:0.6rem 1.5rem" id="form-submit-btn">Create Campaign</button>
+                <button type="button" class="btn-sm" id="form-cancel-btn" style="display:none">Cancel</button>
+              </div>
+              <p id="form-error" class="error-msg" style="display:none;margin-top:0.5rem"></p>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab: UTM Builder -->
+        <div id="tab-utm" style="display:none">
+          <div class="panel">
+            <h2>UTM Link Builder</h2>
+            <p style="font-size:0.8rem;color:#6b7280;margin-bottom:1.25rem">Generate trackable campaign URLs for any page on the TEM website.</p>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label>Destination URL *</label>
+                <input type="url" id="utm-url" placeholder="https://www.troweledearthmelbourne.com.au/products/marbellino/" />
+              </div>
+              <div class="form-group">
+                <label>utm_source *</label>
+                <input type="text" id="utm-source" placeholder="google" />
+              </div>
+              <div class="form-group">
+                <label>utm_medium *</label>
+                <input type="text" id="utm-medium" placeholder="cpc" />
+              </div>
+              <div class="form-group">
+                <label>utm_campaign *</label>
+                <input type="text" id="utm-campaign" placeholder="spring-marbellino-2026" />
+              </div>
+              <div class="form-group">
+                <label>utm_content</label>
+                <input type="text" id="utm-content" placeholder="hero-banner" />
+              </div>
+              <div class="form-group">
+                <label>utm_term</label>
+                <input type="text" id="utm-term" placeholder="venetian+plaster+melbourne" />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" style="width:auto;padding:0.6rem 1.5rem" id="utm-build-btn">Build URL</button>
+              <button class="btn-sm" id="utm-clear-btn">Clear</button>
+            </div>
+
+            <div class="utm-output" id="utm-output" style="display:none">
+              <div class="label" style="font-size:0.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem">Generated URL</div>
+              <div class="url-text" id="utm-result"></div>
+              <div class="copy-row">
+                <button class="btn-sm" id="utm-copy-btn">Copy URL</button>
+              </div>
+            </div>
+
+            <!-- Quick presets -->
+            <div style="margin-top:1.5rem;border-top:1px solid #1a1a1a;padding-top:1.25rem">
+              <div class="label" style="font-size:0.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem">Quick Presets</div>
+              <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+                <button class="btn-sm utm-preset" data-source="google" data-medium="cpc" data-campaign="">Google Ads</button>
+                <button class="btn-sm utm-preset" data-source="facebook" data-medium="paid_social" data-campaign="">Meta / Facebook</button>
+                <button class="btn-sm utm-preset" data-source="instagram" data-medium="paid_social" data-campaign="">Instagram Ads</button>
+                <button class="btn-sm utm-preset" data-source="mailchimp" data-medium="email" data-campaign="">Email Campaign</button>
+                <button class="btn-sm utm-preset" data-source="instagram" data-medium="social" data-campaign="bio_link">Instagram Bio Link</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="edit-modal" style="display:none">
+      <div class="modal">
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+        <h2>Edit Campaign</h2>
+        <div id="modal-body"></div>
+      </div>
+    </div>
+
+    <script>
+      const ADMIN_PASSWORD = 'TEM-admin-2026!';
+      let pw: string | null = null;
+      let allCampaigns: any[] = [];
+
+      // ── Auth ──────────────────────────────────────────────────────
+      const $login = (id: string) => document.getElementById(id) as HTMLElement;
+      const loginSection = $login('login-section');
+      const dashSection = $login('dashboard-section');
+      const loginError = $login('login-error');
+      const passwordInput = document.getElementById('admin-password') as HTMLInputElement;
+
+      const stored = sessionStorage.getItem('tem-admin-pw');
+      if (stored === ADMIN_PASSWORD) { pw = stored; showDash(); }
+
+      document.getElementById('login-btn')!.addEventListener('click', () => {
+        const val = passwordInput.value;
+        if (val === ADMIN_PASSWORD) {
+          pw = val;
+          sessionStorage.setItem('tem-admin-pw', val);
+          loginError.style.display = 'none';
+          showDash();
+        } else {
+          loginError.textContent = 'Invalid password';
+          loginError.style.display = 'block';
+        }
+      });
+      passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('login-btn')!.click(); });
+
+      document.getElementById('logout-btn')!.addEventListener('click', () => {
+        pw = null;
+        sessionStorage.removeItem('tem-admin-pw');
+        loginSection.style.display = 'flex';
+        dashSection.style.display = 'none';
+      });
+
+      function showDash() {
+        loginSection.style.display = 'none';
+        dashSection.style.display = 'block';
+        loadCampaigns();
+      }
+
+      // ── Tabs ──────────────────────────────────────────────────────
+      document.querySelectorAll<HTMLButtonElement>('.tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          btn.classList.add('active');
+          ['campaigns', 'add', 'utm'].forEach(id => {
+            const el = document.getElementById(`tab-${id}`);
+            if (el) el.style.display = btn.dataset.tab === id ? 'block' : 'none';
+          });
+        });
+      });
+
+      // ── API helpers ───────────────────────────────────────────────
+      async function api(method: string, body?: object) {
+        const res = await fetch('/api/admin/campaigns', {
+          method,
+          headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw || '' },
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        return res.json();
+      }
+
+      // ── Campaign list ─────────────────────────────────────────────
+      async function loadCampaigns() {
+        document.getElementById('campaigns-loading')!.style.display = 'block';
+        document.getElementById('campaigns-table')!.style.display = 'none';
+        document.getElementById('campaigns-empty')!.style.display = 'none';
+
+        const data = await api('GET');
+        allCampaigns = data.campaigns || [];
+
+        updateStats(allCampaigns);
+
+        document.getElementById('campaigns-loading')!.style.display = 'none';
+
+        if (allCampaigns.length === 0) {
+          document.getElementById('campaigns-empty')!.style.display = 'block';
+          return;
+        }
+
+        renderTable(allCampaigns);
+        document.getElementById('campaigns-table')!.style.display = 'block';
+      }
+
+      function updateStats(campaigns: any[]) {
+        const active = campaigns.filter(c => c.status === 'active').length;
+        const totalBudget = campaigns.reduce((s, c) => s + (parseFloat(c.budget) || 0), 0);
+        const totalSpend = campaigns.reduce((s, c) => s + (parseFloat(c.spend) || 0), 0);
+        document.getElementById('stat-total')!.textContent = String(campaigns.length);
+        document.getElementById('stat-active')!.textContent = String(active);
+        document.getElementById('stat-clicks')!.textContent = campaigns.reduce((s, c) => s + (c.clicks || 0), 0).toLocaleString();
+        document.getElementById('stat-leads')!.textContent = campaigns.reduce((s, c) => s + (c.leads || 0), 0).toLocaleString();
+        document.getElementById('stat-conv')!.textContent = campaigns.reduce((s, c) => s + (c.conversions || 0), 0).toLocaleString();
+        document.getElementById('stat-budget')!.textContent = totalBudget > 0 ? `$${totalBudget.toLocaleString('en-AU', {maximumFractionDigits: 0})}` : '—';
+        document.getElementById('stat-spend')!.textContent = totalSpend > 0 ? `$${totalSpend.toLocaleString('en-AU', {maximumFractionDigits: 0})} spent` : '';
+      }
+
+      function channelBadgeClass(ch: string) {
+        if (ch === 'Google Ads') return 'badge-google';
+        if (ch === 'Meta Ads') return 'badge-meta';
+        if (ch === 'Email') return 'badge-email';
+        if (ch === 'Organic') return 'badge-organic';
+        return 'badge-other';
+      }
+
+      function statusBadgeClass(s: string) {
+        return `badge-${s}`;
+      }
+
+      function fmt(n: number | null) {
+        if (!n) return `<span class="metric metric-zero">0</span>`;
+        return `<span class="metric metric-good">${n.toLocaleString()}</span>`;
+      }
+
+      function fmtDate(d: string | null) {
+        if (!d) return '—';
+        return new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: '2-digit' });
+      }
+
+      function renderTable(campaigns: any[]) {
+        const tbody = document.getElementById('campaigns-tbody')!;
+        tbody.innerHTML = campaigns.map(c => `
+          <tr>
+            <td>
+              <div style="font-weight:500;color:#e5e7eb">${escHtml(c.name)}</div>
+              ${c.utm_campaign ? `<div style="font-size:0.7rem;color:#4b5563;margin-top:0.2rem">utm: ${escHtml(c.utm_campaign)}</div>` : ''}
+            </td>
+            <td><span class="badge ${channelBadgeClass(c.channel)}">${escHtml(c.channel)}</span></td>
+            <td><span class="badge ${statusBadgeClass(c.status)}">${c.status}</span></td>
+            <td class="metric">${c.budget ? `$${parseFloat(c.budget).toLocaleString('en-AU', {maximumFractionDigits: 0})}` : '—'}</td>
+            <td class="metric">${c.spend ? `$${parseFloat(c.spend).toLocaleString('en-AU', {maximumFractionDigits: 0})}` : '—'}</td>
+            <td>${fmt(c.clicks)}</td>
+            <td>${fmt(c.leads)}</td>
+            <td>${fmt(c.conversions)}</td>
+            <td style="font-size:0.75rem;color:#6b7280;white-space:nowrap">
+              ${fmtDate(c.start_date)}<br>${c.end_date ? `→ ${fmtDate(c.end_date)}` : ''}
+            </td>
+            <td style="white-space:nowrap;display:flex;gap:0.4rem">
+              <button class="btn-sm btn-edit edit-btn" data-id="${c.id}">Edit</button>
+              <button class="btn-sm btn-danger delete-btn" data-id="${c.id}">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+
+        // Edit buttons
+        tbody.querySelectorAll<HTMLButtonElement>('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const c = allCampaigns.find(x => x.id === btn.dataset.id);
+            if (c) openEditModal(c);
+          });
+        });
+
+        // Delete buttons
+        tbody.querySelectorAll<HTMLButtonElement>('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const c = allCampaigns.find(x => x.id === btn.dataset.id);
+            if (!c) return;
+            if (!confirm(`Delete campaign "${c.name}"? This cannot be undone.`)) return;
+            await api('DELETE', { id: c.id });
+            loadCampaigns();
+          });
+        });
+      }
+
+      document.getElementById('refresh-btn')!.addEventListener('click', loadCampaigns);
+
+      // ── Create / Edit form ────────────────────────────────────────
+      const form = document.getElementById('campaign-form') as HTMLFormElement;
+      const formError = document.getElementById('form-error')!;
+      const submitBtn = document.getElementById('form-submit-btn')!;
+      const cancelBtn = document.getElementById('form-cancel-btn')!;
+      const formTitle = document.getElementById('form-title')!;
+      const editId = document.getElementById('edit-id') as HTMLInputElement;
+
+      function getFormValues() {
+        return {
+          name: (document.getElementById('f-name') as HTMLInputElement).value.trim(),
+          channel: (document.getElementById('f-channel') as HTMLSelectElement).value,
+          status: (document.getElementById('f-status') as HTMLSelectElement).value,
+          budget: parseFloat((document.getElementById('f-budget') as HTMLInputElement).value) || null,
+          spend: parseFloat((document.getElementById('f-spend') as HTMLInputElement).value) || 0,
+          start_date: (document.getElementById('f-start') as HTMLInputElement).value || null,
+          end_date: (document.getElementById('f-end') as HTMLInputElement).value || null,
+          utm_source: (document.getElementById('f-utm-source') as HTMLInputElement).value.trim() || null,
+          utm_medium: (document.getElementById('f-utm-medium') as HTMLInputElement).value.trim() || null,
+          utm_campaign: (document.getElementById('f-utm-campaign') as HTMLInputElement).value.trim() || null,
+          utm_content: (document.getElementById('f-utm-content') as HTMLInputElement).value.trim() || null,
+          utm_term: (document.getElementById('f-utm-term') as HTMLInputElement).value.trim() || null,
+          impressions: parseInt((document.getElementById('f-impressions') as HTMLInputElement).value) || 0,
+          clicks: parseInt((document.getElementById('f-clicks') as HTMLInputElement).value) || 0,
+          leads: parseInt((document.getElementById('f-leads') as HTMLInputElement).value) || 0,
+          conversions: parseInt((document.getElementById('f-conversions') as HTMLInputElement).value) || 0,
+          notes: (document.getElementById('f-notes') as HTMLTextAreaElement).value.trim() || null,
+        };
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        formError.style.display = 'none';
+        submitBtn.setAttribute('disabled', 'true');
+        submitBtn.textContent = 'Saving…';
+
+        const values = getFormValues();
+        const id = editId.value;
+
+        const data = id ? await api('PUT', { id, ...values }) : await api('POST', values);
+
+        submitBtn.removeAttribute('disabled');
+        submitBtn.textContent = id ? 'Update Campaign' : 'Create Campaign';
+
+        if (data.error) {
+          formError.textContent = data.error;
+          formError.style.display = 'block';
+          return;
+        }
+
+        // Reset form
+        form.reset();
+        editId.value = '';
+        formTitle.textContent = 'New Campaign';
+        submitBtn.textContent = 'Create Campaign';
+        cancelBtn.style.display = 'none';
+
+        // Switch to campaigns tab and reload
+        document.querySelector<HTMLButtonElement>('.tab[data-tab="campaigns"]')!.click();
+        loadCampaigns();
+      });
+
+      cancelBtn.addEventListener('click', () => {
+        form.reset();
+        editId.value = '';
+        formTitle.textContent = 'New Campaign';
+        submitBtn.textContent = 'Create Campaign';
+        cancelBtn.style.display = 'none';
+        formError.style.display = 'none';
+      });
+
+      // ── Edit modal ────────────────────────────────────────────────
+      function openEditModal(c: any) {
+        // Populate form and switch to add tab
+        editId.value = c.id;
+        (document.getElementById('f-name') as HTMLInputElement).value = c.name;
+        (document.getElementById('f-channel') as HTMLSelectElement).value = c.channel;
+        (document.getElementById('f-status') as HTMLSelectElement).value = c.status;
+        (document.getElementById('f-budget') as HTMLInputElement).value = c.budget || '';
+        (document.getElementById('f-spend') as HTMLInputElement).value = c.spend || '';
+        (document.getElementById('f-start') as HTMLInputElement).value = c.start_date || '';
+        (document.getElementById('f-end') as HTMLInputElement).value = c.end_date || '';
+        (document.getElementById('f-utm-source') as HTMLInputElement).value = c.utm_source || '';
+        (document.getElementById('f-utm-medium') as HTMLInputElement).value = c.utm_medium || '';
+        (document.getElementById('f-utm-campaign') as HTMLInputElement).value = c.utm_campaign || '';
+        (document.getElementById('f-utm-content') as HTMLInputElement).value = c.utm_content || '';
+        (document.getElementById('f-utm-term') as HTMLInputElement).value = c.utm_term || '';
+        (document.getElementById('f-impressions') as HTMLInputElement).value = c.impressions || '';
+        (document.getElementById('f-clicks') as HTMLInputElement).value = c.clicks || '';
+        (document.getElementById('f-leads') as HTMLInputElement).value = c.leads || '';
+        (document.getElementById('f-conversions') as HTMLInputElement).value = c.conversions || '';
+        (document.getElementById('f-notes') as HTMLTextAreaElement).value = c.notes || '';
+
+        formTitle.textContent = `Edit: ${c.name}`;
+        submitBtn.textContent = 'Update Campaign';
+        cancelBtn.style.display = 'inline-block';
+
+        document.querySelector<HTMLButtonElement>('.tab[data-tab="add"]')!.click();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // ── UTM Builder ───────────────────────────────────────────────
+      function buildUTM() {
+        const base = (document.getElementById('utm-url') as HTMLInputElement).value.trim();
+        const source = (document.getElementById('utm-source') as HTMLInputElement).value.trim();
+        const medium = (document.getElementById('utm-medium') as HTMLInputElement).value.trim();
+        const campaign = (document.getElementById('utm-campaign') as HTMLInputElement).value.trim();
+        const content = (document.getElementById('utm-content') as HTMLInputElement).value.trim();
+        const term = (document.getElementById('utm-term') as HTMLInputElement).value.trim();
+
+        if (!base || !source || !medium || !campaign) {
+          alert('URL, source, medium, and campaign are required.');
+          return;
+        }
+
+        const url = new URL(base);
+        url.searchParams.set('utm_source', source);
+        url.searchParams.set('utm_medium', medium);
+        url.searchParams.set('utm_campaign', campaign);
+        if (content) url.searchParams.set('utm_content', content);
+        if (term) url.searchParams.set('utm_term', term);
+
+        document.getElementById('utm-result')!.textContent = url.toString();
+        document.getElementById('utm-output')!.style.display = 'block';
+      }
+
+      document.getElementById('utm-build-btn')!.addEventListener('click', buildUTM);
+
+      document.getElementById('utm-clear-btn')!.addEventListener('click', () => {
+        ['utm-url','utm-source','utm-medium','utm-campaign','utm-content','utm-term'].forEach(id => {
+          (document.getElementById(id) as HTMLInputElement).value = '';
+        });
+        document.getElementById('utm-output')!.style.display = 'none';
+      });
+
+      document.getElementById('utm-copy-btn')!.addEventListener('click', () => {
+        const text = document.getElementById('utm-result')!.textContent || '';
+        navigator.clipboard.writeText(text);
+        const btn = document.getElementById('utm-copy-btn')!;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy URL', 2000);
+      });
+
+      document.querySelectorAll<HTMLButtonElement>('.utm-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          (document.getElementById('utm-source') as HTMLInputElement).value = btn.dataset.source || '';
+          (document.getElementById('utm-medium') as HTMLInputElement).value = btn.dataset.medium || '';
+          if (btn.dataset.campaign) {
+            (document.getElementById('utm-campaign') as HTMLInputElement).value = btn.dataset.campaign;
+          }
+        });
+      });
+
+      // ── Helpers ───────────────────────────────────────────────────
+      function escHtml(str: string) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+    </script>
+  </body>
+</html>
