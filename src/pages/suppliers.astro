@@ -9,7 +9,7 @@ import AnimatedFooter from '../components/AnimatedFooter';
   <section class="relative h-[50vh] min-h-[400px] flex items-center justify-center bg-[#0a0a0a] overflow-hidden">
     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#0a0a0a]/80 z-10"></div>
     <div class="relative z-20 text-center px-6">
-      <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Authorised Stockist</span>
+      <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Authorised Stockists</span>
       <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight">
         Where to Buy
       </h1>
@@ -26,38 +26,64 @@ import AnimatedFooter from '../components/AnimatedFooter';
           Ready to transform your space with Troweled Earth products?
         </p>
         <p class="text-lg text-[#1a1a1a]/70 leading-relaxed max-w-2xl mx-auto">
-          Our premium plaster finishes are available through our authorised stockist, 
-          Render Supply Co. Browse our full range and order online for delivery across Australia.
+          Our premium plaster finishes are available through our authorised stockists.
+          Browse online or visit in-store.
         </p>
       </div>
 
-      <!-- Supplier Card -->
-      <div class="bg-white rounded-lg shadow-lg p-12 mb-16">
-        <div class="flex flex-col items-center">
-          <div class="w-20 h-20 bg-[#8b7355]/10 rounded-full flex items-center justify-center mb-6">
-            <svg class="w-10 h-10 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <!-- Supplier Cards -->
+      <div class="grid md:grid-cols-2 gap-8 mb-16">
+
+        <!-- Render Supply Co -->
+        <div class="bg-white rounded-lg shadow-lg p-10 flex flex-col items-center text-center">
+          <div class="w-16 h-16 bg-[#8b7355]/10 rounded-full flex items-center justify-center mb-5">
+            <svg class="w-8 h-8 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
-          
-          <h2 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-4">Render Supply Co</h2>
-          <p class="text-lg text-[#1a1a1a]/70 mb-8 max-w-lg">
-            Australia's premier supplier of rendering and plastering materials. 
-            Fast shipping, expert advice, and quality guaranteed.
+          <h2 class="text-2xl font-bold text-[#1a1a1a] mb-3">Render Supply Co</h2>
+          <p class="text-[#1a1a1a]/70 mb-6 text-sm leading-relaxed">
+            Australia's premier supplier of rendering and plastering materials.
+            Full Troweled Earth range available online with Australia-wide shipping.
           </p>
-          
-          <a 
+          <a
             href="https://store.rendersupplyco.com.au/interior-and-exterior-coatings/surface-coating/troweled-earth.html"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center gap-3 px-10 py-5 bg-[#1a1a1a] text-white font-medium uppercase tracking-widest text-sm hover:bg-[#8b7355] transition-colors"
+            class="inline-flex items-center gap-2 px-7 py-4 bg-[#1a1a1a] text-white font-medium uppercase tracking-widest text-xs hover:bg-[#8b7355] transition-colors mt-auto"
           >
-            Shop Troweled Earth Products
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            Shop Online
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
           </a>
         </div>
+
+        <!-- Colour World Geelong -->
+        <div class="bg-white rounded-lg shadow-lg p-10 flex flex-col items-center text-center">
+          <div class="w-16 h-16 bg-[#8b7355]/10 rounded-full flex items-center justify-center mb-5">
+            <svg class="w-8 h-8 text-[#8b7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-[#1a1a1a] mb-3">Colour World Geelong</h2>
+          <p class="text-[#1a1a1a]/70 mb-6 text-sm leading-relaxed">
+            Geelong's specialist paint and decorative finishes store.
+            Visit in-store to see and feel the Troweled Earth range first-hand.
+          </p>
+          <a
+            href="https://colourworld.com.au/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-7 py-4 bg-[#1a1a1a] text-white font-medium uppercase tracking-widest text-xs hover:bg-[#8b7355] transition-colors mt-auto"
+          >
+            Visit Website
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+
       </div>
 
       <!-- Additional Info -->
