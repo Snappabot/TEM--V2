@@ -299,7 +299,7 @@ function generateResponse(message: string, history: { role: string; content: str
 
   // ── Suppliers ─────────────────────────────────────────────────────────────
   if (lower.match(/supplier|stockist|where.*buy|buy|purchase|store|distributor/)) {
-    return `Our products are available from these stockists:\n\n🏪 **Render Supply Co** — [shop online](https://store.rendersupplyco.com.au/interior-and-exterior-coatings/surface-coating/troweled-earth.html)\n🏪 **Colour World Geelong** — [colourworld.com.au](https://colourworld.com.au/)\n\nFor project orders and consultations, contact us directly.`;
+    return `Our products are available from these stockists:\n\n🏪 **Render Supply Co** — [shop online](https://store.rendersupplyco.com.au/interior-and-exterior-coatings/surface-coating/troweled-earth.html)\n🏪 **Colour World Geelong** — [colourworld.com.au](https://colourworld.com.au/)\n🏪 **Wet Trades** — [wettrades.com.au](https://wettrades.com.au/)\n\nFor project orders and consultations, contact us directly.`;
   }
 
   // ── After several exchanges — offer contact ───────────────────────────────
