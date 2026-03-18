@@ -4,6 +4,7 @@ import CustomCursor from '../../components/CustomCursor';
 import ScrollProgress from '../../components/ScrollProgress';
 import AnimatedFooter from '../../components/AnimatedFooter';
 import GalleryWithLightbox from '../../components/GalleryWithLightbox';
+import InfiniteZoomMetals from '../../components/InfiniteZoomMetals';
 
 const product = {
   name: 'Metallics',
@@ -128,6 +129,9 @@ const product = {
       <p class="text-xl text-white/70 mt-6 max-w-2xl">{product.description}</p>
     </div>
   </section>
+
+  <!-- Infinite Zoom -->
+  <InfiniteZoomMetals client:load />
 
   <!-- Sub Products -->
   <section class="py-24 bg-[#1a1a1a]">
