@@ -33,10 +33,30 @@ export const prerender = false;
         <div class="max-w-6xl mx-auto flex items-center justify-between">
           <h1 class="text-2xl font-light">Visualizer Admin</h1>
           <div class="flex items-center gap-3">
-            <nav class="flex gap-2">
-              <a href="/admin/campaigns" class="px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-sm hover:border-neutral-600 hover:text-white transition-colors no-underline">Campaigns</a>
-              <a href="/admin/strategy" class="px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-sm hover:border-neutral-600 hover:text-white transition-colors no-underline">Strategy</a>
-              <a href="/admin/analytics" class="px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-sm hover:border-neutral-600 hover:text-white transition-colors no-underline">Analytics</a>
+            <nav class="flex gap-4 flex-wrap items-start">
+              <div class="flex flex-col gap-1">
+                <span class="text-neutral-600 text-xs uppercase tracking-widest">SEO &amp; Campaigns</span>
+                <div class="flex gap-1.5 flex-wrap">
+                  <a href="/admin/campaigns" class="px-2.5 py-1 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-xs hover:border-neutral-600 hover:text-white transition-colors no-underline">Campaigns</a>
+                  <a href="/admin/strategy" class="px-2.5 py-1 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-xs hover:border-neutral-600 hover:text-white transition-colors no-underline">Strategy</a>
+                  <a href="/admin/content" class="px-2.5 py-1 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-xs hover:border-neutral-600 hover:text-white transition-colors no-underline">Content</a>
+                  <a href="/admin/links" class="px-2.5 py-1 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-xs hover:border-neutral-600 hover:text-white transition-colors no-underline">Links</a>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-neutral-600 text-xs uppercase tracking-widest">Tracking</span>
+                <div class="flex gap-1.5 flex-wrap">
+                  <a href="/admin/analytics" class="px-2.5 py-1 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-xs hover:border-neutral-600 hover:text-white transition-colors no-underline">Analytics</a>
+                  <a href="/admin/cro" class="px-2.5 py-1 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-xs hover:border-neutral-600 hover:text-white transition-colors no-underline">CRO</a>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-neutral-600 text-xs uppercase tracking-widest">Operations</span>
+                <div class="flex gap-1.5 flex-wrap">
+                  <a href="/admin/team" class="px-2.5 py-1 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-xs hover:border-neutral-600 hover:text-white transition-colors no-underline">Team</a>
+                  <a href="/admin/future" class="px-2.5 py-1 bg-neutral-900 border border-neutral-800 rounded text-neutral-400 text-xs hover:border-neutral-600 hover:text-white transition-colors no-underline">AI Future</a>
+                </div>
+              </div>
             </nav>
             <button
               id="logout-btn"

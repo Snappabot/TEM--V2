@@ -1,0 +1,615 @@
+---
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team & Execution Hub | TEM Admin</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+      input, select, textarea { font-family: inherit; }
+
+      .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+      .login-card { width: 100%; max-width: 380px; }
+      .login-card h1 { font-size: 1.75rem; font-weight: 300; text-align: center; margin-bottom: 2rem; color: #fff; }
+      .login-card input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; }
+      .login-card input:focus { border-color: #8b7355; }
+      .btn-primary { display: block; width: 100%; padding: 0.875rem; margin-top: 0.75rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+      .btn-primary:hover { background: #a68b6a; }
+      .error-msg { color: #f87171; font-size: 0.8rem; margin-top: 0.5rem; }
+
+      .dash-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; border-bottom: 1px solid #1a1a1a; flex-wrap: wrap; gap: 0.75rem; }
+      .dash-header h1 { font-size: 1.25rem; font-weight: 400; }
+      .dash-header .logo { color: #8b7355; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; }
+      .btn-sm { padding: 0.5rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+      .btn-sm:hover { border-color: #8b7355; color: #fff; }
+
+      .dash-nav { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
+      .nav-group { display: flex; flex-direction: column; gap: 0.3rem; }
+      .nav-group-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.15em; color: #4b5563; }
+      .nav-group-links { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+      .dash-nav a { padding: 0.35rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.78rem; text-decoration: none; transition: all 0.2s; white-space: nowrap; }
+      .dash-nav a:hover { border-color: #8b7355; color: #fff; }
+      .dash-nav a.active { border-color: #8b7355; color: #8b7355; }
+
+      .btn-danger { background: transparent; border-color: #7f1d1d; color: #f87171; }
+      .btn-danger:hover { background: #7f1d1d; border-color: #7f1d1d; color: #fff; }
+
+      .dash-body { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+      .section-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; color: #e5e7eb; display: flex; align-items: center; gap: 0.75rem; }
+      .section-title .tag { font-size: 0.65rem; background: #1a1a2e; color: #93c5fd; border-radius: 4px; padding: 0.2rem 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; }
+
+      .panel { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem; }
+      .panel h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; color: #e5e7eb; }
+
+      .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+      .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+      .form-group.full { grid-column: 1 / -1; }
+      .form-group label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em; }
+      .form-group input, .form-group select, .form-group textarea { padding: 0.6rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none; }
+      .form-group input:focus, .form-group select:focus { border-color: #8b7355; }
+      .form-group select option { background: #1a1a1a; }
+      .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+
+      /* Responsibility Matrix */
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+      thead tr { border-bottom: 1px solid #1a1a1a; }
+      th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; white-space: nowrap; }
+      td { padding: 0.75rem 1rem; border-bottom: 1px solid #111; vertical-align: middle; }
+      tr:hover td { background: #0f0f0f; }
+      .editable-cell { cursor: pointer; }
+      .editable-cell:hover { background: #161616; }
+      .editable-cell input { background: transparent; border: none; border-bottom: 1px solid #8b7355; color: #fff; font-size: 0.85rem; width: 100%; outline: none; padding: 0.1rem 0; }
+      .empty-state { text-align: center; padding: 3rem; color: #4b5563; }
+
+      /* Accordion */
+      .accordion-item { border: 1px solid #1a1a1a; border-radius: 8px; margin-bottom: 0.5rem; overflow: hidden; }
+      .accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; cursor: pointer; background: #111; transition: background 0.2s; user-select: none; }
+      .accordion-header:hover { background: #161616; }
+      .acc-title { display: flex; align-items: center; gap: 0.75rem; }
+      .acc-title span { font-size: 0.9rem; font-weight: 500; color: #e5e7eb; }
+      .acc-badge { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+      .acc-badge-weekly { background: #14532d; color: #86efac; }
+      .acc-badge-monthly { background: #1e3a5f; color: #93c5fd; }
+      .acc-badge-quarterly { background: #3a1d5f; color: #d8b4fe; }
+      .acc-badge-algo { background: #3a2800; color: #fbbf24; }
+      .accordion-icon { color: #6b7280; font-size: 1rem; transition: transform 0.2s; display: inline-block; }
+      .accordion-icon.open { transform: rotate(45deg); }
+      .accordion-body { display: none; padding: 1.25rem; background: #0d0d0d; border-top: 1px solid #1a1a1a; }
+      .accordion-body.open { display: block; }
+      .task-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+      .task-list li { display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.85rem; color: #d1d5db; padding: 0.4rem 0; }
+      .task-list li::before { content: '→'; color: #8b7355; min-width: 1rem; font-size: 0.8rem; margin-top: 0.1rem; }
+
+      /* Contingency cards */
+      .contingency-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+      .warning-card { border-radius: 10px; overflow: hidden; }
+      .warning-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; cursor: pointer; user-select: none; transition: filter 0.2s; }
+      .warning-header:hover { filter: brightness(1.1); }
+      .warning-header-inner { display: flex; align-items: center; gap: 0.75rem; }
+      .warning-icon { font-size: 1.25rem; }
+      .warning-title { font-size: 0.9rem; font-weight: 600; }
+      .warning-toggle { font-size: 1rem; color: rgba(255,255,255,0.6); transition: transform 0.2s; display: inline-block; }
+      .warning-toggle.open { transform: rotate(45deg); }
+      .warning-body { display: none; padding: 1.25rem; }
+      .warning-body.open { display: block; }
+      .warning-body ol { list-style: none; counter-reset: steps; display: flex; flex-direction: column; gap: 0.6rem; }
+      .warning-body ol li { counter-increment: steps; display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.83rem; line-height: 1.5; }
+      .warning-body ol li::before { content: counter(steps); min-width: 1.5rem; height: 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+
+      .warning-card-traffic { background: #1a0a0a; border: 1px solid #7f1d1d; }
+      .warning-card-traffic .warning-header { background: #2a0a0a; }
+      .warning-card-traffic .warning-title { color: #fca5a5; }
+      .warning-card-traffic .warning-body { background: #1a0a0a; color: #fca5a5; }
+      .warning-card-traffic ol li::before { background: #7f1d1d; color: #fca5a5; }
+
+      .warning-card-cpl { background: #1a1400; border: 1px solid #92400e; }
+      .warning-card-cpl .warning-header { background: #2a1e00; }
+      .warning-card-cpl .warning-title { color: #fde68a; }
+      .warning-card-cpl .warning-body { background: #1a1400; color: #fde68a; }
+      .warning-card-cpl ol li::before { background: #92400e; color: #fde68a; }
+
+      .warning-card-backlink { background: #001a1a; border: 1px solid #164e63; }
+      .warning-card-backlink .warning-header { background: #002020; }
+      .warning-card-backlink .warning-title { color: #67e8f9; }
+      .warning-card-backlink .warning-body { background: #001a1a; color: #a5f3fc; }
+      .warning-card-backlink ol li::before { background: #164e63; color: #67e8f9; }
+
+      .warning-card-review { background: #0d0a1a; border: 1px solid #4c1d95; }
+      .warning-card-review .warning-header { background: #160d2a; }
+      .warning-card-review .warning-title { color: #d8b4fe; }
+      .warning-card-review .warning-body { background: #0d0a1a; color: #ddd6fe; }
+      .warning-card-review ol li::before { background: #4c1d95; color: #d8b4fe; }
+
+      @media (max-width: 640px) {
+        .dash-header { padding: 1rem; }
+        .dash-body { padding: 1rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- LOGIN GATE -->
+    <div id="login-section" class="login-wrap">
+      <div class="login-card">
+        <h1>Team & Execution</h1>
+        <input type="password" id="admin-password" placeholder="Admin password" autocomplete="current-password" />
+        <p id="login-error" class="error-msg" style="display:none"></p>
+        <button class="btn-primary" id="login-btn">Enter</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" style="display:none">
+      <header class="dash-header">
+        <div>
+          <div class="logo">Troweled Earth Melbourne</div>
+          <h1>Team & Execution Hub</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+          <nav class="dash-nav">
+            <div class="nav-group">
+              <div class="nav-group-label">SEO & Campaigns</div>
+              <div class="nav-group-links">
+                <a href="/admin/campaigns">Campaigns</a>
+                <a href="/admin/strategy">Strategy</a>
+                <a href="/admin/content">Content</a>
+                <a href="/admin/links">Links</a>
+              </div>
+            </div>
+            <div class="nav-group">
+              <div class="nav-group-label">Tracking</div>
+              <div class="nav-group-links">
+                <a href="/admin/analytics">Analytics</a>
+                <a href="/admin/cro">CRO</a>
+              </div>
+            </div>
+            <div class="nav-group">
+              <div class="nav-group-label">Operations</div>
+              <div class="nav-group-links">
+                <a href="/admin/team" class="active">Team</a>
+                <a href="/admin/future">AI Future</a>
+              </div>
+            </div>
+          </nav>
+          <button class="btn-sm" id="logout-btn">Log out</button>
+        </div>
+      </header>
+
+      <div class="dash-body">
+
+        <!-- ── SECTION 1: Responsibility Matrix ──────────────────── -->
+        <div class="section-title">Responsibility Matrix <span class="tag">Section 1</span></div>
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem">
+            <h2 style="margin:0">Team Responsibilities</h2>
+            <div style="display:flex;gap:0.5rem">
+              <button class="btn-sm" id="tm-add-btn">+ Add Row</button>
+              <button class="btn-sm" id="tm-refresh-btn">↻ Refresh</button>
+            </div>
+          </div>
+          <p style="font-size:0.75rem;color:#4b5563;margin-bottom:1rem">Click any cell to edit inline. Press Enter or click away to save.</p>
+          <div id="tm-loading" style="text-align:center;padding:2rem;color:#6b7280">Loading…</div>
+          <div class="table-wrap" id="tm-table" style="display:none">
+            <table>
+              <thead>
+                <tr>
+                  <th>Area</th>
+                  <th>Owner</th>
+                  <th>Frequency</th>
+                  <th>Tools</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tm-tbody"></tbody>
+            </table>
+          </div>
+          <div id="tm-empty" class="empty-state" style="display:none">No responsibilities defined yet.</div>
+
+          <!-- Add form -->
+          <div id="tm-form-wrap" style="display:none;margin-top:1.5rem;border-top:1px solid #1a1a1a;padding-top:1.5rem">
+            <h2>Add Responsibility</h2>
+            <div class="form-grid">
+              <div class="form-group"><label>Area</label><input type="text" id="tm-area" placeholder="SEO Content" /></div>
+              <div class="form-group"><label>Owner</label><input type="text" id="tm-owner" placeholder="Marketing Manager" /></div>
+              <div class="form-group"><label>Frequency</label><input type="text" id="tm-freq" placeholder="Weekly" /></div>
+              <div class="form-group"><label>Tools</label><input type="text" id="tm-tools" placeholder="GSC, Ahrefs" /></div>
+              <div class="form-group full"><label>Notes</label><input type="text" id="tm-notes" /></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" style="width:auto;padding:0.6rem 1.5rem" id="tm-save-btn">Add Row</button>
+              <button class="btn-sm" id="tm-cancel-btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 2: Review Cadence ─────────────────────────── -->
+        <div class="section-title">Review Cadence <span class="tag">Section 2</span></div>
+        <div class="panel">
+          <div id="review-cadence">
+            <!-- Weekly -->
+            <div class="accordion-item">
+              <div class="accordion-header" data-acc="weekly">
+                <div class="acc-title">
+                  <span class="acc-badge acc-badge-weekly">Weekly</span>
+                  <span>Weekly Review Tasks</span>
+                </div>
+                <span class="accordion-icon" id="acc-icon-weekly">+</span>
+              </div>
+              <div class="accordion-body" id="acc-body-weekly">
+                <ul class="task-list">
+                  <li>Check Google Search Console for coverage errors & new keywords</li>
+                  <li>Review Ahrefs rank tracker — flag any drops &gt;3 positions</li>
+                  <li>Check Google Business Profile for new reviews (respond within 24h)</li>
+                  <li>Review Google Ads performance — pause underperforming ad groups</li>
+                  <li>Check Core Web Vitals on key product pages</li>
+                  <li>Monitor lead form submissions & notify sales team</li>
+                  <li>Schedule 1–2 social media posts for next week</li>
+                </ul>
+              </div>
+            </div>
+            <!-- Monthly -->
+            <div class="accordion-item">
+              <div class="accordion-header" data-acc="monthly">
+                <div class="acc-title">
+                  <span class="acc-badge acc-badge-monthly">Monthly</span>
+                  <span>Monthly Review Tasks</span>
+                </div>
+                <span class="accordion-icon" id="acc-icon-monthly">+</span>
+              </div>
+              <div class="accordion-body" id="acc-body-monthly">
+                <ul class="task-list">
+                  <li>Export GSC data — compare MoM impressions, clicks, CTR</li>
+                  <li>Log brand search metrics to Brand Search Lift Tracker</li>
+                  <li>Ahrefs full backlink audit — disavow toxic links</li>
+                  <li>Publish minimum 1 blog article with internal linking</li>
+                  <li>Review and update top-10 landing page meta titles & descriptions</li>
+                  <li>Report Google Ads spend vs budget — adjust bids</li>
+                  <li>Analyse heatmaps — identify drop-off points on quote page</li>
+                  <li>Send monthly newsletter to subscriber list</li>
+                </ul>
+              </div>
+            </div>
+            <!-- Quarterly -->
+            <div class="accordion-item">
+              <div class="accordion-header" data-acc="quarterly">
+                <div class="acc-title">
+                  <span class="acc-badge acc-badge-quarterly">Quarterly</span>
+                  <span>Quarterly Strategy Review</span>
+                </div>
+                <span class="accordion-icon" id="acc-icon-quarterly">+</span>
+              </div>
+              <div class="accordion-body" id="acc-body-quarterly">
+                <ul class="task-list">
+                  <li>Full technical SEO audit — crawl errors, schema, site speed</li>
+                  <li>Keyword gap analysis vs top 3 competitors</li>
+                  <li>Review content pillar strategy — identify gaps</li>
+                  <li>Audit all product page conversion elements (CTA, imagery, copy)</li>
+                  <li>Review A/B test results — implement winning variants</li>
+                  <li>Update Google Ads keyword lists — add negatives, test new match types</li>
+                  <li>Review backlink profile — outreach to 10 new prospects</li>
+                  <li>Update FAQ pages with new customer questions</li>
+                  <li>Competitor pricing & product audit</li>
+                </ul>
+              </div>
+            </div>
+            <!-- Post-Algorithm -->
+            <div class="accordion-item">
+              <div class="accordion-header" data-acc="algo">
+                <div class="acc-title">
+                  <span class="acc-badge acc-badge-algo">Algorithm</span>
+                  <span>Post-Algorithm Update Response</span>
+                </div>
+                <span class="accordion-icon" id="acc-icon-algo">+</span>
+              </div>
+              <div class="accordion-body" id="acc-body-algo">
+                <ul class="task-list">
+                  <li>Log update in Algorithm Update Log with confirmed date</li>
+                  <li>Pull GSC data for 7 days pre/post rollout — compare traffic</li>
+                  <li>Identify pages with biggest ranking drops in Ahrefs</li>
+                  <li>Review Google's official guidance for the update type</li>
+                  <li>Audit affected pages for thin content, E-E-A-T signals</li>
+                  <li>Do not make panic changes — wait for full rollout to complete</li>
+                  <li>Brief team on findings — adjust content calendar if needed</li>
+                  <li>Re-review 4 weeks after rollout completes</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 3: Contingency Playbook ───────────────────── -->
+        <div class="section-title">Contingency Playbook <span class="tag">Section 3</span></div>
+        <div class="contingency-grid">
+
+          <!-- Traffic Drop -->
+          <div class="warning-card warning-card-traffic">
+            <div class="warning-header" data-warning="traffic">
+              <div class="warning-header-inner">
+                <span class="warning-icon">📉</span>
+                <span class="warning-title">Traffic Drop &gt;20%</span>
+              </div>
+              <span class="warning-toggle" id="wt-icon-traffic">+</span>
+            </div>
+            <div class="warning-body" id="wt-body-traffic">
+              <ol>
+                <li>Check Google Search Console for manual penalty or coverage issues</li>
+                <li>Cross-reference with known algorithm update dates</li>
+                <li>Run Screaming Frog — check for accidental noindex or canonical issues</li>
+                <li>Compare affected URLs to Ahrefs historical ranking data</li>
+                <li>Check if hosting/CDN had downtime (Cloudflare logs)</li>
+                <li>Identify pattern: brand vs non-brand, product vs blog</li>
+                <li>Escalate to SEO consultant if drop persists 7+ days</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- CPL Jump -->
+          <div class="warning-card warning-card-cpl">
+            <div class="warning-header" data-warning="cpl">
+              <div class="warning-header-inner">
+                <span class="warning-icon">💸</span>
+                <span class="warning-title">CPL Jumps &gt;30%</span>
+              </div>
+              <span class="warning-toggle" id="wt-icon-cpl">+</span>
+            </div>
+            <div class="warning-body" id="wt-body-cpl">
+              <ol>
+                <li>Check Google Ads auction insights — new competitors?</li>
+                <li>Review Quality Score changes for top keywords</li>
+                <li>Check landing page load speed — any degradation?</li>
+                <li>Review ad copy CTR — has it dropped?</li>
+                <li>Check conversion tracking — tag still firing correctly?</li>
+                <li>Pause any new campaigns/ad groups launched in last 7 days</li>
+                <li>Consider dayparting — reduce bids in low-converting hours</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Backlink Drop -->
+          <div class="warning-card warning-card-backlink">
+            <div class="warning-header" data-warning="backlink">
+              <div class="warning-header-inner">
+                <span class="warning-icon">🔗</span>
+                <span class="warning-title">Backlink Drop</span>
+              </div>
+              <span class="warning-toggle" id="wt-icon-backlink">+</span>
+            </div>
+            <div class="warning-body" id="wt-body-backlink">
+              <ol>
+                <li>Export lost backlinks from Ahrefs — filter by DR &gt;30</li>
+                <li>Check if referring pages still exist (404?) or removed link</li>
+                <li>Identify if high-value link was from editorial or paid source</li>
+                <li>Email site owner to inquire — mention the specific article/page</li>
+                <li>Add lost link targets to outreach spreadsheet for replacement</li>
+                <li>Review if content that earned the link is still competitive</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Negative Review -->
+          <div class="warning-card warning-card-review">
+            <div class="warning-header" data-warning="review">
+              <div class="warning-header-inner">
+                <span class="warning-icon">⭐</span>
+                <span class="warning-title">Negative Review</span>
+              </div>
+              <span class="warning-toggle" id="wt-icon-review">+</span>
+            </div>
+            <div class="warning-body" id="wt-body-review">
+              <ol>
+                <li>Respond within 24 hours — calm, professional, empathetic tone</li>
+                <li>Acknowledge the issue without admitting liability if disputed</li>
+                <li>Move conversation offline: provide direct contact details</li>
+                <li>Investigate internally — speak with team member involved</li>
+                <li>If resolved: follow up and invite update to review</li>
+                <li>If fake/spam: flag to Google for removal via GBP dashboard</li>
+                <li>Accelerate positive review requests to recent happy clients</li>
+              </ol>
+            </div>
+          </div>
+
+        </div><!-- /contingency-grid -->
+
+      </div><!-- /dash-body -->
+    </div><!-- /dashboard-section -->
+
+    <script>
+      const ADMIN_PASSWORD = 'TEM-admin-2026!';
+      const SB_URL = 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+      const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdHhib2hqanBraHpod2xucnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDgzMjEsImV4cCI6MjA4NjYyNDMyMX0.UWgOz-9ZAy0xxVH-VTTysFzvrbD1CX0a459rNC391Hw';
+
+      function sbHeaders() {
+        return { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+      }
+      async function sbGet(table: string, params?: string) {
+        const r = await fetch(`${SB_URL}/rest/v1/${table}?${params||''}`, { headers: sbHeaders() });
+        return r.json();
+      }
+      async function sbPost(table: string, body: object) {
+        const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method: 'POST', headers: sbHeaders(), body: JSON.stringify(body) });
+        return r.json();
+      }
+      async function sbPatch(table: string, id: string, body: object) {
+        const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'PATCH', headers: sbHeaders(), body: JSON.stringify(body) });
+        return r.json();
+      }
+      async function sbDelete(table: string, id: string) {
+        await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: sbHeaders() });
+      }
+      function escHtml(s: any) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+      // ── Auth ──────────────────────────────────────────────────────
+      const stored = sessionStorage.getItem('tem-admin-pw');
+      if (stored === ADMIN_PASSWORD) showDash();
+
+      document.getElementById('login-btn')!.addEventListener('click', () => {
+        const val = (document.getElementById('admin-password') as HTMLInputElement).value;
+        if (val === ADMIN_PASSWORD) {
+          sessionStorage.setItem('tem-admin-pw', val);
+          document.getElementById('login-error')!.style.display = 'none';
+          showDash();
+        } else {
+          const e = document.getElementById('login-error')!;
+          e.textContent = 'Invalid password';
+          e.style.display = 'block';
+        }
+      });
+      (document.getElementById('admin-password') as HTMLInputElement).addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('login-btn')!.click(); });
+      document.getElementById('logout-btn')!.addEventListener('click', () => {
+        sessionStorage.removeItem('tem-admin-pw');
+        document.getElementById('login-section')!.style.display = 'flex';
+        document.getElementById('dashboard-section')!.style.display = 'none';
+      });
+
+      function showDash() {
+        document.getElementById('login-section')!.style.display = 'none';
+        document.getElementById('dashboard-section')!.style.display = 'block';
+        loadTeam();
+        initAccordions();
+        initWarnings();
+      }
+
+      // ── SECTION 1: Responsibility Matrix ─────────────────────────
+      const TM_SEED = [
+        { area: 'SEO Content Publishing', owner: 'Content Manager', frequency: 'Weekly', tools: 'WordPress, GSC, Ahrefs', notes: 'Min 1 article/week' },
+        { area: 'Google Ads Management', owner: 'Paid Media Manager', frequency: 'Weekly', tools: 'Google Ads, Analytics', notes: 'Review CPL & ROAS' },
+        { area: 'Backlink Outreach', owner: 'SEO Specialist', frequency: 'Monthly', tools: 'Ahrefs, Hunter.io', notes: '10 prospects/month minimum' },
+        { area: 'GBP Management', owner: 'Marketing Manager', frequency: 'Weekly', tools: 'Google Business Profile', notes: 'Respond to reviews within 24h' },
+        { area: 'Technical SEO Audit', owner: 'SEO Specialist', frequency: 'Quarterly', tools: 'Screaming Frog, GSC', notes: 'Full crawl + schema review' },
+        { area: 'Social Media Scheduling', owner: 'Content Manager', frequency: 'Weekly', tools: 'Later, Canva', notes: '3–4 posts/week across platforms' },
+        { area: 'Analytics Reporting', owner: 'Marketing Manager', frequency: 'Monthly', tools: 'GA4, GSC, Ahrefs', notes: 'Send to director by 5th of month' },
+        { area: 'Email Marketing', owner: 'Marketing Manager', frequency: 'Monthly', tools: 'Mailchimp/Klaviyo', notes: '1 newsletter + 1 promotional' },
+        { area: 'CRO & A/B Testing', owner: 'Marketing Manager', frequency: 'Quarterly', tools: 'Hotjar, Clarity, VWO', notes: 'Min 1 active test at all times' },
+        { area: 'Photography & Video', owner: 'Creative Lead', frequency: 'Quarterly', tools: 'Camera, Adobe Suite', notes: 'New project photos each quarter' },
+        { area: 'Review Generation', owner: 'Account Manager', frequency: 'Per Project', tools: 'GBP, Email', notes: 'Request within 48h of completion' },
+        { area: 'Competitor Monitoring', owner: 'SEO Specialist', frequency: 'Monthly', tools: 'Ahrefs, SEMrush, Manual', notes: 'Track top 3 competitors' },
+      ];
+
+      let tmData: any[] = [];
+
+      async function loadTeam() {
+        document.getElementById('tm-loading')!.style.display = 'block';
+        document.getElementById('tm-table')!.style.display = 'none';
+        document.getElementById('tm-empty')!.style.display = 'none';
+
+        let rows = await sbGet('team_responsibilities', 'order=created_at.asc');
+        if (!Array.isArray(rows) || rows.length === 0) {
+          for (const seed of TM_SEED) await sbPost('team_responsibilities', seed);
+          rows = await sbGet('team_responsibilities', 'order=created_at.asc');
+        }
+        tmData = Array.isArray(rows) ? rows : [];
+        document.getElementById('tm-loading')!.style.display = 'none';
+        renderTeam();
+      }
+
+      function renderTeam() {
+        if (tmData.length === 0) {
+          document.getElementById('tm-empty')!.style.display = 'block';
+          document.getElementById('tm-table')!.style.display = 'none';
+          return;
+        }
+        document.getElementById('tm-empty')!.style.display = 'none';
+        document.getElementById('tm-table')!.style.display = 'block';
+        const tbody = document.getElementById('tm-tbody')!;
+        tbody.innerHTML = tmData.map(r => `
+          <tr data-id="${r.id}">
+            <td class="editable-cell" data-field="area">${escHtml(r.area)}</td>
+            <td class="editable-cell" data-field="owner">${escHtml(r.owner)}</td>
+            <td class="editable-cell" data-field="frequency">${escHtml(r.frequency)}</td>
+            <td class="editable-cell" data-field="tools" style="font-size:0.78rem;color:#9ca3af">${escHtml(r.tools)}</td>
+            <td class="editable-cell" data-field="notes" style="font-size:0.78rem;color:#6b7280">${escHtml(r.notes||'')}</td>
+            <td><button class="btn-sm btn-danger tm-del-btn" data-id="${r.id}">×</button></td>
+          </tr>
+        `).join('');
+
+        // Inline editing
+        tbody.querySelectorAll<HTMLTableCellElement>('.editable-cell').forEach(cell => {
+          cell.addEventListener('click', () => {
+            if (cell.querySelector('input')) return;
+            const current = cell.textContent || '';
+            const field = cell.dataset.field!;
+            const row = cell.closest('tr')!;
+            const id = (row as HTMLElement).dataset.id!;
+            cell.innerHTML = `<input type="text" value="${escHtml(current)}" style="min-width:120px" />`;
+            const input = cell.querySelector('input')!;
+            input.focus();
+            const save = async () => {
+              const val = input.value.trim();
+              cell.textContent = val;
+              const patch: any = {};
+              patch[field] = val;
+              await sbPatch('team_responsibilities', id, patch);
+              const item = tmData.find(x => x.id === id);
+              if (item) item[field] = val;
+            };
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { save(); input.blur(); } });
+          });
+        });
+
+        tbody.querySelectorAll<HTMLButtonElement>('.tm-del-btn').forEach(b => b.addEventListener('click', async () => {
+          if (!confirm('Delete this row?')) return;
+          await sbDelete('team_responsibilities', b.dataset.id!);
+          loadTeam();
+        }));
+      }
+
+      document.getElementById('tm-add-btn')!.addEventListener('click', () => {
+        document.getElementById('tm-form-wrap')!.style.display = 'block';
+      });
+      document.getElementById('tm-refresh-btn')!.addEventListener('click', loadTeam);
+      document.getElementById('tm-cancel-btn')!.addEventListener('click', () => { document.getElementById('tm-form-wrap')!.style.display = 'none'; });
+      document.getElementById('tm-save-btn')!.addEventListener('click', async () => {
+        const payload = {
+          area: (document.getElementById('tm-area') as HTMLInputElement).value.trim(),
+          owner: (document.getElementById('tm-owner') as HTMLInputElement).value.trim(),
+          frequency: (document.getElementById('tm-freq') as HTMLInputElement).value.trim(),
+          tools: (document.getElementById('tm-tools') as HTMLInputElement).value.trim(),
+          notes: (document.getElementById('tm-notes') as HTMLInputElement).value.trim(),
+        };
+        if (!payload.area) { alert('Area is required'); return; }
+        await sbPost('team_responsibilities', payload);
+        document.getElementById('tm-form-wrap')!.style.display = 'none';
+        loadTeam();
+      });
+
+      // ── SECTION 2: Accordions ─────────────────────────────────────
+      function initAccordions() {
+        document.querySelectorAll<HTMLDivElement>('.accordion-header').forEach(header => {
+          header.addEventListener('click', () => {
+            const id = header.dataset.acc!;
+            const body = document.getElementById(`acc-body-${id}`)!;
+            const icon = document.getElementById(`acc-icon-${id}`)!;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open', !isOpen);
+            icon.classList.toggle('open', !isOpen);
+            icon.textContent = isOpen ? '+' : '×';
+          });
+        });
+      }
+
+      // ── SECTION 3: Warning cards ──────────────────────────────────
+      function initWarnings() {
+        document.querySelectorAll<HTMLDivElement>('.warning-header').forEach(header => {
+          header.addEventListener('click', () => {
+            const id = header.dataset.warning!;
+            const body = document.getElementById(`wt-body-${id}`)!;
+            const icon = document.getElementById(`wt-icon-${id}`)!;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open', !isOpen);
+            icon.classList.toggle('open', !isOpen);
+            icon.textContent = isOpen ? '+' : '×';
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,799 @@
+---
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI & Future-Proofing Hub | TEM Admin</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+      input, select, textarea { font-family: inherit; }
+
+      .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+      .login-card { width: 100%; max-width: 380px; }
+      .login-card h1 { font-size: 1.75rem; font-weight: 300; text-align: center; margin-bottom: 2rem; color: #fff; }
+      .login-card input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; }
+      .login-card input:focus { border-color: #8b7355; }
+      .btn-primary { display: block; width: 100%; padding: 0.875rem; margin-top: 0.75rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+      .btn-primary:hover { background: #a68b6a; }
+      .error-msg { color: #f87171; font-size: 0.8rem; margin-top: 0.5rem; }
+
+      .dash-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; border-bottom: 1px solid #1a1a1a; flex-wrap: wrap; gap: 0.75rem; }
+      .dash-header h1 { font-size: 1.25rem; font-weight: 400; }
+      .dash-header .logo { color: #8b7355; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; }
+      .btn-sm { padding: 0.5rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+      .btn-sm:hover { border-color: #8b7355; color: #fff; }
+
+      /* Grouped nav */
+      .dash-nav { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
+      .nav-group { display: flex; flex-direction: column; gap: 0.3rem; }
+      .nav-group-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.15em; color: #4b5563; }
+      .nav-group-links { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+      .dash-nav a { padding: 0.35rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.78rem; text-decoration: none; transition: all 0.2s; white-space: nowrap; }
+      .dash-nav a:hover { border-color: #8b7355; color: #fff; }
+      .dash-nav a.active { border-color: #8b7355; color: #8b7355; }
+
+      .btn-danger { background: transparent; border-color: #7f1d1d; color: #f87171; }
+      .btn-danger:hover { background: #7f1d1d; border-color: #7f1d1d; color: #fff; }
+      .btn-edit { border-color: #1d3a7f; color: #93c5fd; }
+      .btn-edit:hover { background: #1d3a7f; color: #fff; }
+
+      .dash-body { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+      .section-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; color: #e5e7eb; display: flex; align-items: center; gap: 0.75rem; }
+      .section-title .tag { font-size: 0.65rem; background: #1a2a1a; color: #86efac; border-radius: 4px; padding: 0.2rem 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; }
+
+      .panel { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem; }
+      .panel h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; color: #e5e7eb; }
+
+      .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+      .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+      .form-group.full { grid-column: 1 / -1; }
+      .form-group label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em; }
+      .form-group input, .form-group select, .form-group textarea { padding: 0.6rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none; }
+      .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; }
+      .form-group select option { background: #1a1a1a; }
+      .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+      thead tr { border-bottom: 1px solid #1a1a1a; }
+      th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; white-space: nowrap; }
+      td { padding: 0.9rem 1rem; border-bottom: 1px solid #111; vertical-align: middle; }
+      tr:hover td { background: #0f0f0f; }
+      .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+      .badge-not_optimised { background: #1a1a1a; color: #9ca3af; }
+      .badge-in_progress { background: #3a2e00; color: #fde68a; }
+      .badge-live { background: #14532d; color: #86efac; }
+      .badge-winning { background: #3a2800; color: #fbbf24; border: 1px solid #92400e; }
+      .empty-state { text-align: center; padding: 3rem; color: #4b5563; }
+
+      /* Checklist */
+      .checklist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+      .checklist-col h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: #8b7355; margin-bottom: 1rem; }
+      .check-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+      .check-item:last-child { border-bottom: none; }
+      .check-box { width: 18px; height: 18px; min-width: 18px; border: 1px solid #2a2a2a; border-radius: 4px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+      .check-box.checked { background: #8b7355; border-color: #8b7355; }
+      .check-box.checked::after { content: '✓'; font-size: 0.65rem; color: #fff; font-weight: 700; }
+      .check-label { font-size: 0.85rem; color: #d1d5db; line-height: 1.4; }
+      .check-item.done .check-label { color: #4b5563; text-decoration: line-through; }
+
+      /* Policy card */
+      .policy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+      .policy-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 8px; padding: 1.25rem; }
+      .policy-card h4 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.875rem; }
+      .policy-card h4.green { color: #86efac; }
+      .policy-card h4.yellow { color: #fde68a; }
+      .policy-card h4.red { color: #f87171; }
+      .policy-card h4.blue { color: #93c5fd; }
+      .policy-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+      .policy-card li { font-size: 0.82rem; color: #9ca3af; padding-left: 1rem; position: relative; }
+      .policy-card li::before { content: '·'; position: absolute; left: 0; color: #4b5563; }
+
+      /* Chart */
+      .chart-wrap { position: relative; height: 280px; margin-top: 1.5rem; }
+
+      /* Accordion */
+      .accordion-item { border: 1px solid #1a1a1a; border-radius: 8px; margin-bottom: 0.5rem; overflow: hidden; }
+      .accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; cursor: pointer; background: #111; transition: background 0.2s; }
+      .accordion-header:hover { background: #161616; }
+      .accordion-header span { font-size: 0.9rem; font-weight: 500; color: #e5e7eb; }
+      .accordion-icon { color: #6b7280; font-size: 1.2rem; transition: transform 0.2s; }
+      .accordion-icon.open { transform: rotate(45deg); }
+      .accordion-body { display: none; padding: 1rem 1.25rem; background: #0d0d0d; border-top: 1px solid #1a1a1a; }
+      .accordion-body.open { display: block; }
+
+      .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+      .filter-btn { padding: 0.3rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 999px; color: #9ca3af; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
+      .filter-btn:hover, .filter-btn.active { border-color: #8b7355; color: #8b7355; }
+
+      @media (max-width: 640px) {
+        .dash-header { padding: 1rem; }
+        .dash-body { padding: 1rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- LOGIN GATE -->
+    <div id="login-section" class="login-wrap">
+      <div class="login-card">
+        <h1>AI & Future-Proofing</h1>
+        <input type="password" id="admin-password" placeholder="Admin password" autocomplete="current-password" />
+        <p id="login-error" class="error-msg" style="display:none"></p>
+        <button class="btn-primary" id="login-btn">Enter</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" style="display:none">
+      <header class="dash-header">
+        <div>
+          <div class="logo">Troweled Earth Melbourne</div>
+          <h1>AI & Future-Proofing Hub</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+          <nav class="dash-nav">
+            <div class="nav-group">
+              <div class="nav-group-label">SEO & Campaigns</div>
+              <div class="nav-group-links">
+                <a href="/admin/campaigns">Campaigns</a>
+                <a href="/admin/strategy">Strategy</a>
+                <a href="/admin/content">Content</a>
+                <a href="/admin/links">Links</a>
+              </div>
+            </div>
+            <div class="nav-group">
+              <div class="nav-group-label">Tracking</div>
+              <div class="nav-group-links">
+                <a href="/admin/analytics">Analytics</a>
+                <a href="/admin/cro">CRO</a>
+              </div>
+            </div>
+            <div class="nav-group">
+              <div class="nav-group-label">Operations</div>
+              <div class="nav-group-links">
+                <a href="/admin/team">Team</a>
+                <a href="/admin/future" class="active">AI Future</a>
+              </div>
+            </div>
+          </nav>
+          <button class="btn-sm" id="logout-btn">Log out</button>
+        </div>
+      </header>
+
+      <div class="dash-body">
+
+        <!-- ── SECTION 1: Zero-click ─────────────────────────────── -->
+        <div class="section-title">Zero-Click Optimisation Tracker <span class="tag">Section 1</span></div>
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem">
+            <h2 style="margin:0">Zero-Click Targets</h2>
+            <div style="display:flex;gap:0.5rem">
+              <button class="btn-sm" id="zc-add-btn">+ Add Target</button>
+              <button class="btn-sm" id="zc-refresh-btn">↻ Refresh</button>
+            </div>
+          </div>
+          <div class="filter-row" id="zc-filters">
+            <button class="filter-btn active" data-type="">All</button>
+            <button class="filter-btn" data-type="featured_snippet">Featured Snippet</button>
+            <button class="filter-btn" data-type="people_also_ask">People Also Ask</button>
+            <button class="filter-btn" data-type="knowledge_panel">Knowledge Panel</button>
+            <button class="filter-btn" data-type="local_pack">Local Pack</button>
+          </div>
+          <div id="zc-loading" style="text-align:center;padding:2rem;color:#6b7280">Loading…</div>
+          <div class="table-wrap" id="zc-table" style="display:none">
+            <table>
+              <thead>
+                <tr>
+                  <th>Page URL</th>
+                  <th>Target Query</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Length</th>
+                  <th>FAQ Schema</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="zc-tbody"></tbody>
+            </table>
+          </div>
+          <div id="zc-empty" class="empty-state" style="display:none">No zero-click targets yet.</div>
+
+          <!-- Add/Edit form -->
+          <div id="zc-form-wrap" style="display:none;margin-top:1.5rem;border-top:1px solid #1a1a1a;padding-top:1.5rem">
+            <h2 id="zc-form-title">Add Target</h2>
+            <div class="form-grid">
+              <div class="form-group full"><label>Page URL</label><input type="text" id="zc-page-url" placeholder="/products/marbellino/" /></div>
+              <div class="form-group full"><label>Target Query</label><input type="text" id="zc-query" placeholder="what is venetian plaster?" /></div>
+              <div class="form-group">
+                <label>Snippet Type</label>
+                <select id="zc-type">
+                  <option value="featured_snippet">Featured Snippet</option>
+                  <option value="people_also_ask">People Also Ask</option>
+                  <option value="knowledge_panel">Knowledge Panel</option>
+                  <option value="local_pack">Local Pack</option>
+                  <option value="image_pack">Image Pack</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="zc-status">
+                  <option value="not_optimised">Not Optimised</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="live">Live</option>
+                  <option value="winning">Winning</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Answer Length (chars)</label><input type="number" id="zc-length" placeholder="300" /></div>
+              <div class="form-group">
+                <label>FAQ Schema?</label>
+                <select id="zc-faq"><option value="false">No</option><option value="true">Yes</option></select>
+              </div>
+              <div class="form-group full"><label>Notes</label><textarea id="zc-notes" rows="2" style="resize:vertical"></textarea></div>
+            </div>
+            <div class="form-actions">
+              <input type="hidden" id="zc-edit-id" />
+              <button class="btn-primary" style="width:auto;padding:0.6rem 1.5rem" id="zc-save-btn">Save Target</button>
+              <button class="btn-sm" id="zc-cancel-btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 2: Voice & Visual Checklist ───────────────── -->
+        <div class="section-title">Voice & Visual Search Checklist <span class="tag">Section 2</span></div>
+        <div class="panel">
+          <div class="checklist-grid" id="vv-checklist">
+            <div class="checklist-col">
+              <h3>🎙 Voice Search</h3>
+              <div id="voice-checks"></div>
+            </div>
+            <div class="checklist-col">
+              <h3>🖼 Visual Search</h3>
+              <div id="visual-checks"></div>
+            </div>
+          </div>
+          <div style="margin-top:1rem;font-size:0.75rem;color:#4b5563">Progress saved in browser. <button class="btn-sm" id="vv-reset-btn" style="padding:0.2rem 0.6rem;font-size:0.7rem;margin-left:0.5rem">Reset all</button></div>
+        </div>
+
+        <!-- ── SECTION 3: AI Content Policy ─────────────────────── -->
+        <div class="section-title">AI Content Policy <span class="tag">Section 3 · Static</span></div>
+        <div class="panel">
+          <div class="policy-grid">
+            <div class="policy-card">
+              <h4 class="green">✅ Use AI For</h4>
+              <ul>
+                <li>Ideation & brainstorming</li>
+                <li>Content outlines</li>
+                <li>Keyword clustering</li>
+                <li>Meta description drafts</li>
+                <li>Social media captions</li>
+              </ul>
+            </div>
+            <div class="policy-card">
+              <h4 class="yellow">⚠️ Human Review Required</h4>
+              <ul>
+                <li>Carbon/sustainability claims</li>
+                <li>Product descriptions</li>
+                <li>Pricing information</li>
+                <li>Project details & portfolio</li>
+                <li>Any compliance content</li>
+              </ul>
+            </div>
+            <div class="policy-card">
+              <h4 class="red">🚫 Never Publish Raw AI</h4>
+              <ul>
+                <li>Unreviewed AI drafts</li>
+                <li>Generic AI responses</li>
+                <li>Content without TEM voice</li>
+                <li>Unverified claims or data</li>
+              </ul>
+            </div>
+            <div class="policy-card">
+              <h4 class="blue">📋 E-E-A-T Checklist</h4>
+              <ul>
+                <li>Named author every article</li>
+                <li>Cited sources required</li>
+                <li>Original insight per piece</li>
+                <li>Author bio with credentials</li>
+                <li>Date + last-updated visible</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 4: Brand Search Lift ─────────────────────── -->
+        <div class="section-title">Brand Search Lift Tracker <span class="tag">Section 4</span></div>
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem">
+            <h2 style="margin:0">Monthly Brand Search Data</h2>
+            <button class="btn-sm" id="bs-log-toggle">+ Log Month</button>
+          </div>
+
+          <div id="bs-form-wrap" style="display:none;margin-bottom:1.5rem;padding:1.25rem;background:#0d0d0d;border-radius:8px;border:1px solid #1a1a1a">
+            <div class="form-grid">
+              <div class="form-group"><label>Month (YYYY-MM)</label><input type="text" id="bs-month" placeholder="2026-03" /></div>
+              <div class="form-group"><label>Branded Impressions</label><input type="number" id="bs-impressions" placeholder="0" /></div>
+              <div class="form-group"><label>Branded Clicks</label><input type="number" id="bs-clicks" placeholder="0" /></div>
+              <div class="form-group"><label>Branded CTR (%)</label><input type="number" id="bs-ctr" placeholder="0.0" step="0.1" /></div>
+              <div class="form-group"><label>Direct Sessions</label><input type="number" id="bs-direct" placeholder="0" /></div>
+              <div class="form-group full"><label>Notes</label><input type="text" id="bs-notes" /></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" style="width:auto;padding:0.6rem 1.5rem" id="bs-save-btn">Save Entry</button>
+              <button class="btn-sm" id="bs-cancel-btn">Cancel</button>
+            </div>
+          </div>
+
+          <div class="chart-wrap"><canvas id="brand-chart"></canvas></div>
+
+          <div class="table-wrap" style="margin-top:1.5rem">
+            <table>
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Impressions</th>
+                  <th>Clicks</th>
+                  <th>CTR</th>
+                  <th>Direct Sessions</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="bs-tbody"></tbody>
+            </table>
+            <div id="bs-empty" class="empty-state" style="display:none">No data yet. Log your first month above.</div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 5: Algorithm Update Log ──────────────────── -->
+        <div class="section-title">Algorithm Update Log <span class="tag">Section 5</span></div>
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem">
+            <h2 style="margin:0">Google Algorithm Updates</h2>
+            <div style="display:flex;gap:0.5rem">
+              <button class="btn-sm" id="algo-add-btn">+ Add Update</button>
+              <button class="btn-sm" id="algo-refresh-btn">↻ Refresh</button>
+            </div>
+          </div>
+          <div id="algo-loading" style="text-align:center;padding:2rem;color:#6b7280">Loading…</div>
+          <div class="table-wrap" id="algo-table" style="display:none">
+            <table>
+              <thead>
+                <tr>
+                  <th>Update Name</th>
+                  <th>Confirmed</th>
+                  <th>Announced</th>
+                  <th>Rollout</th>
+                  <th>Impact on TEM</th>
+                  <th>Traffic Δ%</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="algo-tbody"></tbody>
+            </table>
+          </div>
+          <div id="algo-empty" class="empty-state" style="display:none">No algorithm updates logged yet.</div>
+
+          <div id="algo-form-wrap" style="display:none;margin-top:1.5rem;border-top:1px solid #1a1a1a;padding-top:1.5rem">
+            <h2 id="algo-form-title">Log Update</h2>
+            <div class="form-grid">
+              <div class="form-group full"><label>Update Name</label><input type="text" id="algo-name" placeholder="March 2026 Core Update" /></div>
+              <div class="form-group"><label>Google Confirmed?</label><select id="algo-confirmed"><option value="false">No</option><option value="true">Yes</option></select></div>
+              <div class="form-group"><label>Announced Date</label><input type="date" id="algo-announced" /></div>
+              <div class="form-group"><label>Rollout Start</label><input type="date" id="algo-start" /></div>
+              <div class="form-group"><label>Rollout End</label><input type="date" id="algo-end" /></div>
+              <div class="form-group full"><label>Impact on TEM</label><input type="text" id="algo-impact" placeholder="Minimal / Positive / Negative" /></div>
+              <div class="form-group"><label>Traffic Change %</label><input type="number" id="algo-traffic" step="0.1" placeholder="0.0" /></div>
+              <div class="form-group full"><label>Notes</label><textarea id="algo-notes" rows="2" style="resize:vertical"></textarea></div>
+            </div>
+            <div class="form-actions">
+              <input type="hidden" id="algo-edit-id" />
+              <button class="btn-primary" style="width:auto;padding:0.6rem 1.5rem" id="algo-save-btn">Save Update</button>
+              <button class="btn-sm" id="algo-cancel-btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /dash-body -->
+    </div><!-- /dashboard-section -->
+
+    <script>
+      const ADMIN_PASSWORD = 'TEM-admin-2026!';
+      const SB_URL = 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+      const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdHhib2hqanBraHpod2xucnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDgzMjEsImV4cCI6MjA4NjYyNDMyMX0.UWgOz-9ZAy0xxVH-VTTysFzvrbD1CX0a459rNC391Hw';
+
+      function sbHeaders() {
+        return { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+      }
+
+      async function sbGet(table: string, params?: string) {
+        const r = await fetch(`${SB_URL}/rest/v1/${table}?${params || ''}`, { headers: sbHeaders() });
+        return r.json();
+      }
+      async function sbPost(table: string, body: object) {
+        const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method: 'POST', headers: sbHeaders(), body: JSON.stringify(body) });
+        return r.json();
+      }
+      async function sbPatch(table: string, id: string, body: object) {
+        const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'PATCH', headers: sbHeaders(), body: JSON.stringify(body) });
+        return r.json();
+      }
+      async function sbDelete(table: string, id: string) {
+        await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: sbHeaders() });
+      }
+
+      function escHtml(s: any) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+      function fmtDate(d: string|null) { if (!d) return '—'; return new Date(d).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'2-digit'}); }
+
+      // ── Auth ──────────────────────────────────────────────────────
+      const stored = sessionStorage.getItem('tem-admin-pw');
+      if (stored === ADMIN_PASSWORD) showDash();
+
+      document.getElementById('login-btn')!.addEventListener('click', () => {
+        const val = (document.getElementById('admin-password') as HTMLInputElement).value;
+        if (val === ADMIN_PASSWORD) {
+          sessionStorage.setItem('tem-admin-pw', val);
+          document.getElementById('login-error')!.style.display = 'none';
+          showDash();
+        } else {
+          const e = document.getElementById('login-error')!;
+          e.textContent = 'Invalid password';
+          e.style.display = 'block';
+        }
+      });
+      (document.getElementById('admin-password') as HTMLInputElement).addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('login-btn')!.click(); });
+      document.getElementById('logout-btn')!.addEventListener('click', () => {
+        sessionStorage.removeItem('tem-admin-pw');
+        document.getElementById('login-section')!.style.display = 'flex';
+        document.getElementById('dashboard-section')!.style.display = 'none';
+      });
+
+      function showDash() {
+        document.getElementById('login-section')!.style.display = 'none';
+        document.getElementById('dashboard-section')!.style.display = 'block';
+        initAll();
+      }
+
+      function initAll() {
+        loadZeroClick();
+        initVVChecklist();
+        loadBrandSearch();
+        loadAlgoUpdates();
+      }
+
+      // ── SECTION 1: Zero-click ─────────────────────────────────────
+      const ZC_SEED = [
+        { page_url: '/products/marbellino/', target_query: 'what is marbellino finish?', snippet_type: 'featured_snippet', current_status: 'not_optimised', answer_length: 300, has_faq_schema: false, notes: 'Target 40-50 word answer block' },
+        { page_url: '/products/venetian-plaster/', target_query: 'venetian plaster cost per sqm australia', snippet_type: 'featured_snippet', current_status: 'in_progress', answer_length: 280, has_faq_schema: false, notes: '' },
+        { page_url: '/products/microcement/', target_query: 'how long does microcement last?', snippet_type: 'people_also_ask', current_status: 'not_optimised', answer_length: 250, has_faq_schema: false, notes: '' },
+        { page_url: '/about/', target_query: 'troweled earth melbourne reviews', snippet_type: 'knowledge_panel', current_status: 'in_progress', answer_length: 0, has_faq_schema: false, notes: 'Requires GBP optimisation' },
+        { page_url: '/products/polished-concrete/', target_query: 'polished concrete floors melbourne', snippet_type: 'local_pack', current_status: 'live', answer_length: 0, has_faq_schema: false, notes: '' },
+        { page_url: '/faq/', target_query: 'is venetian plaster waterproof?', snippet_type: 'people_also_ask', current_status: 'not_optimised', answer_length: 200, has_faq_schema: false, notes: 'Add FAQ schema' },
+        { page_url: '/products/tadelakt/', target_query: 'tadelakt vs venetian plaster difference', snippet_type: 'featured_snippet', current_status: 'not_optimised', answer_length: 320, has_faq_schema: false, notes: '' },
+        { page_url: '/services/', target_query: 'decorative plaster applicators near me', snippet_type: 'local_pack', current_status: 'in_progress', answer_length: 0, has_faq_schema: false, notes: '' },
+        { page_url: '/products/limewash/', target_query: 'limewash paint pros and cons', snippet_type: 'featured_snippet', current_status: 'not_optimised', answer_length: 280, has_faq_schema: false, notes: '' },
+        { page_url: '/blog/microcement-vs-tiles/', target_query: 'microcement vs tiles bathroom which is better', snippet_type: 'featured_snippet', current_status: 'not_optimised', answer_length: 350, has_faq_schema: false, notes: 'High-value comparison query' },
+        { page_url: '/products/venetian-plaster/', target_query: 'venetian plaster bathroom ideas australia', snippet_type: 'image_pack', current_status: 'not_optimised', answer_length: 0, has_faq_schema: false, notes: 'Need better image metadata' },
+        { page_url: '/contact/', target_query: 'troweled earth melbourne contact', snippet_type: 'knowledge_panel', current_status: 'live', answer_length: 0, has_faq_schema: false, notes: '' },
+      ];
+
+      let zcData: any[] = [];
+      let zcFilter = '';
+
+      async function loadZeroClick() {
+        document.getElementById('zc-loading')!.style.display = 'block';
+        document.getElementById('zc-table')!.style.display = 'none';
+        document.getElementById('zc-empty')!.style.display = 'none';
+
+        let rows = await sbGet('zero_click_targets', 'order=created_at.asc');
+        if (!Array.isArray(rows) || rows.length === 0) {
+          for (const seed of ZC_SEED) await sbPost('zero_click_targets', seed);
+          rows = await sbGet('zero_click_targets', 'order=created_at.asc');
+        }
+        zcData = Array.isArray(rows) ? rows : [];
+        document.getElementById('zc-loading')!.style.display = 'none';
+        renderZC();
+      }
+
+      function renderZC() {
+        const filtered = zcFilter ? zcData.filter(r => r.snippet_type === zcFilter) : zcData;
+        if (filtered.length === 0) {
+          document.getElementById('zc-empty')!.style.display = 'block';
+          document.getElementById('zc-table')!.style.display = 'none';
+          return;
+        }
+        document.getElementById('zc-empty')!.style.display = 'none';
+        document.getElementById('zc-table')!.style.display = 'block';
+        const tbody = document.getElementById('zc-tbody')!;
+        tbody.innerHTML = filtered.map(r => `
+          <tr>
+            <td style="font-size:0.78rem;color:#9ca3af">${escHtml(r.page_url)}</td>
+            <td style="max-width:200px"><div style="font-size:0.83rem">${escHtml(r.target_query)}</div></td>
+            <td><span class="badge" style="background:#1a1a2a;color:#a5b4fc;font-size:0.65rem">${escHtml(r.snippet_type.replace(/_/g,' '))}</span></td>
+            <td><span class="badge badge-${escHtml(r.current_status)}">${escHtml(r.current_status.replace(/_/g,' '))}</span></td>
+            <td style="font-size:0.8rem;color:#6b7280">${r.answer_length||'—'}</td>
+            <td style="text-align:center">${r.has_faq_schema ? '<span style="color:#86efac">✓</span>' : '<span style="color:#374151">✗</span>'}</td>
+            <td style="font-size:0.78rem;color:#6b7280;max-width:160px">${escHtml(r.notes||'')}</td>
+            <td style="white-space:nowrap">
+              <button class="btn-sm btn-edit zc-edit-btn" data-id="${r.id}" style="margin-right:0.3rem">Edit</button>
+              <button class="btn-sm btn-danger zc-del-btn" data-id="${r.id}">×</button>
+            </td>
+          </tr>
+        `).join('');
+        tbody.querySelectorAll<HTMLButtonElement>('.zc-edit-btn').forEach(b => b.addEventListener('click', () => openZCForm(zcData.find(x=>x.id===b.dataset.id))));
+        tbody.querySelectorAll<HTMLButtonElement>('.zc-del-btn').forEach(b => b.addEventListener('click', async () => {
+          if (!confirm('Delete this target?')) return;
+          await sbDelete('zero_click_targets', b.dataset.id!);
+          loadZeroClick();
+        }));
+      }
+
+      document.getElementById('zc-filters')!.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('.filter-btn') as HTMLButtonElement;
+        if (!btn) return;
+        document.querySelectorAll('#zc-filters .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        zcFilter = btn.dataset.type||'';
+        renderZC();
+      });
+
+      document.getElementById('zc-add-btn')!.addEventListener('click', () => openZCForm(null));
+      document.getElementById('zc-refresh-btn')!.addEventListener('click', loadZeroClick);
+      document.getElementById('zc-cancel-btn')!.addEventListener('click', () => { document.getElementById('zc-form-wrap')!.style.display='none'; });
+
+      function openZCForm(row: any) {
+        const wrap = document.getElementById('zc-form-wrap')!;
+        wrap.style.display = 'block';
+        document.getElementById('zc-form-title')!.textContent = row ? 'Edit Target' : 'Add Target';
+        (document.getElementById('zc-edit-id') as HTMLInputElement).value = row?.id || '';
+        (document.getElementById('zc-page-url') as HTMLInputElement).value = row?.page_url || '';
+        (document.getElementById('zc-query') as HTMLInputElement).value = row?.target_query || '';
+        (document.getElementById('zc-type') as HTMLSelectElement).value = row?.snippet_type || 'featured_snippet';
+        (document.getElementById('zc-status') as HTMLSelectElement).value = row?.current_status || 'not_optimised';
+        (document.getElementById('zc-length') as HTMLInputElement).value = row?.answer_length || '';
+        (document.getElementById('zc-faq') as HTMLSelectElement).value = row?.has_faq_schema ? 'true' : 'false';
+        (document.getElementById('zc-notes') as HTMLTextAreaElement).value = row?.notes || '';
+        wrap.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      document.getElementById('zc-save-btn')!.addEventListener('click', async () => {
+        const id = (document.getElementById('zc-edit-id') as HTMLInputElement).value;
+        const payload = {
+          page_url: (document.getElementById('zc-page-url') as HTMLInputElement).value.trim(),
+          target_query: (document.getElementById('zc-query') as HTMLInputElement).value.trim(),
+          snippet_type: (document.getElementById('zc-type') as HTMLSelectElement).value,
+          current_status: (document.getElementById('zc-status') as HTMLSelectElement).value,
+          answer_length: parseInt((document.getElementById('zc-length') as HTMLInputElement).value)||0,
+          has_faq_schema: (document.getElementById('zc-faq') as HTMLSelectElement).value === 'true',
+          notes: (document.getElementById('zc-notes') as HTMLTextAreaElement).value.trim(),
+        };
+        if (id) await sbPatch('zero_click_targets', id, payload); else await sbPost('zero_click_targets', payload);
+        document.getElementById('zc-form-wrap')!.style.display = 'none';
+        loadZeroClick();
+      });
+
+      // ── SECTION 2: Voice & Visual Checklist ──────────────────────
+      const VOICE_ITEMS = [
+        'Near me queries answered on key pages',
+        'FAQ content uses natural phrasing',
+        'Under 2s mobile load time achieved',
+        'Google Business Profile optimised',
+        'Conversational keywords in headings',
+      ];
+      const VISUAL_ITEMS = [
+        'Descriptive alt text on all images',
+        'Descriptive, keyword-rich filenames',
+        'GSC image sitemap submitted',
+        'Pinterest boards active & linked',
+        'Instagram alt text on all posts',
+        'Texture photos tagged with material names',
+      ];
+
+      function initVVChecklist() {
+        const stored = JSON.parse(localStorage.getItem('tem-vv-checks') || '{}');
+        renderChecklist('voice-checks', VOICE_ITEMS, 'voice', stored);
+        renderChecklist('visual-checks', VISUAL_ITEMS, 'visual', stored);
+      }
+
+      function renderChecklist(containerId: string, items: string[], prefix: string, stored: any) {
+        const el = document.getElementById(containerId)!;
+        el.innerHTML = items.map((item, i) => {
+          const key = `${prefix}-${i}`;
+          const checked = !!stored[key];
+          return `<div class="check-item${checked?' done':''}" data-key="${key}">
+            <div class="check-box${checked?' checked':''}"></div>
+            <div class="check-label">${escHtml(item)}</div>
+          </div>`;
+        }).join('');
+        el.querySelectorAll<HTMLDivElement>('.check-item').forEach(row => {
+          row.addEventListener('click', () => {
+            const s = JSON.parse(localStorage.getItem('tem-vv-checks') || '{}');
+            const k = row.dataset.key!;
+            s[k] = !s[k];
+            localStorage.setItem('tem-vv-checks', JSON.stringify(s));
+            initVVChecklist();
+          });
+        });
+      }
+
+      document.getElementById('vv-reset-btn')!.addEventListener('click', () => {
+        if (!confirm('Reset all checklist items?')) return;
+        localStorage.removeItem('tem-vv-checks');
+        initVVChecklist();
+      });
+
+      // ── SECTION 4: Brand Search ───────────────────────────────────
+      let brandChart: any = null;
+
+      async function loadBrandSearch() {
+        const rows = await sbGet('brand_search', 'order=recorded_month.asc');
+        const data = Array.isArray(rows) ? rows : [];
+        renderBrandTable(data);
+        renderBrandChart(data);
+      }
+
+      function renderBrandTable(data: any[]) {
+        const tbody = document.getElementById('bs-tbody')!;
+        const empty = document.getElementById('bs-empty')!;
+        if (data.length === 0) { empty.style.display = 'block'; tbody.innerHTML = ''; return; }
+        empty.style.display = 'none';
+        tbody.innerHTML = data.map(r => `
+          <tr>
+            <td style="font-weight:500">${escHtml(r.recorded_month)}</td>
+            <td>${(r.branded_impressions||0).toLocaleString()}</td>
+            <td>${(r.branded_clicks||0).toLocaleString()}</td>
+            <td>${r.branded_ctr ? r.branded_ctr.toFixed(1)+'%' : '—'}</td>
+            <td>${(r.direct_sessions||0).toLocaleString()}</td>
+            <td style="font-size:0.78rem;color:#6b7280">${escHtml(r.notes||'')}</td>
+            <td><button class="btn-sm btn-danger bs-del-btn" data-id="${r.id}">×</button></td>
+          </tr>
+        `).join('');
+        tbody.querySelectorAll<HTMLButtonElement>('.bs-del-btn').forEach(b => b.addEventListener('click', async () => {
+          if (!confirm('Delete this entry?')) return;
+          await sbDelete('brand_search', b.dataset.id!);
+          loadBrandSearch();
+        }));
+      }
+
+      function renderBrandChart(data: any[]) {
+        const ctx = (document.getElementById('brand-chart') as HTMLCanvasElement).getContext('2d')!;
+        if (brandChart) brandChart.destroy();
+        brandChart = new (window as any).Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: data.map(r => r.recorded_month),
+            datasets: [
+              { label: 'Branded Clicks', data: data.map(r => r.branded_clicks||0), borderColor: '#8b7355', backgroundColor: 'rgba(139,115,85,0.1)', tension: 0.4, fill: true },
+              { label: 'Direct Sessions', data: data.map(r => r.direct_sessions||0), borderColor: '#93c5fd', backgroundColor: 'rgba(147,197,253,0.05)', tension: 0.4 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#9ca3af', font: { size: 11 } } } },
+            scales: {
+              x: { ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+              y: { ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+            }
+          }
+        });
+      }
+
+      document.getElementById('bs-log-toggle')!.addEventListener('click', () => {
+        const w = document.getElementById('bs-form-wrap')!;
+        w.style.display = w.style.display === 'none' ? 'block' : 'none';
+      });
+      document.getElementById('bs-cancel-btn')!.addEventListener('click', () => { document.getElementById('bs-form-wrap')!.style.display = 'none'; });
+      document.getElementById('bs-save-btn')!.addEventListener('click', async () => {
+        const payload = {
+          recorded_month: (document.getElementById('bs-month') as HTMLInputElement).value.trim(),
+          branded_impressions: parseInt((document.getElementById('bs-impressions') as HTMLInputElement).value)||0,
+          branded_clicks: parseInt((document.getElementById('bs-clicks') as HTMLInputElement).value)||0,
+          branded_ctr: parseFloat((document.getElementById('bs-ctr') as HTMLInputElement).value)||0,
+          direct_sessions: parseInt((document.getElementById('bs-direct') as HTMLInputElement).value)||0,
+          notes: (document.getElementById('bs-notes') as HTMLInputElement).value.trim(),
+        };
+        if (!payload.recorded_month) { alert('Month is required'); return; }
+        await sbPost('brand_search', payload);
+        document.getElementById('bs-form-wrap')!.style.display = 'none';
+        loadBrandSearch();
+      });
+
+      // ── SECTION 5: Algorithm Updates ─────────────────────────────
+      const ALGO_SEED = [
+        { update_name: 'March 2024 Core Update', google_confirmed: true, announced_date: '2024-03-05', rollout_start: '2024-03-05', rollout_end: '2024-04-19', impact_on_tem: 'Minimal — slight positive', traffic_change_pct: 3.2, notes: 'Longest rollout in Google history' },
+        { update_name: 'November 2024 Core Update', google_confirmed: true, announced_date: '2024-11-11', rollout_start: '2024-11-11', rollout_end: '2024-12-05', impact_on_tem: 'Positive — local pages gained', traffic_change_pct: 8.1, notes: '' },
+        { update_name: 'March 2025 Core Update', google_confirmed: true, announced_date: '2025-03-13', rollout_start: '2025-03-13', rollout_end: '2025-03-27', impact_on_tem: 'Under review', traffic_change_pct: 0, notes: 'Monitor rankings closely' },
+      ];
+
+      async function loadAlgoUpdates() {
+        document.getElementById('algo-loading')!.style.display = 'block';
+        document.getElementById('algo-table')!.style.display = 'none';
+        document.getElementById('algo-empty')!.style.display = 'none';
+
+        let rows = await sbGet('algo_updates', 'order=announced_date.desc');
+        if (!Array.isArray(rows) || rows.length === 0) {
+          for (const seed of ALGO_SEED) await sbPost('algo_updates', seed);
+          rows = await sbGet('algo_updates', 'order=announced_date.desc');
+        }
+        const data = Array.isArray(rows) ? rows : [];
+        document.getElementById('algo-loading')!.style.display = 'none';
+
+        if (data.length === 0) { document.getElementById('algo-empty')!.style.display = 'block'; return; }
+        document.getElementById('algo-table')!.style.display = 'block';
+        const tbody = document.getElementById('algo-tbody')!;
+        tbody.innerHTML = data.map(r => `
+          <tr>
+            <td style="font-weight:500;color:#e5e7eb">${escHtml(r.update_name)}</td>
+            <td>${r.google_confirmed ? '<span style="color:#86efac">✓ Yes</span>' : '<span style="color:#6b7280">Unconfirmed</span>'}</td>
+            <td style="font-size:0.8rem;color:#9ca3af">${fmtDate(r.announced_date)}</td>
+            <td style="font-size:0.78rem;color:#6b7280">${fmtDate(r.rollout_start)} → ${fmtDate(r.rollout_end)}</td>
+            <td style="font-size:0.82rem">${escHtml(r.impact_on_tem||'')}</td>
+            <td style="font-variant-numeric:tabular-nums;color:${(r.traffic_change_pct||0)>0?'#86efac':(r.traffic_change_pct||0)<0?'#f87171':'#6b7280'}">${r.traffic_change_pct!==null&&r.traffic_change_pct!==undefined ? (r.traffic_change_pct>0?'+':'')+r.traffic_change_pct.toFixed(1)+'%' : '—'}</td>
+            <td style="font-size:0.78rem;color:#6b7280;max-width:160px">${escHtml(r.notes||'')}</td>
+            <td style="white-space:nowrap">
+              <button class="btn-sm btn-edit algo-edit-btn" data-id="${r.id}" style="margin-right:0.3rem">Edit</button>
+              <button class="btn-sm btn-danger algo-del-btn" data-id="${r.id}">×</button>
+            </td>
+          </tr>
+        `).join('');
+
+        tbody.querySelectorAll<HTMLButtonElement>('.algo-edit-btn').forEach(b => b.addEventListener('click', async () => {
+          const rows2 = await sbGet('algo_updates', 'order=announced_date.desc');
+          const row = (Array.isArray(rows2)?rows2:[]).find((x: any) => x.id===b.dataset.id);
+          if (row) openAlgoForm(row);
+        }));
+        tbody.querySelectorAll<HTMLButtonElement>('.algo-del-btn').forEach(b => b.addEventListener('click', async () => {
+          if (!confirm('Delete this update?')) return;
+          await sbDelete('algo_updates', b.dataset.id!);
+          loadAlgoUpdates();
+        }));
+      }
+
+      document.getElementById('algo-add-btn')!.addEventListener('click', () => openAlgoForm(null));
+      document.getElementById('algo-refresh-btn')!.addEventListener('click', loadAlgoUpdates);
+      document.getElementById('algo-cancel-btn')!.addEventListener('click', () => { document.getElementById('algo-form-wrap')!.style.display='none'; });
+
+      function openAlgoForm(row: any) {
+        const wrap = document.getElementById('algo-form-wrap')!;
+        wrap.style.display = 'block';
+        document.getElementById('algo-form-title')!.textContent = row ? 'Edit Update' : 'Log Update';
+        (document.getElementById('algo-edit-id') as HTMLInputElement).value = row?.id || '';
+        (document.getElementById('algo-name') as HTMLInputElement).value = row?.update_name || '';
+        (document.getElementById('algo-confirmed') as HTMLSelectElement).value = row?.google_confirmed ? 'true' : 'false';
+        (document.getElementById('algo-announced') as HTMLInputElement).value = row?.announced_date || '';
+        (document.getElementById('algo-start') as HTMLInputElement).value = row?.rollout_start || '';
+        (document.getElementById('algo-end') as HTMLInputElement).value = row?.rollout_end || '';
+        (document.getElementById('algo-impact') as HTMLInputElement).value = row?.impact_on_tem || '';
+        (document.getElementById('algo-traffic') as HTMLInputElement).value = row?.traffic_change_pct ?? '';
+        (document.getElementById('algo-notes') as HTMLTextAreaElement).value = row?.notes || '';
+        wrap.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      document.getElementById('algo-save-btn')!.addEventListener('click', async () => {
+        const id = (document.getElementById('algo-edit-id') as HTMLInputElement).value;
+        const payload = {
+          update_name: (document.getElementById('algo-name') as HTMLInputElement).value.trim(),
+          google_confirmed: (document.getElementById('algo-confirmed') as HTMLSelectElement).value === 'true',
+          announced_date: (document.getElementById('algo-announced') as HTMLInputElement).value || null,
+          rollout_start: (document.getElementById('algo-start') as HTMLInputElement).value || null,
+          rollout_end: (document.getElementById('algo-end') as HTMLInputElement).value || null,
+          impact_on_tem: (document.getElementById('algo-impact') as HTMLInputElement).value.trim(),
+          traffic_change_pct: parseFloat((document.getElementById('algo-traffic') as HTMLInputElement).value)||0,
+          notes: (document.getElementById('algo-notes') as HTMLTextAreaElement).value.trim(),
+        };
+        if (id) await sbPatch('algo_updates', id, payload); else await sbPost('algo_updates', payload);
+        document.getElementById('algo-form-wrap')!.style.display = 'none';
+        loadAlgoUpdates();
+      });
+    </script>
+  </body>
+</html>

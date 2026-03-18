@@ -1,0 +1,666 @@
+---
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CRO Hub | TEM Admin</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+      input, select, textarea { font-family: inherit; }
+
+      .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+      .login-card { width: 100%; max-width: 380px; }
+      .login-card h1 { font-size: 1.75rem; font-weight: 300; text-align: center; margin-bottom: 2rem; color: #fff; }
+      .login-card input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; }
+      .login-card input:focus { border-color: #8b7355; }
+      .btn-primary { display: block; width: 100%; padding: 0.875rem; margin-top: 0.75rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+      .btn-primary:hover { background: #a68b6a; }
+      .error-msg { color: #f87171; font-size: 0.8rem; margin-top: 0.5rem; }
+
+      .dash-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; border-bottom: 1px solid #1a1a1a; flex-wrap: wrap; gap: 0.75rem; }
+      .dash-header h1 { font-size: 1.25rem; font-weight: 400; }
+      .dash-header .logo { color: #8b7355; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; }
+      .btn-sm { padding: 0.5rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+      .btn-sm:hover { border-color: #8b7355; color: #fff; }
+
+      .dash-nav { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
+      .nav-group { display: flex; flex-direction: column; gap: 0.3rem; }
+      .nav-group-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.15em; color: #4b5563; }
+      .nav-group-links { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+      .dash-nav a { padding: 0.35rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #9ca3af; font-size: 0.78rem; text-decoration: none; transition: all 0.2s; white-space: nowrap; }
+      .dash-nav a:hover { border-color: #8b7355; color: #fff; }
+      .dash-nav a.active { border-color: #8b7355; color: #8b7355; }
+
+      .btn-danger { background: transparent; border-color: #7f1d1d; color: #f87171; }
+      .btn-danger:hover { background: #7f1d1d; border-color: #7f1d1d; color: #fff; }
+
+      .dash-body { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+      .section-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; color: #e5e7eb; display: flex; align-items: center; gap: 0.75rem; }
+      .section-title .tag { font-size: 0.65rem; background: #1a2a1a; color: #86efac; border-radius: 4px; padding: 0.2rem 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; }
+
+      .panel { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem; }
+      .panel h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; color: #e5e7eb; }
+
+      .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+      .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+      .form-group.full { grid-column: 1 / -1; }
+      .form-group label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em; }
+      .form-group input, .form-group select, .form-group textarea { padding: 0.6rem 0.875rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none; }
+      .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; }
+      .form-group select option { background: #1a1a1a; }
+      .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+
+      .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+      .empty-state { text-align: center; padding: 3rem; color: #4b5563; }
+
+      /* Kanban */
+      .kanban { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; }
+      .kanban-col { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 10px; }
+      .kanban-col-header { display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1.25rem; border-bottom: 1px solid #1a1a1a; }
+      .kanban-col-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+      .kanban-count { background: #1a1a1a; color: #9ca3af; font-size: 0.7rem; padding: 0.1rem 0.5rem; border-radius: 999px; }
+      .kanban-col-title-planned { color: #9ca3af; }
+      .kanban-col-title-running { color: #fde68a; }
+      .kanban-col-title-complete { color: #86efac; }
+      .kanban-cards { padding: 0.875rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 200px; }
+      .kanban-card { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 1rem; }
+      .kanban-card:hover { border-color: #2a2a2a; }
+      .kanban-card-name { font-size: 0.88rem; font-weight: 500; color: #e5e7eb; margin-bottom: 0.4rem; }
+      .kanban-card-url { font-size: 0.72rem; color: #4b5563; margin-bottom: 0.5rem; }
+      .kanban-card-hyp { font-size: 0.78rem; color: #9ca3af; line-height: 1.4; margin-bottom: 0.75rem; }
+      .kanban-card-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+      .kanban-card-actions { display: flex; gap: 0.4rem; margin-top: 0.75rem; }
+      .winner-badge { background: #3a2800; color: #fbbf24; border: 1px solid #92400e; }
+
+      /* Rate bars */
+      .rate-bar-wrap { margin-top: 0.5rem; }
+      .rate-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; color: #6b7280; margin-bottom: 0.3rem; }
+      .rate-bar { flex: 1; height: 4px; background: #1a1a1a; border-radius: 2px; overflow: hidden; }
+      .rate-bar-fill { height: 100%; border-radius: 2px; }
+      .rate-bar-a { background: #8b7355; }
+      .rate-bar-b { background: #93c5fd; }
+
+      /* Heatmap cards */
+      .heatmap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; }
+      .heatmap-card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.25rem; }
+      .heatmap-card h3 { font-size: 0.9rem; font-weight: 600; color: #e5e7eb; margin-bottom: 0.25rem; }
+      .heatmap-card .subtitle { font-size: 0.75rem; color: #6b7280; margin-bottom: 1rem; }
+      .code-block { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 0.875rem; font-family: 'Courier New', monospace; font-size: 0.72rem; color: #9ca3af; line-height: 1.6; white-space: pre-wrap; word-break: break-all; margin-bottom: 1rem; }
+      .status-toggle { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; }
+      .toggle-switch { position: relative; width: 40px; height: 22px; }
+      .toggle-switch input { opacity: 0; width: 0; height: 0; }
+      .toggle-slider { position: absolute; inset: 0; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 11px; cursor: pointer; transition: all 0.2s; }
+      .toggle-slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #4b5563; border-radius: 50%; transition: all 0.2s; }
+      .toggle-switch input:checked + .toggle-slider { background: #1a3a1a; border-color: #14532d; }
+      .toggle-switch input:checked + .toggle-slider::before { background: #86efac; transform: translateX(18px); }
+      .toggle-label { font-size: 0.8rem; color: #9ca3af; }
+      .heatmap-checklist { list-style: none; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+      .heatmap-checklist li { display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; color: #d1d5db; cursor: pointer; padding: 0.35rem 0; }
+      .heatmap-checklist li .chk { width: 16px; height: 16px; min-width: 16px; border: 1px solid #2a2a2a; border-radius: 3px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 0.6rem; }
+      .heatmap-checklist li.done { color: #4b5563; text-decoration: line-through; }
+      .heatmap-checklist li.done .chk { background: #8b7355; border-color: #8b7355; color: #fff; }
+
+      /* Nurture flow */
+      .nurture-flow { display: flex; flex-direction: column; gap: 0; }
+      .nurture-step { display: flex; align-items: flex-start; gap: 1rem; position: relative; }
+      .nurture-step:not(:last-child)::after { content: ''; position: absolute; left: 19px; top: 38px; width: 2px; height: calc(100% + 0px); background: #1a1a1a; }
+      .nurture-node { width: 40px; height: 40px; min-width: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; z-index: 1; position: relative; }
+      .node-live { background: #14532d; color: #86efac; border: 2px solid #86efac; }
+      .node-planned { background: #1a1a1a; color: #6b7280; border: 2px solid #2a2a2a; }
+      .nurture-card { flex: 1; background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+      .nurture-card.live { border-color: #14532d; }
+      .nurture-card-top { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+      .nurture-day { font-size: 0.7rem; color: #6b7280; }
+      .nurture-subject { font-size: 0.88rem; font-weight: 500; color: #e5e7eb; }
+      .nurture-type { font-size: 0.68rem; background: #1a1a2a; color: #a5b4fc; padding: 0.15rem 0.5rem; border-radius: 4px; }
+      .nurture-notes { font-size: 0.78rem; color: #6b7280; }
+
+      /* Conversion Goals */
+      .goals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+      .goal-card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.25rem; }
+      .goal-card .goal-name { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 0.5rem; }
+      .goal-card .goal-target { font-size: 1.75rem; font-weight: 600; color: #8b7355; margin-bottom: 0.25rem; }
+      .goal-card .goal-current-label { font-size: 0.72rem; color: #4b5563; margin-bottom: 0.3rem; }
+      .goal-card .goal-current-input { width: 100%; padding: 0.4rem 0.6rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #fff; font-size: 0.85rem; outline: none; margin-top: 0.5rem; }
+      .goal-card .goal-current-input:focus { border-color: #8b7355; }
+      .goal-bar-wrap { margin-top: 0.75rem; }
+      .goal-bar { height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; }
+      .goal-bar-fill { height: 100%; background: linear-gradient(90deg, #8b7355, #a68b6a); border-radius: 3px; transition: width 0.4s ease; }
+      .goal-pct { font-size: 0.7rem; color: #6b7280; margin-top: 0.3rem; }
+
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+      thead tr { border-bottom: 1px solid #1a1a1a; }
+      th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; white-space: nowrap; }
+      td { padding: 0.9rem 1rem; border-bottom: 1px solid #111; vertical-align: middle; }
+      tr:hover td { background: #0f0f0f; }
+
+      @media (max-width: 640px) {
+        .dash-header { padding: 1rem; }
+        .dash-body { padding: 1rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- LOGIN GATE -->
+    <div id="login-section" class="login-wrap">
+      <div class="login-card">
+        <h1>CRO Hub</h1>
+        <input type="password" id="admin-password" placeholder="Admin password" autocomplete="current-password" />
+        <p id="login-error" class="error-msg" style="display:none"></p>
+        <button class="btn-primary" id="login-btn">Enter</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" style="display:none">
+      <header class="dash-header">
+        <div>
+          <div class="logo">Troweled Earth Melbourne</div>
+          <h1>Conversion Rate Optimisation Hub</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+          <nav class="dash-nav">
+            <div class="nav-group">
+              <div class="nav-group-label">SEO & Campaigns</div>
+              <div class="nav-group-links">
+                <a href="/admin/campaigns">Campaigns</a>
+                <a href="/admin/strategy">Strategy</a>
+                <a href="/admin/content">Content</a>
+                <a href="/admin/links">Links</a>
+              </div>
+            </div>
+            <div class="nav-group">
+              <div class="nav-group-label">Tracking</div>
+              <div class="nav-group-links">
+                <a href="/admin/analytics">Analytics</a>
+                <a href="/admin/cro" class="active">CRO</a>
+              </div>
+            </div>
+            <div class="nav-group">
+              <div class="nav-group-label">Operations</div>
+              <div class="nav-group-links">
+                <a href="/admin/team">Team</a>
+                <a href="/admin/future">AI Future</a>
+              </div>
+            </div>
+          </nav>
+          <button class="btn-sm" id="logout-btn">Log out</button>
+        </div>
+      </header>
+
+      <div class="dash-body">
+
+        <!-- ── SECTION 1: A/B Test Tracker ───────────────────────── -->
+        <div class="section-title">A/B Test Tracker <span class="tag">Section 1</span></div>
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem">
+            <h2 style="margin:0">Test Kanban</h2>
+            <div style="display:flex;gap:0.5rem">
+              <button class="btn-sm" id="ab-add-btn">+ New Test</button>
+              <button class="btn-sm" id="ab-refresh-btn">↻ Refresh</button>
+            </div>
+          </div>
+          <div id="ab-loading" style="text-align:center;padding:2rem;color:#6b7280">Loading…</div>
+          <div id="ab-kanban-wrap" style="display:none">
+            <div class="kanban">
+              <div class="kanban-col">
+                <div class="kanban-col-header">
+                  <span class="kanban-col-title kanban-col-title-planned">Planned</span>
+                  <span class="kanban-count" id="ab-count-planned">0</span>
+                </div>
+                <div class="kanban-cards" id="ab-col-planned"></div>
+              </div>
+              <div class="kanban-col">
+                <div class="kanban-col-header">
+                  <span class="kanban-col-title kanban-col-title-running">Running</span>
+                  <span class="kanban-count" id="ab-count-running">0</span>
+                </div>
+                <div class="kanban-cards" id="ab-col-running"></div>
+              </div>
+              <div class="kanban-col">
+                <div class="kanban-col-header">
+                  <span class="kanban-col-title kanban-col-title-complete">Complete</span>
+                  <span class="kanban-count" id="ab-count-complete">0</span>
+                </div>
+                <div class="kanban-cards" id="ab-col-complete"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Form -->
+          <div id="ab-form-wrap" style="display:none;margin-top:1.5rem;border-top:1px solid #1a1a1a;padding-top:1.5rem">
+            <h2 id="ab-form-title">New A/B Test</h2>
+            <div class="form-grid">
+              <div class="form-group full"><label>Test Name</label><input type="text" id="ab-name" placeholder="Hero CTA Button Copy" /></div>
+              <div class="form-group full"><label>Page URL</label><input type="text" id="ab-url" placeholder="/products/venetian-plaster/" /></div>
+              <div class="form-group full"><label>Hypothesis</label><textarea id="ab-hyp" rows="2" style="resize:vertical" placeholder="Changing the CTA from 'Get a Quote' to 'See Pricing' will increase quote submissions by 15%"></textarea></div>
+              <div class="form-group full"><label>Variant A (Control)</label><input type="text" id="ab-va" placeholder="Get a Quote" /></div>
+              <div class="form-group full"><label>Variant B (Test)</label><input type="text" id="ab-vb" placeholder="See Our Pricing" /></div>
+              <div class="form-group"><label>Start Date</label><input type="date" id="ab-start" /></div>
+              <div class="form-group"><label>End Date</label><input type="date" id="ab-end" /></div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="ab-status">
+                  <option value="planned">Planned</option>
+                  <option value="running">Running</option>
+                  <option value="complete">Complete</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Winner (if complete)</label><input type="text" id="ab-winner" placeholder="Variant B" /></div>
+              <div class="form-group"><label>Conversion Metric</label><input type="text" id="ab-metric" placeholder="Quote form submissions" /></div>
+              <div class="form-group"><label>Variant A Rate (%)</label><input type="number" id="ab-ra" step="0.01" placeholder="0.00" /></div>
+              <div class="form-group"><label>Variant B Rate (%)</label><input type="number" id="ab-rb" step="0.01" placeholder="0.00" /></div>
+              <div class="form-group full"><label>Notes</label><textarea id="ab-notes" rows="2" style="resize:vertical"></textarea></div>
+            </div>
+            <div class="form-actions">
+              <input type="hidden" id="ab-edit-id" />
+              <button class="btn-primary" style="width:auto;padding:0.6rem 1.5rem" id="ab-save-btn">Save Test</button>
+              <button class="btn-sm" id="ab-cancel-btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 2: Heatmap Setup ───────────────────────────── -->
+        <div class="section-title">Heatmap Setup <span class="tag">Section 2</span></div>
+        <div class="panel">
+          <div class="heatmap-grid">
+            <!-- Hotjar -->
+            <div class="heatmap-card">
+              <h3>Hotjar</h3>
+              <div class="subtitle">Session recordings, heatmaps & surveys</div>
+              <div class="code-block">&lt;!-- Hotjar Tracking Code --&gt;
+&lt;script&gt;
+  (function(h,o,t,j,a,r){
+    h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+    h._hjSettings={hjid:YOUR_SITE_ID,hjsv:6};
+    a=o.getElementsByTagName('head')[0];
+    r=o.createElement('script');r.async=1;
+    r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+    a.appendChild(r);
+  })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+&lt;/script&gt;</div>
+              <div class="status-toggle">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="hj-toggle" />
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label" id="hj-label">Not installed</span>
+              </div>
+            </div>
+
+            <!-- Clarity -->
+            <div class="heatmap-card">
+              <h3>Microsoft Clarity</h3>
+              <div class="subtitle">Free heatmaps, session replay & insights</div>
+              <div class="code-block">&lt;!-- Microsoft Clarity --&gt;
+&lt;script type="text/javascript"&gt;
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;
+    t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];
+    y.parentNode.insertBefore(t,y);
+  })(window,document,"clarity","script","YOUR_PROJECT_ID");
+&lt;/script&gt;</div>
+              <div class="status-toggle">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="cl-toggle" />
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label" id="cl-label">Not installed</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5-page checklist -->
+          <div style="margin-top:1.5rem;border-top:1px solid #1a1a1a;padding-top:1.25rem">
+            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;margin-bottom:0.875rem">Priority Pages to Track</div>
+            <ul class="heatmap-checklist" id="heatmap-page-checks">
+              <li data-hkey="hm-quote"><span class="chk"></span>Quote / Contact page — track scroll depth & form engagement</li>
+              <li data-hkey="hm-venetian"><span class="chk"></span>Venetian Plaster product page — identify CTA click patterns</li>
+              <li data-hkey="hm-marbellino"><span class="chk"></span>Marbellino product page — watch for exit before pricing</li>
+              <li data-hkey="hm-homepage"><span class="chk"></span>Homepage — track hero scroll & nav clicks</li>
+              <li data-hkey="hm-microcement"><span class="chk"></span>Microcement product page — compare mobile vs desktop heatmap</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ── SECTION 3: Lead Nurturing ─────────────────────────── -->
+        <div class="section-title">Lead Nurturing Sequence <span class="tag">Section 3</span></div>
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem">
+            <h2 style="margin:0">Email Sequence Builder</h2>
+            <button class="btn-sm" id="ns-refresh-btn">↻ Refresh</button>
+          </div>
+          <div id="ns-loading" style="text-align:center;padding:2rem;color:#6b7280">Loading…</div>
+          <div id="ns-flow" class="nurture-flow" style="display:none"></div>
+        </div>
+
+        <!-- ── SECTION 4: Conversion Goals ───────────────────────── -->
+        <div class="section-title">Conversion Goals <span class="tag">Section 4 · localStorage</span></div>
+        <div class="panel">
+          <p style="font-size:0.78rem;color:#6b7280;margin-bottom:1.25rem">Enter your current rates below — progress is saved in your browser.</p>
+          <div class="goals-grid" id="goals-grid"></div>
+        </div>
+
+      </div><!-- /dash-body -->
+    </div><!-- /dashboard-section -->
+
+    <script>
+      const ADMIN_PASSWORD = 'TEM-admin-2026!';
+      const SB_URL = 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+      const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdHhib2hqanBraHpod2xucnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDgzMjEsImV4cCI6MjA4NjYyNDMyMX0.UWgOz-9ZAy0xxVH-VTTysFzvrbD1CX0a459rNC391Hw';
+
+      function sbHeaders() {
+        return { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+      }
+      async function sbGet(table: string, params?: string) {
+        const r = await fetch(`${SB_URL}/rest/v1/${table}?${params||''}`, { headers: sbHeaders() });
+        return r.json();
+      }
+      async function sbPost(table: string, body: object) {
+        const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method: 'POST', headers: sbHeaders(), body: JSON.stringify(body) });
+        return r.json();
+      }
+      async function sbPatch(table: string, id: string, body: object) {
+        const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'PATCH', headers: sbHeaders(), body: JSON.stringify(body) });
+        return r.json();
+      }
+      async function sbDelete(table: string, id: string) {
+        await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: sbHeaders() });
+      }
+      function escHtml(s: any) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+      function fmtDate(d: string|null) { if (!d) return '—'; return new Date(d).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'2-digit'}); }
+
+      // ── Auth ──────────────────────────────────────────────────────
+      const stored = sessionStorage.getItem('tem-admin-pw');
+      if (stored === ADMIN_PASSWORD) showDash();
+
+      document.getElementById('login-btn')!.addEventListener('click', () => {
+        const val = (document.getElementById('admin-password') as HTMLInputElement).value;
+        if (val === ADMIN_PASSWORD) {
+          sessionStorage.setItem('tem-admin-pw', val);
+          document.getElementById('login-error')!.style.display = 'none';
+          showDash();
+        } else {
+          const e = document.getElementById('login-error')!;
+          e.textContent = 'Invalid password';
+          e.style.display = 'block';
+        }
+      });
+      (document.getElementById('admin-password') as HTMLInputElement).addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('login-btn')!.click(); });
+      document.getElementById('logout-btn')!.addEventListener('click', () => {
+        sessionStorage.removeItem('tem-admin-pw');
+        document.getElementById('login-section')!.style.display = 'flex';
+        document.getElementById('dashboard-section')!.style.display = 'none';
+      });
+
+      function showDash() {
+        document.getElementById('login-section')!.style.display = 'none';
+        document.getElementById('dashboard-section')!.style.display = 'block';
+        loadABTests();
+        initHeatmapToggles();
+        initHeatmapChecklist();
+        loadNurture();
+        initGoals();
+      }
+
+      // ── SECTION 1: A/B Tests ──────────────────────────────────────
+      const AB_SEED = [
+        { test_name: 'Hero CTA Button Copy', page_url: '/products/venetian-plaster/', hypothesis: 'Changing CTA from "Get a Quote" to "See Our Pricing" will increase quote form starts by 15%.', variant_a: 'Get a Quote', variant_b: 'See Our Pricing', start_date: null, end_date: null, status: 'planned', winner: null, conversion_metric: 'Quote form submissions', variant_a_rate: null, variant_b_rate: null, notes: 'High-traffic page — good candidate for first test' },
+        { test_name: 'Homepage Hero Image', page_url: '/', hypothesis: 'Using a bathroom Venetian plaster image vs a feature wall will attract more qualified leads.', variant_a: 'Feature wall hero', variant_b: 'Bathroom application hero', start_date: null, end_date: null, status: 'planned', winner: null, conversion_metric: 'Scroll depth + contact clicks', variant_a_rate: null, variant_b_rate: null, notes: '' },
+        { test_name: 'Quote Form Length', page_url: '/contact/', hypothesis: 'Reducing the quote form from 8 fields to 4 fields will increase submission rate by 20%.', variant_a: '8-field form', variant_b: '4-field form (name, phone, product, suburb)', start_date: null, end_date: null, status: 'planned', winner: null, conversion_metric: 'Quote form submissions', variant_a_rate: null, variant_b_rate: null, notes: 'Validate lead quality post-test' },
+        { test_name: 'Product Page Social Proof Placement', page_url: '/products/marbellino/', hypothesis: 'Moving Google reviews above the fold will increase enquiry rate.', variant_a: 'Reviews in footer section', variant_b: 'Reviews directly below hero image', start_date: null, end_date: null, status: 'planned', winner: null, conversion_metric: 'Enquiry clicks', variant_a_rate: null, variant_b_rate: null, notes: '' },
+        { test_name: 'Navigation CTA', page_url: 'All pages', hypothesis: 'A sticky "Request Quote" button in the nav will increase conversion on mobile.', variant_a: 'Standard nav (no sticky CTA)', variant_b: 'Nav with sticky amber CTA button', start_date: null, end_date: null, status: 'planned', winner: null, conversion_metric: 'Mobile quote form clicks', variant_a_rate: null, variant_b_rate: null, notes: 'Mobile traffic >60% — high priority' },
+      ];
+
+      let abData: any[] = [];
+
+      async function loadABTests() {
+        document.getElementById('ab-loading')!.style.display = 'block';
+        document.getElementById('ab-kanban-wrap')!.style.display = 'none';
+
+        let rows = await sbGet('ab_tests', 'order=created_at.asc');
+        if (!Array.isArray(rows) || rows.length === 0) {
+          for (const seed of AB_SEED) await sbPost('ab_tests', seed);
+          rows = await sbGet('ab_tests', 'order=created_at.asc');
+        }
+        abData = Array.isArray(rows) ? rows : [];
+        document.getElementById('ab-loading')!.style.display = 'none';
+        document.getElementById('ab-kanban-wrap')!.style.display = 'block';
+        renderABKanban();
+      }
+
+      function renderABKanban() {
+        const cols: Record<string, any[]> = { planned: [], running: [], complete: [] };
+        abData.forEach(t => {
+          const key = t.status in cols ? t.status : 'planned';
+          cols[key].push(t);
+        });
+        ['planned','running','complete'].forEach(col => {
+          document.getElementById(`ab-count-${col}`)!.textContent = String(cols[col].length);
+          const el = document.getElementById(`ab-col-${col}`)!;
+          if (cols[col].length === 0) {
+            el.innerHTML = '<div class="empty-state" style="padding:1.5rem;font-size:0.8rem">No tests here</div>';
+            return;
+          }
+          el.innerHTML = cols[col].map(t => {
+            const hasRates = t.variant_a_rate != null && t.variant_b_rate != null;
+            const aRate = parseFloat(t.variant_a_rate)||0;
+            const bRate = parseFloat(t.variant_b_rate)||0;
+            const maxRate = Math.max(aRate, bRate, 0.01);
+            return `<div class="kanban-card">
+              <div class="kanban-card-name">${escHtml(t.test_name)}</div>
+              <div class="kanban-card-url">${escHtml(t.page_url)}</div>
+              <div class="kanban-card-hyp">${escHtml(t.hypothesis||'')}</div>
+              <div class="kanban-card-meta">
+                ${t.start_date ? `<span style="font-size:0.7rem;color:#6b7280">${fmtDate(t.start_date)}${t.end_date?' → '+fmtDate(t.end_date):''}</span>` : ''}
+                ${t.winner ? `<span class="badge winner-badge">Winner: ${escHtml(t.winner)}</span>` : ''}
+              </div>
+              ${hasRates ? `<div class="rate-bar-wrap">
+                <div class="rate-row"><span style="min-width:3rem">A: ${aRate.toFixed(2)}%</span><div class="rate-bar"><div class="rate-bar-fill rate-bar-a" style="width:${(aRate/maxRate*100).toFixed(1)}%"></div></div></div>
+                <div class="rate-row"><span style="min-width:3rem">B: ${bRate.toFixed(2)}%</span><div class="rate-bar"><div class="rate-bar-fill rate-bar-b" style="width:${(bRate/maxRate*100).toFixed(1)}%"></div></div></div>
+              </div>` : ''}
+              <div class="kanban-card-actions">
+                <button class="btn-sm btn-edit ab-edit-btn" data-id="${t.id}">Edit</button>
+                <button class="btn-sm btn-danger ab-del-btn" data-id="${t.id}">×</button>
+              </div>
+            </div>`;
+          }).join('');
+          el.querySelectorAll<HTMLButtonElement>('.ab-edit-btn').forEach(b => b.addEventListener('click', () => openABForm(abData.find(x=>x.id===b.dataset.id))));
+          el.querySelectorAll<HTMLButtonElement>('.ab-del-btn').forEach(b => b.addEventListener('click', async () => {
+            if (!confirm('Delete this test?')) return;
+            await sbDelete('ab_tests', b.dataset.id!);
+            loadABTests();
+          }));
+        });
+      }
+
+      document.getElementById('ab-add-btn')!.addEventListener('click', () => openABForm(null));
+      document.getElementById('ab-refresh-btn')!.addEventListener('click', loadABTests);
+      document.getElementById('ab-cancel-btn')!.addEventListener('click', () => { document.getElementById('ab-form-wrap')!.style.display='none'; });
+
+      function openABForm(row: any) {
+        const wrap = document.getElementById('ab-form-wrap')!;
+        wrap.style.display = 'block';
+        document.getElementById('ab-form-title')!.textContent = row ? 'Edit Test' : 'New A/B Test';
+        (document.getElementById('ab-edit-id') as HTMLInputElement).value = row?.id || '';
+        (document.getElementById('ab-name') as HTMLInputElement).value = row?.test_name || '';
+        (document.getElementById('ab-url') as HTMLInputElement).value = row?.page_url || '';
+        (document.getElementById('ab-hyp') as HTMLTextAreaElement).value = row?.hypothesis || '';
+        (document.getElementById('ab-va') as HTMLInputElement).value = row?.variant_a || '';
+        (document.getElementById('ab-vb') as HTMLInputElement).value = row?.variant_b || '';
+        (document.getElementById('ab-start') as HTMLInputElement).value = row?.start_date || '';
+        (document.getElementById('ab-end') as HTMLInputElement).value = row?.end_date || '';
+        (document.getElementById('ab-status') as HTMLSelectElement).value = row?.status || 'planned';
+        (document.getElementById('ab-winner') as HTMLInputElement).value = row?.winner || '';
+        (document.getElementById('ab-metric') as HTMLInputElement).value = row?.conversion_metric || '';
+        (document.getElementById('ab-ra') as HTMLInputElement).value = row?.variant_a_rate ?? '';
+        (document.getElementById('ab-rb') as HTMLInputElement).value = row?.variant_b_rate ?? '';
+        (document.getElementById('ab-notes') as HTMLTextAreaElement).value = row?.notes || '';
+        wrap.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      document.getElementById('ab-save-btn')!.addEventListener('click', async () => {
+        const id = (document.getElementById('ab-edit-id') as HTMLInputElement).value;
+        const payload = {
+          test_name: (document.getElementById('ab-name') as HTMLInputElement).value.trim(),
+          page_url: (document.getElementById('ab-url') as HTMLInputElement).value.trim(),
+          hypothesis: (document.getElementById('ab-hyp') as HTMLTextAreaElement).value.trim(),
+          variant_a: (document.getElementById('ab-va') as HTMLInputElement).value.trim(),
+          variant_b: (document.getElementById('ab-vb') as HTMLInputElement).value.trim(),
+          start_date: (document.getElementById('ab-start') as HTMLInputElement).value || null,
+          end_date: (document.getElementById('ab-end') as HTMLInputElement).value || null,
+          status: (document.getElementById('ab-status') as HTMLSelectElement).value,
+          winner: (document.getElementById('ab-winner') as HTMLInputElement).value.trim() || null,
+          conversion_metric: (document.getElementById('ab-metric') as HTMLInputElement).value.trim(),
+          variant_a_rate: parseFloat((document.getElementById('ab-ra') as HTMLInputElement).value) || null,
+          variant_b_rate: parseFloat((document.getElementById('ab-rb') as HTMLInputElement).value) || null,
+          notes: (document.getElementById('ab-notes') as HTMLTextAreaElement).value.trim(),
+        };
+        if (id) await sbPatch('ab_tests', id, payload); else await sbPost('ab_tests', payload);
+        document.getElementById('ab-form-wrap')!.style.display = 'none';
+        loadABTests();
+      });
+
+      // ── SECTION 2: Heatmap toggles & checklist ───────────────────
+      function initHeatmapToggles() {
+        const stored = JSON.parse(localStorage.getItem('tem-heatmap-status') || '{}');
+        ['hj','cl'].forEach(prefix => {
+          const toggle = document.getElementById(`${prefix}-toggle`) as HTMLInputElement;
+          const label = document.getElementById(`${prefix}-label`)!;
+          toggle.checked = !!stored[prefix];
+          label.textContent = toggle.checked ? 'Installed' : 'Not installed';
+          toggle.addEventListener('change', () => {
+            const s = JSON.parse(localStorage.getItem('tem-heatmap-status') || '{}');
+            s[prefix] = toggle.checked;
+            localStorage.setItem('tem-heatmap-status', JSON.stringify(s));
+            label.textContent = toggle.checked ? 'Installed' : 'Not installed';
+          });
+        });
+      }
+
+      function initHeatmapChecklist() {
+        const stored = JSON.parse(localStorage.getItem('tem-heatmap-checks') || '{}');
+        const list = document.getElementById('heatmap-page-checks')!;
+        list.querySelectorAll<HTMLLIElement>('li').forEach(li => {
+          const key = li.dataset.hkey!;
+          const chk = li.querySelector('.chk')!;
+          const apply = (checked: boolean) => {
+            li.classList.toggle('done', checked);
+            chk.textContent = checked ? '✓' : '';
+          };
+          apply(!!stored[key]);
+          li.addEventListener('click', () => {
+            const s = JSON.parse(localStorage.getItem('tem-heatmap-checks') || '{}');
+            s[key] = !s[key];
+            localStorage.setItem('tem-heatmap-checks', JSON.stringify(s));
+            apply(!!s[key]);
+          });
+        });
+      }
+
+      // ── SECTION 3: Nurture Sequence ───────────────────────────────
+      const NS_SEED = [
+        { step_number: 1, day_offset: 0, email_subject: 'Thanks for your enquiry — what to expect next', email_type: 'welcome', status: 'live', notes: 'Sent immediately on form submission' },
+        { step_number: 2, day_offset: 1, email_subject: 'See how [Product] transforms spaces', email_type: 'educational', status: 'not_built', notes: 'Include project gallery images' },
+        { step_number: 3, day_offset: 3, email_subject: 'Customer story: [Name]\'s Venetian Plaster renovation', email_type: 'social_proof', status: 'not_built', notes: 'Use real client case study' },
+        { step_number: 4, day_offset: 7, email_subject: 'Your quote is ready — book your consultation', email_type: 'offer', status: 'not_built', notes: 'Include calendar booking link' },
+        { step_number: 5, day_offset: 14, email_subject: 'Still thinking it over? Here\'s what our clients say', email_type: 'objection_handling', status: 'not_built', notes: 'Address common hesitations: cost, mess, time' },
+        { step_number: 6, day_offset: 30, email_subject: 'Last chance — our schedule fills up fast', email_type: 'urgency', status: 'not_built', notes: 'Only send if no booking made' },
+      ];
+
+      async function loadNurture() {
+        document.getElementById('ns-loading')!.style.display = 'block';
+        document.getElementById('ns-flow')!.style.display = 'none';
+
+        let rows = await sbGet('nurture_sequences', 'order=step_number.asc');
+        if (!Array.isArray(rows) || rows.length === 0) {
+          for (const seed of NS_SEED) await sbPost('nurture_sequences', seed);
+          rows = await sbGet('nurture_sequences', 'order=step_number.asc');
+        }
+        const data = Array.isArray(rows) ? rows : [];
+        document.getElementById('ns-loading')!.style.display = 'none';
+        document.getElementById('ns-flow')!.style.display = 'flex';
+
+        const flow = document.getElementById('ns-flow')!;
+        flow.innerHTML = data.map((r, i) => {
+          const isLive = r.status === 'live';
+          const typeBadge: Record<string,string> = { welcome: '#86efac', educational: '#a5b4fc', social_proof: '#fde68a', offer: '#fca5a5', objection_handling: '#fdba74', urgency: '#f87171' };
+          const badgeColor = typeBadge[r.email_type] || '#9ca3af';
+          return `<div class="nurture-step">
+            <div class="nurture-node ${isLive?'node-live':'node-planned'}">${r.step_number}</div>
+            <div class="nurture-card${isLive?' live':''}">
+              <div class="nurture-card-top">
+                <span class="nurture-day">Day ${r.day_offset}</span>
+                <span class="nurture-type" style="color:${badgeColor};background:${badgeColor}18">${escHtml((r.email_type||'').replace(/_/g,' '))}</span>
+                <span class="badge" style="background:${isLive?'#14532d':'#1a1a1a'};color:${isLive?'#86efac':'#6b7280'};font-size:0.65rem">${isLive?'Live':'Not Built'}</span>
+              </div>
+              <div class="nurture-subject">${escHtml(r.email_subject)}</div>
+              ${r.notes ? `<div class="nurture-notes" style="margin-top:0.4rem">${escHtml(r.notes)}</div>` : ''}
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      document.getElementById('ns-refresh-btn')!.addEventListener('click', loadNurture);
+
+      // ── SECTION 4: Conversion Goals ───────────────────────────────
+      const GOALS = [
+        { key: 'quote-form', name: 'Quote Form CVR', target: 3, unit: '%', description: 'Visitors → Quote form start' },
+        { key: 'contact-enquiry', name: 'Contact → Enquiry', target: 8, unit: '%', description: 'Contact page → Qualified lead' },
+        { key: 'organic-enquiry', name: 'Organic → Enquiry', target: 1.5, unit: '%', description: 'Organic sessions → Any enquiry' },
+        { key: 'google-ads-cpl', name: 'Google Ads CPL', target: 80, unit: '$', description: 'Cost per qualified lead (AUD)', lower_is_better: true },
+      ];
+
+      function initGoals() {
+        const stored = JSON.parse(localStorage.getItem('tem-cro-goals') || '{}');
+        const grid = document.getElementById('goals-grid')!;
+        grid.innerHTML = GOALS.map(g => {
+          const current = parseFloat(stored[g.key] || '0');
+          const pct = g.lower_is_better
+            ? Math.min(100, current > 0 ? (g.target / current) * 100 : 0)
+            : Math.min(100, (current / g.target) * 100);
+          return `<div class="goal-card">
+            <div class="goal-name">${escHtml(g.name)}</div>
+            <div class="goal-target">${g.unit === '$' ? '$'+g.target : g.target+g.unit}</div>
+            <div style="font-size:0.68rem;color:#4b5563;margin-bottom:0.5rem">${escHtml(g.description)}</div>
+            <div class="goal-current-label">Current value</div>
+            <input type="number" class="goal-current-input" data-key="${g.key}" value="${current||''}" placeholder="${g.unit==='$'?'$':''}0${g.unit==='%'?'%':''}" step="0.01" />
+            <div class="goal-bar-wrap">
+              <div class="goal-bar"><div class="goal-bar-fill" style="width:${pct.toFixed(1)}%"></div></div>
+              <div class="goal-pct">${pct.toFixed(0)}% of target${g.lower_is_better?' (lower = better)':''}</div>
+            </div>
+          </div>`;
+        }).join('');
+
+        grid.querySelectorAll<HTMLInputElement>('.goal-current-input').forEach(input => {
+          input.addEventListener('input', () => {
+            const s = JSON.parse(localStorage.getItem('tem-cro-goals') || '{}');
+            s[input.dataset.key!] = input.value;
+            localStorage.setItem('tem-cro-goals', JSON.stringify(s));
+            // Re-render bar
+            const card = input.closest('.goal-card')!;
+            const goal = GOALS.find(g => g.key === input.dataset.key!)!;
+            const current = parseFloat(input.value) || 0;
+            const pct = goal.lower_is_better
+              ? Math.min(100, current > 0 ? (goal.target / current) * 100 : 0)
+              : Math.min(100, (current / goal.target) * 100);
+            const fill = card.querySelector<HTMLDivElement>('.goal-bar-fill')!;
+            const pctText = card.querySelector<HTMLDivElement>('.goal-pct')!;
+            fill.style.width = pct.toFixed(1) + '%';
+            pctText.textContent = `${pct.toFixed(0)}% of target${goal.lower_is_better?' (lower = better)':''}`;
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
