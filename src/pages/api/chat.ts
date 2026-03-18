@@ -191,38 +191,156 @@ function buildProductResponse(productKey: string, question: string): string {
   return `${prod.description}\n\n**Best for:** ${prod.useCases.slice(0, 4).join(', ')}\n**Colours:** ${prod.colours}\n\nWhat specifically are you looking to achieve?`;
 }
 
+// ─── Personalised greeting helpers ───────────────────────────────────────────
+
+function greetByProject(name: string, project: string): string {
+  const n = name ? `Thanks ${name}! ` : '';
+  if (project.match(/bathroom|shower/)) {
+    return `${n}A bathroom project — great choice for a real transformation. 🛁\n\nFor wet areas you've got two standout options:\n\n• **Tadelakt** — naturally waterproof, seamless, no grout lines. Traditional Moroccan lime plaster used in hammams for centuries. Incredibly warm and organic.\n• **Marbellino** — polished Venetian plaster, stone-like finish. Also works in wet areas with sealing.\n\nAre you going for a warm, organic feel — or more of a luxurious polished stone look?\n\nAlso — what's the substrate? (Render, plasterboard, existing tiles?)`;
+  }
+  if (project.match(/kitchen|splashback/)) {
+    return `${n}Kitchen splashbacks and feature walls look incredible in our finishes. 🍳\n\nFor kitchens I'd usually point you toward:\n\n• **Marbellino** — polished stone look, handles splashes well with sealing\n• **Concretum** — raw concrete aesthetic, very popular in modern kitchens\n• **Metallics** — copper or brass near a rangehood can be a real statement piece\n\nWhat's the vibe you're going for — modern and minimal, or something with warmth?`;
+  }
+  if (project.match(/floor/)) {
+    return `${n}Floor project! **Marbellino** is your answer — it's the only one in our range approved for floor applications. Creates a beautiful polished stone look with real depth.\n\nIs it a residential or commercial space? And roughly how many square metres are we talking?`;
+  }
+  if (project.match(/exterior|outside|outdoor|facade/)) {
+    return `${n}Exterior work is one of our specialties. 🏠\n\nTop picks for outside:\n\n• **Rokka** — heavily textured stone effect, very robust outdoors\n• **Earthen Hemp Render** — rammed earth look, sustainable, brilliant on facades\n• **Concretum** — raw concrete, UV stable and weather-resistant\n• **Marbellino** — polished, also approved for exterior use\n\nWhat style is the property — modern, heritage, or somewhere in between?`;
+  }
+  if (project.match(/feature wall|lounge|living|bedroom/)) {
+    return `${n}Feature walls are where we really get to show off. ✨\n\nWhat aesthetic are you after?\n\n• **Polished & luxurious** → Marbellino\n• **Raw concrete** → Concretum\n• **Stone texture** → Rokka\n• **Earthy, rammed earth** → Earthen Hemp Render\n• **Metallic statement** → Copper, Bronze, Brass\n• **Classic European** → Antique Stucco\n\nAny colour direction in mind?`;
+  }
+  if (project.match(/commercial|restaurant|hotel|cafe|office|retail|hospitality/)) {
+    return `${n}Commercial projects are a big part of what we do — restaurants, hotels, retail spaces, lobbies. 🏢\n\nMarbellino and Rokka are our most popular for commercial work, but it really depends on the vibe.\n\nWhat's the space, and what atmosphere are you trying to create?`;
+  }
+  if (project.match(/reno|renovati|new build|house|home/)) {
+    return `${n}Sounds like a great project! We work with a lot of residential renovations and new builds across Melbourne.\n\nWhich spaces are you thinking of plastering? (Bathrooms, feature walls, floors, exterior?)`;
+  }
+  return `${n}That sounds like a great project! To point you in the right direction — which specific spaces are you working on, and what look are you going for?`;
+}
+
 function generateResponse(message: string, history: { role: string; content: string }[], state: ConversationState): string {
   const lower = message.toLowerCase();
+  const hi = state.userName ? `${state.userName}, ` : '';
 
   // ── First message / greeting ──────────────────────────────────────────────
-  if (history.length <= 1 || lower.match(/^(hi|hello|hey|g'day|yo|howdy)/)) {
-    return `G'day! 👋 Welcome to Troweled Earth Melbourne.\n\nBefore we dive in — what's your name, and what are you working on?`;
+  if (history.length <= 1 || lower.match(/^(hi|hello|hey|g'day|yo|howdy|sup|hiya)/)) {
+    return `G'day! 👋 Welcome to Troweled Earth Melbourne — I'm here to help you find the perfect finish for your project.\n\nWhat's your name, and what are you working on?`;
   }
 
-  // ── Name capture ──────────────────────────────────────────────────────────
-  const freshNameMatch = message.match(/(?:i'm|i am|my name is|it's|its|name's|call me)\s+([A-Za-z]+)/i) ||
-    (history.length <= 3 && !state.hasName && message.match(/^([A-Z][a-z]+)$/));
-  if (freshNameMatch) {
+  // ── Name + project in one message e.g. "I'm Joe, bathroom reno" ──────────
+  const nameAndProject = message.match(/(?:i'?m|i am|my name(?:'s| is)?|it'?s|call me|name'?s)\s+([A-Za-z]+)[,\s]+(.+)/i);
+  if (nameAndProject && !state.hasName) {
+    const name = nameAndProject[1].charAt(0).toUpperCase() + nameAndProject[1].slice(1);
+    const project = nameAndProject[2].toLowerCase();
+    return greetByProject(name, project);
+  }
+
+  // ── Name only ─────────────────────────────────────────────────────────────
+  const freshNameMatch = message.match(/(?:i'?m|i am|my name(?:'s| is)?|it'?s|call me|name'?s)\s+([A-Za-z]+)/i) ||
+    (history.length <= 3 && !state.hasName && message.match(/^([A-Z][a-z]{1,14})\.?$/));
+  if (freshNameMatch && !state.hasName) {
     const name = freshNameMatch[1].charAt(0).toUpperCase() + freshNameMatch[1].slice(1);
-    return `Nice to meet you, ${name}! What are you working on — is this a residential reno, new build, or commercial project?`;
+    return `Great to meet you, ${name}! 😊 What are you working on — bathroom, feature wall, floors, or something else? And is it residential or commercial?`;
   }
 
-  // ── Project type questions ────────────────────────────────────────────────
-  if (!state.hasProjectContext && !lower.match(/marbellino|tadelakt|concretum|rokka|stucco|metallic|hemp/)) {
-    if (lower.match(/bathroom|shower/)) {
-      return `${state.userName ? state.userName + ', for' : 'For'} bathrooms and showers, we have two standout options:\n\n• **Tadelakt** — naturally waterproof, no sealer needed, seamless (no grout lines). A traditional Moroccan lime plaster used in hammams for centuries.\n• **Marbellino** — polished Venetian plaster, also suitable for wet areas with sealing. More of a marble/stone look.\n\nAre you after that warm, organic Moroccan feel, or more of a polished stone finish?`;
+  // ── Short project description after name is known ─────────────────────────
+  if (state.hasName && !state.hasProjectContext && history.length <= 5) {
+    if (lower.match(/bathroom|shower|wet area/)) {
+      return greetByProject(state.userName || '', 'bathroom');
+    }
+    if (lower.match(/kitchen|splashback/)) {
+      return greetByProject(state.userName || '', 'kitchen');
     }
     if (lower.match(/floor/)) {
-      return `For floors, **Marbellino** is the one — it's our only product approved for floor applications. It creates a polished stone-like finish with real depth and movement.\n\nIs it a residential or commercial space? That affects the sealer spec.`;
+      return greetByProject(state.userName || '', 'floor');
     }
     if (lower.match(/exterior|outside|outdoor|facade/)) {
-      return `For exterior work we have a few great options:\n\n• **Rokka** — heavily textured stone effect, earthy and robust\n• **Earthen Hemp Render** — rammed earth aesthetic, sustainable hemp fibres\n• **Concretum** — raw industrial concrete look\n• **Marbellino** — polished finish, also works exterior\n\nWhat's the style you're going for?`;
+      return greetByProject(state.userName || '', 'exterior');
+    }
+    if (lower.match(/feature wall|lounge|living|bedroom/)) {
+      return greetByProject(state.userName || '', 'feature wall');
+    }
+    if (lower.match(/commercial|restaurant|hotel|cafe|office/)) {
+      return greetByProject(state.userName || '', 'commercial');
+    }
+    if (lower.match(/reno|renovati|new build|house|home/)) {
+      return greetByProject(state.userName || '', 'reno');
+    }
+  }
+
+  // ── Substrate questions ───────────────────────────────────────────────────
+  if (lower.match(/plasterboard|gyprock|render|tiles|concrete slab|masonry|brick|hebel|substrate/)) {
+    if (lower.match(/plasterboard|gyprock/)) {
+      return `${hi}Good news — all our products go onto plasterboard with the right primer and prep. For wet areas on plasterboard, we apply a waterproofing membrane first before the plaster.\n\nAre you applying it yourself, or using a tradesperson?`;
+    }
+    if (lower.match(/tiles/)) {
+      return `${hi}Going over existing tiles is possible with the right prep — the surface needs to be clean, stable, and properly primed. We'd recommend confirming with Matt for the specific product you're after.\n\nWould you like me to put you in touch with him directly?`;
+    }
+    if (lower.match(/render|masonry|brick|hebel/)) {
+      return `${hi}Rendered masonry or brick is actually an ideal substrate for most of our products. Very stable surface to work with.\n\nWhich product are you thinking of going with?`;
+    }
+    if (lower.match(/concrete slab/)) {
+      return `${hi}Concrete slab for flooring? **Marbellino** is the one — it's our only floor-approved product. Goes straight over a sound concrete slab with appropriate prep.\n\nHow large is the area roughly?`;
+    }
+    return `${hi}The substrate matters a lot for prep and product selection. What are you working with — plasterboard, render, existing tiles, or something else?`;
+  }
+
+  // ── DIY vs trade ──────────────────────────────────────────────────────────
+  if (lower.match(/diy|do it myself|do it yourself|can i apply|self.apply/)) {
+    return `${hi}Honest answer — our products are designed for trained applicators. Venetian plasters like Marbellino and Tadelakt take real skill to get right; the technique makes the finish.\n\nThat said, we do run hands-on training workshops if you're keen to learn. Matt and Jarrad teach the techniques directly.\n\nAre you a tradesperson looking to add this to your skillset, or a homeowner?`;
+  }
+
+  // ── Timeline / how long ───────────────────────────────────────────────────
+  if (lower.match(/how long|timeline|time.*(take|frame)|days|weeks/)) {
+    return `${hi}Good question. Most of our finishes cure in 5–7 days, but the full application process depends on the product and size of the job:\n\n• **Single room** — typically 2–3 days application + curing time\n• **Full home** — 1–3 weeks depending on scope\n• **Commercial** — project-dependent\n\nFor a proper timeline, it's best to chat with Matt once you have the scope locked in. Want me to connect you?`;
+  }
+
+  // ── Maintenance / cleaning ────────────────────────────────────────────────
+  if (lower.match(/clean|maintain|maintenance|care|look after|seal/)) {
+    const prod = findMatchingProduct(lower);
+    if (prod === 'tadelakt') {
+      return `Tadelakt is beautifully low-maintenance. Clean with a mild pH-neutral soap — avoid acidic cleaners. You can re-polish it with black soap periodically to restore the shine. No sealer needed in wet areas.`;
+    }
+    if (prod === 'marbellino') {
+      return `Marbellino needs a light clean every 12–18 months. On floors, the sealer may need reapplication every 24 months in high-traffic areas. Use pH-neutral cleaners — no harsh chemicals.`;
+    }
+    return `${hi}All our products are low-maintenance by design. General rule:\n\n• **Damp cloth** for everyday cleaning\n• **pH-neutral cleaner** — avoid acidic or abrasive products\n• **Sealer reapplication** every 1–2 years for flooring products\n\nWhich specific product are you asking about?`;
+  }
+
+  // ── Colour questions ──────────────────────────────────────────────────────
+  if (lower.match(/colour|color|shade|tint|palette|white|grey|gray|black|cream|warm|cool|dark|light/)) {
+    const prod = findMatchingProduct(lower);
+    if (prod) {
+      return `**${productDetails[prod].aliases[0].charAt(0).toUpperCase() + productDetails[prod].aliases[0].slice(1)} colours:**\n\n${productDetails[prod].colours}\n\nWe work with you to match exact colours to your project. Have you got a specific tone in mind, or a colour from your interior scheme we could match to?`;
+    }
+    return `${hi}Colour is one of the best parts! Every product has a huge range — we can custom tint to match almost any palette.\n\nAre you working with a warm or cool tone? Any existing colours in the space we should work with?`;
+  }
+
+  // ── Size / area questions ─────────────────────────────────────────────────
+  if (lower.match(/how much.*need|square met|sqm|m2|area|size|how big/)) {
+    return `${hi}To give you an accurate material quantity I'd need the square metres of the area. Roughly:\n\n• **Marbellino:** ~0.5–0.8 kg per m² per coat (4–5 coats)\n• **Concretum:** ~1–1.5 kg per m² (2–3 coats)\n• **Rokka / Hemp Render:** ~2–4 kg per m² (thick application)\n\nDo you have an approximate area size? Happy to help estimate.`;
+  }
+
+  // ── Project type questions (without name context) ─────────────────────────
+  if (!state.hasProjectContext && !lower.match(/marbellino|tadelakt|concretum|rokka|stucco|metallic|hemp/)) {
+    if (lower.match(/bathroom|shower/)) {
+      return greetByProject(state.userName || '', 'bathroom');
+    }
+    if (lower.match(/floor/)) {
+      return greetByProject(state.userName || '', 'floor');
+    }
+    if (lower.match(/exterior|outside|outdoor|facade/)) {
+      return greetByProject(state.userName || '', 'exterior');
     }
     if (lower.match(/feature wall|living|bedroom|lounge/)) {
-      return `Feature walls are where we really shine. What aesthetic are you after?\n\n• **Polished & luxurious** → Marbellino\n• **Raw concrete** → Concretum\n• **Stone texture** → Rokka\n• **Earthy, rammed earth** → Earthen Hemp Render\n• **Metallic statement** → Copper, Bronze, Brass finishes\n• **Classic European** → Antique Stucco`;
+      return greetByProject(state.userName || '', 'feature wall');
     }
     if (lower.match(/commercial|restaurant|hotel|office|cafe|retail|hospitality/)) {
-      return `Commercial work is a big part of what we do — restaurants, hotels, retail, hospitality spaces. Marbellino and Rokka are our most popular for commercial.\n\nWhat's the space and what vibe are you after?`;
+      return greetByProject(state.userName || '', 'commercial');
+    }
+    if (lower.match(/kitchen|splashback/)) {
+      return greetByProject(state.userName || '', 'kitchen');
     }
   }
 
@@ -230,86 +348,121 @@ function generateResponse(message: string, history: { role: string; content: str
   const matchedProduct = findMatchingProduct(lower);
   if (matchedProduct) {
     const prod = productDetails[matchedProduct];
+    const prodName = prod.aliases[0].charAt(0).toUpperCase() + prod.aliases[0].slice(1);
 
-    // Specific sub-questions
     if (lower.match(/shower|bathroom|wet|waterproof/)) {
       const wetOk = prod.useCases.some(u => u.match(/bathroom|shower|wet/));
-      return wetOk
-        ? `Yes — ${prod.description.split('.')[0]}. ${prod.faq.find(f => f.q.toLowerCase().includes('shower') || f.q.toLowerCase().includes('waterproof'))?.a || ''}`
-        : `${Object.keys(productDetails).find(k => k === matchedProduct) === 'rokka' ? 'Rokka isn\'t ideal for wet areas due to the texture retaining moisture.' : `${prod.description.split('.')[0]} isn't recommended for wet areas.`} For showers, **Tadelakt** is the better choice — naturally waterproof, no sealer needed.`;
+      if (wetOk) {
+        const faqAnswer = prod.faq.find(f => f.q.toLowerCase().includes('shower') || f.q.toLowerCase().includes('waterproof'))?.a || '';
+        return `${hi}${prodName} works great in wet areas! ${faqAnswer}\n\nWhat's the substrate — plasterboard, render, or over existing tiles?`;
+      } else {
+        return `${hi}${prodName} isn't ideal for wet areas. For showers and bathrooms, **Tadelakt** is the standout choice — naturally waterproof, seamless, no grout lines.\n\nWant me to tell you more about Tadelakt?`;
+      }
     }
-    if (lower.match(/floor/)) {
-      return matchedProduct === 'marbellino'
-        ? `Yes! ${prod.faq.find(f => f.q.toLowerCase().includes('floor'))?.a}`
-        : `${Object.values(productDetails)[0].description.split('.')[0]} isn't approved for floors. **Marbellino** is our only floor-approved product.`;
+    if (lower.match(/\bfloor\b/)) {
+      if (matchedProduct === 'marbellino') {
+        return `${hi}Yes! Marbellino is our only product approved for floors. ${prod.faq.find(f => f.q.toLowerCase().includes('floor'))?.a}\n\nIs this a residential or commercial floor, and roughly how many square metres?`;
+      }
+      return `${hi}${prodName} isn't designed for floor applications — foot traffic would damage it over time. **Marbellino** is the only one in our range approved for floors.\n\nWould Marbellino work for your project?`;
     }
     if (lower.match(/outside|exterior|outdoor/)) {
       const exteriorOk = prod.useCases.some(u => u.match(/exterior|outdoor|outside/));
+      const faqAnswer = prod.faq.find(f => f.q.toLowerCase().includes('outside'))?.a || '';
       return exteriorOk
-        ? `Yes — ${prod.aliases[0].charAt(0).toUpperCase() + prod.aliases[0].slice(1)} works well outside. ${prod.faq.find(f => f.q.toLowerCase().includes('outside'))?.a || ''}`
-        : `${prod.aliases[0].charAt(0).toUpperCase() + prod.aliases[0].slice(1)} is primarily an interior product.`;
+        ? `${hi}Yes — ${prodName} works great outdoors. ${faqAnswer}\n\nIs this a wall, facade, or something else?`
+        : `${hi}${prodName} is primarily an interior product. For exterior work, **Rokka** or **Earthen Hemp Render** are your best options — both weather-resistant and UV stable.`;
     }
     if (lower.match(/colour|color|shade|tint/)) {
-      return `**${prod.aliases[0].charAt(0).toUpperCase() + prod.aliases[0].slice(1)} colours:** ${prod.colours}`;
+      return `${hi}${prodName} colours: ${prod.colours}\n\nHave you got a colour direction in mind, or a Dulux/Resene code we could work from?`;
     }
-    if (lower.match(/how.*(apply|applied|put on)|application|install/)) {
-      return `**Application:** ${prod.application}`;
+    if (lower.match(/how.*(apply|applied|put on)|application|install|process/)) {
+      return `${hi}${prodName} application: ${prod.application}\n\nAll our work is done by trained applicators — this isn't a DIY product (the technique is what makes the finish special). Are you looking to hire an applicator, or do you want to learn the technique yourself?`;
     }
     if (lower.match(/durability|durable|last|long|warranty|guarantee/)) {
-      return `All our products come with a **10-Year Limited Warranty** when applied by our trained applicators. ${prod.description.split('.')[0]}.`;
+      return `${hi}${prodName} is extremely durable — all our products carry a **10-Year Limited Warranty** when applied by our trained applicators.\n\n${prod.description.split('.')[0]}.\n\nThe warranty covers peeling, blistering, flaking, and delamination.`;
     }
     if (lower.match(/price|cost|how much|quote|expensive/)) {
-      return `Pricing depends on the area size and project complexity. The best way to get an accurate number is a quick chat with Matt.\n\nWould you like me to connect you? I just need your name, email, and a rough project description.`;
+      return `${hi}Pricing for ${prodName} depends on the area size, surface prep, and project complexity. Our products are at the premium end — this is artisan plasterwork, not paint.\n\nThe best way to get an accurate quote is a quick chat with Matt. Want me to connect you? I just need your email and a rough project description.`;
+    }
+    if (lower.match(/difference|compare|vs|versus/)) {
+      return buildProductResponse(matchedProduct, lower);
     }
 
-    // General product info
-    return buildProductResponse(matchedProduct, lower);
+    // General product info — then ask a follow-up
+    const baseInfo = buildProductResponse(matchedProduct, lower);
+    return `${baseInfo}\n\n${hi ? hi + 'w' : 'W'}hat's the space you're working on?`;
   }
 
   // ── Comparison questions ──────────────────────────────────────────────────
   if (lower.match(/difference|compare|vs |versus|which one|what.*(best|suit|right)/)) {
     if (lower.match(/bathroom|shower|wet/)) {
-      return `For wet areas, the main two are:\n\n**Tadelakt** — naturally waterproof, no sealer, seamless, Moroccan heritage technique. The purist's choice.\n**Marbellino** — polished stone look, works in bathrooms with sealing.\n\nTadelakt = organic and warm. Marbellino = polished and luxurious.`;
+      return `${hi}For wet areas, the main two are:\n\n**Tadelakt** — naturally waterproof, no sealer, seamless. Traditional Moroccan lime plaster. Warm and organic.\n**Marbellino** — polished stone look, works in wet areas with sealing. More luxurious.\n\nTadelakt = organic warmth. Marbellino = polished luxury.\n\nWhat's the overall vibe of your bathroom?`;
     }
     if (lower.match(/concrete|industrial/)) {
-      return `**Concretum** is the industrial concrete look — smooth, raw, minimal.\n**Rokka** is the textured stone look — rough, tactile, organic.\n\nBoth are earthy and modern, just very different to touch and look at.`;
+      return `${hi}**Concretum** vs **Rokka** — both earthy and modern, very different textures:\n\n**Concretum** — smooth, industrial, raw concrete look. Clean and minimal.\n**Rokka** — rough, deeply textured stone effect. Very tactile and organic.\n\nIf you want people to run their hand along the wall, Rokka. If you want a sleek industrial feel, Concretum.`;
     }
-    return `Quick comparison:\n\n• **Marbellino** — polished stone look, can do floors, very versatile\n• **Tadelakt** — naturally waterproof, best for showers\n• **Concretum** — raw concrete aesthetic\n• **Rokka** — textured stone, very tactile\n• **Earthen Hemp** — rammed earth look, sustainable\n• **Metallics** — copper, bronze, brass statement finishes\n• **Antique Stucco** — classic European aged plaster\n\nWhat space are you working with?`;
+    if (lower.match(/marbellino|tadelakt/)) {
+      return `${hi}Great question:\n\n**Marbellino** — polished Venetian plaster, stone-like finish, can do floors, interior and exterior, wide colour range.\n**Tadelakt** — naturally waterproof (no sealer!), seamless, traditional Moroccan technique, best for wet areas.\n\nBoth are premium and hand-applied. The main decision is: do you need it in a wet area?`;
+    }
+    return `${hi}Here's the full range:\n\n• **Marbellino** — polished stone, can do floors, very versatile ⭐\n• **Tadelakt** — naturally waterproof, best for showers\n• **Concretum** — raw concrete aesthetic\n• **Rokka** — textured stone, very tactile\n• **Earthen Hemp** — rammed earth look, sustainable\n• **Metallics** — copper, bronze, brass statement finishes\n• **Antique Stucco** — classic European aged plaster\n\nWhat space are you working with and what's the vibe you're after?`;
   }
 
   // ── Pricing ───────────────────────────────────────────────────────────────
-  if (lower.match(/price|cost|how much|quote|expensive|cheap/)) {
-    return `Pricing varies by product, area, and complexity. Our products are at the premium end — this is artisan plasterwork, not a paint job.\n\nFor a rough idea, it's best to have a quick conversation with Matt. Want me to set that up? I just need your email and a brief on the project.`;
+  if (lower.match(/price|cost|how much|quote|expensive|cheap|budget/)) {
+    return `${hi}Our products are at the premium end of the market — this is hand-applied artisan plasterwork, not paint or wallpaper.\n\nPricing is driven by:\n• Product choice\n• Area size (m²)\n• Surface prep required\n• Location\n\nFor a ballpark, it's best to have a quick chat with Matt — he can give you a realistic number fast. Want me to put you in touch? I just need your email.`;
   }
 
   // ── Contact / email ───────────────────────────────────────────────────────
-  if (lower.match(/contact|call|email|phone|speak to|talk to|get in touch|matt/)) {
-    return `You can reach Matt directly:\n\n📞 **0439 243 055**\n📧 **matt-troweledearth@outlook.com**\n📱 **@troweled_earth_melbourne**\n\nOr if you'd like, share your email and I'll make sure he gets your project details straight away.`;
+  if (lower.match(/contact|call|email|phone|speak to|talk to|get in touch|reach|matt/)) {
+    return `${hi}You can reach Matt directly:\n\n📞 **0439 243 055**\n📧 **matt-troweledearth@outlook.com**\n📱 Instagram: **@troweled_earth_melbourne**\n\nOr share your email here and I'll make sure he gets your project details straight away — saves you time.`;
+  }
+
+  // ── Location / Melbourne ──────────────────────────────────────────────────
+  if (lower.match(/melbourne|victoria|geelong|ballarat|bendigo|mornington|peninsula|bayside|richmond|toorak|brighton|st kilda|brunswick|fitzroy|collingwood/)) {
+    return `${hi}Yes — we're Melbourne-based and work across Greater Melbourne and regional Victoria. Toorak, Brighton, Richmond, Brunswick — we do a lot of work right across the city.\n\nWhere's your project located?`;
+  }
+
+  // ── Instagram / social ────────────────────────────────────────────────────
+  if (lower.match(/instagram|insta|social|portfolio|photos|examples|see.*work/)) {
+    return `${hi}Check out our work on Instagram — **@troweled_earth_melbourne** — 7,000+ followers and hundreds of real project photos.\n\nYou'll get a great feel for the range of finishes and colour options. Anything specific you'd like to see?`;
   }
 
   // ── Training ─────────────────────────────────────────────────────────────
-  if (lower.match(/training|workshop|course|learn|applicator/)) {
-    return `We run hands-on training workshops for plasterers, builders, and serious DIY enthusiasts. Matt and Jarrad teach the application techniques directly.\n\nFollow **@troweled_earth_melbourne** on Instagram for upcoming dates, or contact us to register interest:\n📞 0439 243 055`;
+  if (lower.match(/training|workshop|course|learn|applicator|skill/)) {
+    return `${hi}We run hands-on training workshops for plasterers, builders, and tradespeople who want to add decorative finishes to their skillset. Matt and Jarrad teach the techniques directly — you'll actually apply the product on the day.\n\nFollow **@troweled_earth_melbourne** on Instagram for upcoming dates, or call Matt directly:\n📞 **0439 243 055**`;
   }
 
   // ── Warranty ─────────────────────────────────────────────────────────────
-  if (lower.match(/warranty|guarantee|how long/)) {
-    return `All Troweled Earth products carry a **10-Year Limited Warranty** when applied by one of our trained applicators. This covers peeling, blistering, flaking, and delamination.\n\nThe warranty applies to residential applications. Commercial terms can be discussed with Matt.`;
+  if (lower.match(/warranty|guarantee|how long.*(last|for)|cover/)) {
+    return `${hi}All Troweled Earth products carry a **10-Year Limited Warranty** when applied by one of our trained applicators.\n\nCovers: peeling, blistering, flaking, delamination.\n\nResidential terms are standard. Commercial warranty terms are discussed on a project basis with Matt.`;
   }
 
   // ── Suppliers ─────────────────────────────────────────────────────────────
-  if (lower.match(/supplier|stockist|where.*buy|buy|purchase|store|distributor/)) {
-    return `Our products are available from these stockists:\n\n🏪 **Render Supply Co** — [shop online](https://store.rendersupplyco.com.au/interior-and-exterior-coatings/surface-coating/troweled-earth.html)\n🏪 **Colour World Geelong** — [colourworld.com.au](https://colourworld.com.au/)\n🏪 **Wet Trades** — [wettrades.com.au](https://wettrades.com.au/)\n🏪 **Metro Build Suppliers** — [metrobuildsuppliers.com.au](https://metrobuildsuppliers.com.au/)\n\nFor project orders and consultations, contact us directly.`;
+  if (lower.match(/supplier|stockist|where.*buy|buy|purchase|store|distributor|stock/)) {
+    return `${hi}Our products are available from these stockists:\n\n🏪 **Render Supply Co** — [shop online](https://store.rendersupplyco.com.au/interior-and-exterior-coatings/surface-coating/troweled-earth.html)\n🏪 **Colour World Geelong** — [colourworld.com.au](https://colourworld.com.au/)\n🏪 **Wet Trades** — [wettrades.com.au](https://wettrades.com.au/)\n🏪 **Metro Build Suppliers** — [metrobuildsuppliers.com.au](https://metrobuildsuppliers.com.au/)\n\nFor project quotes and bulk orders, contact us directly.`;
+  }
+
+  // ── Yes / no / short affirmatives ────────────────────────────────────────
+  if (lower.match(/^(yes|yeah|yep|sure|ok|okay|sounds good|perfect|great|definitely|absolutely)[\s!.]*$/)) {
+    if (state.productsDiscussed.length > 0) {
+      const prod = state.productsDiscussed[state.productsDiscussed.length - 1];
+      return `${hi}Great! To help get you the right info — what's the substrate you're working with (plasterboard, render, existing tiles, concrete slab)?`;
+    }
+    return `${hi}Great! What would you like to know more about?`;
+  }
+
+  // ── Thanks ────────────────────────────────────────────────────────────────
+  if (lower.match(/thank|thanks|cheers|appreciate/)) {
+    return `${hi}No worries at all! If you have any more questions or want to get a quote, reach out anytime. 😊\n\nMatt's number is **0439 243 055** if you want to chat directly.`;
   }
 
   // ── After several exchanges — offer contact ───────────────────────────────
-  if (state.messageCount >= 6 && !state.offerContactMade) {
-    return `Sounds like you've got a solid project on the go. Would you like me to connect you with Matt for a proper consultation? He can give you specific product recommendations and a quote.\n\nJust share your email and I'll pass on your project details.`;
+  if (state.messageCount >= 6 && !state.offerContactMade && state.hasProjectContext) {
+    return `${hi}Sounds like you've got a great project on the go! Would you like me to connect you with Matt for a proper consultation and quote?\n\nHe can walk you through the right product, colour, and give you a realistic price. Just share your email and I'll pass on your details.`;
   }
 
   // ── Fallback ──────────────────────────────────────────────────────────────
-  const namePrefix = state.userName ? `${state.userName}, ` : '';
-  return `${namePrefix}I want to make sure I give you the right answer. Could you tell me a bit more about:\n\n• What space is this for? (bathroom, feature wall, exterior, etc.)\n• What look are you going for?\n\nThat'll help me point you to exactly the right finish.`;
+  return `${hi}I want to make sure I point you in the right direction! Could you tell me:\n\n• What space is this for? (bathroom, feature wall, floors, exterior?)\n• What look are you going for?\n• Roughly what suburb is the project in?\n\nThat'll help me give you a specific recommendation. 😊`;
 }
 
 // ─── API Handler ──────────────────────────────────────────────────────────────
