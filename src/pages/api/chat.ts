@@ -5,6 +5,20 @@ import { sendLeadNotification } from '../../lib/email';
 
 // ─── Product Knowledge Base ───────────────────────────────────────────────────
 
+const PAGES: Record<string, string> = {
+  marbellino: '/products/marbellino',
+  tadelakt: '/products/tadelakt',
+  concretum: '/products/concretum',
+  rokka: '/products/rokka',
+  earthenHemp: '/products/earthen-renders',
+  metallics: '/products/metallics',
+  antiqueStucco: '/products/antique-stucco',
+  suppliers: '/suppliers',
+  gallery: '/#gallery',
+  contact: '/#contact',
+  training: '/training',
+};
+
 const KB = {
   marbellino: {
     aliases: ['marbellino', 'venetian', 'polished plaster', 'marbled', 'marble', 'venetian plaster'],
@@ -421,8 +435,10 @@ function respond(message: string, history: { role: string; content: string }[], 
     }
 
     // General product info
+    const pageUrl = PAGES[prodKey];
+    const pageLink = pageUrl ? `\n\n👉 [See photos & full spec →](${pageUrl})` : '';
     return {
-      reply: `${hi}Here's the full picture on **${prod.name}**:\n\n${prod.description}\n\n**Best for:** ${prod.bestFor.slice(0, 5).join(', ')}\n**Colours:** ${prod.colours}\n**Application:** ${prod.application}\n\nWhat's the space you're working with?`,
+      reply: `${hi}Here's the full picture on **${prod.name}**:\n\n${prod.description}\n\n**Best for:** ${prod.bestFor.slice(0, 5).join(', ')}\n**Colours:** ${prod.colours}\n**Application:** ${prod.application}${pageLink}\n\nWhat's the space you're working with?`,
       shouldEmail: false,
       collectEmail: false
     };
@@ -431,15 +447,15 @@ function respond(message: string, history: { role: string; content: string }[], 
   // ── Comparisons ───────────────────────────────────────────────────────────
   if (lower.match(/difference|compare|vs\.?|versus|which.*better|which.*one|what.*best|should i (use|choose|go with)/)) {
     if (lower.match(/bathroom|shower|wet/)) {
-      return { reply: `${hi}For wet areas, the two standout options:\n\n**Tadelakt** — naturally waterproof (no sealer!), completely seamless, no grout lines. Traditional Moroccan technique. Warm and organic.\n\n**Marbellino** — polished stone look, works in bathrooms with sealing. More luxurious, polished finish.\n\nThe question is: do you want warm and organic (Tadelakt) or polished and luxurious (Marbellino)?`, shouldEmail: false, collectEmail: false };
+      return { reply: `${hi}For wet areas, the two standout options:\n\n**Tadelakt** — naturally waterproof (no sealer!), completely seamless, no grout lines. Traditional Moroccan technique. Warm and organic.\n👉 [See Tadelakt →](/products/tadelakt)\n\n**Marbellino** — polished stone look, works in bathrooms with sealing. More luxurious, polished finish.\n👉 [See Marbellino →](/products/marbellino)\n\nThe question is: do you want warm and organic (Tadelakt) or polished and luxurious (Marbellino)?`, shouldEmail: false, collectEmail: false };
     }
     if (lower.match(/concrete|industrial|rokka|concretum/)) {
-      return { reply: `${hi}**Concretum vs Rokka** — both earthy and modern, very different feel:\n\n**Concretum** — smooth, industrial, raw concrete look. Minimal and clean.\n**Rokka** — rough, deeply textured stone effect. Tactile and organic.\n\nIf you want people to run their hand along the wall → Rokka. If you want sleek industrial → Concretum.\n\nWhat's the space?`, shouldEmail: false, collectEmail: false };
+      return { reply: `${hi}**Concretum vs Rokka** — both earthy and modern, very different feel:\n\n**Concretum** — smooth, industrial, raw concrete look. Minimal and clean.\n👉 [See Concretum →](/products/concretum)\n\n**Rokka** — rough, deeply textured stone effect. Tactile and organic.\n👉 [See Rokka →](/products/rokka)\n\nIf you want people to run their hand along the wall → Rokka. If you want sleek industrial → Concretum.\n\nWhat's the space?`, shouldEmail: false, collectEmail: false };
     }
     if (lower.match(/marbellino|tadelakt/)) {
-      return { reply: `${hi}**Marbellino vs Tadelakt:**\n\n**Marbellino** — polished stone look, can do floors, interior + exterior, enormous colour range. Needs sealing for wet areas.\n\n**Tadelakt** — naturally waterproof, seamless, best for showers. More limited in application (not for floors or heavy exterior).\n\nKey question: is this for a wet area?`, shouldEmail: false, collectEmail: false };
+      return { reply: `${hi}**Marbellino vs Tadelakt:**\n\n**Marbellino** — polished stone look, can do floors, interior + exterior, enormous colour range. Needs sealing for wet areas.\n👉 [See Marbellino →](/products/marbellino)\n\n**Tadelakt** — naturally waterproof, seamless, best for showers. Not for floors.\n👉 [See Tadelakt →](/products/tadelakt)\n\nKey question: is this for a wet area?`, shouldEmail: false, collectEmail: false };
     }
-    return { reply: `${hi}Full comparison:\n\n• **Marbellino** — polished stone, floors OK, versatile ⭐ most popular\n• **Tadelakt** — naturally waterproof, seamless, best for showers\n• **Concretum** — raw concrete look, smooth\n• **Rokka** — stone texture, tactile, rough\n• **Earthen Hemp** — rammed earth look, sustainable\n• **Troweled Metal** — copper, brass, bronze statement pieces\n• **Antique Stucco** — classic European aged finish\n\nTell me the space and the vibe and I'll narrow it down for you.`, shouldEmail: false, collectEmail: false };
+    return { reply: `${hi}Full comparison:\n\n• **Marbellino** — polished stone, floors OK, versatile ⭐ [View →](/products/marbellino)\n• **Tadelakt** — naturally waterproof, seamless [View →](/products/tadelakt)\n• **Concretum** — raw concrete look [View →](/products/concretum)\n• **Rokka** — stone texture, tactile [View →](/products/rokka)\n• **Earthen Hemp** — rammed earth look [View →](/products/earthen-renders)\n• **Troweled Metal** — copper, brass, bronze [View →](/products/metallics)\n• **Antique Stucco** — classic European [View →](/products/antique-stucco)\n\nTell me the space and the vibe and I'll narrow it down for you.`, shouldEmail: false, collectEmail: false };
   }
 
   // ── DIY question ──────────────────────────────────────────────────────────
@@ -472,9 +488,14 @@ function respond(message: string, history: { role: string; content: string }[], 
     return { reply: `${hi}We run hands-on training workshops for plasterers, builders, and tradespeople. Matt and Jarrad teach the application techniques directly — you actually apply the product on the day.\n\nFollow **@troweled_earth_melbourne** on Instagram for upcoming dates, or call Matt:\n📞 **0439 243 055**`, shouldEmail: false, collectEmail: false };
   }
 
+  // ── Suppliers / where to buy ───────────────────────────────────────────────
+  if (lower.match(/supplier|stockist|where.*buy|buy|purchase|store|distributor|stock/)) {
+    return { reply: `${hi}Our products are available from these stockists:\n\n🏪 **Render Supply Co** — [shop online](https://store.rendersupplyco.com.au/interior-and-exterior-coatings/surface-coating/troweled-earth.html)\n🏪 **Colour World Geelong** — [colourworld.com.au](https://colourworld.com.au/)\n🏪 **Wet Trades** — [wettrades.com.au](https://wettrades.com.au/)\n🏪 **Metro Build Suppliers** — [metrobuildsuppliers.com.au](https://metrobuildsuppliers.com.au/)\n\n👉 [Full stockist details →](/suppliers)`, shouldEmail: false, collectEmail: false };
+  }
+
   // ── Sustainability / eco ──────────────────────────────────────────────────
   if (lower.match(/eco|sustainable|green|voc|environment|natural/)) {
-    return { reply: `${hi}All TEM products are low VOC and Green Star compliant. The standout eco product is **Earthen Hemp Render** — contains real sustainable hemp fibres, made in WA, and creates a convincing rammed earth look.\n\nMarbellino and Tadelakt are lime-based — naturally breathable and non-toxic.\n\nIs sustainability a key factor for your project?`, shouldEmail: false, collectEmail: false };
+    return { reply: `${hi}All TEM products are low VOC and Green Star compliant. The standout eco product is **Earthen Hemp Render** — contains real sustainable hemp fibres, made in WA, and creates a convincing rammed earth look.\n\n👉 [View Earthen Hemp Render →](/products/earthen-renders)\n\nMarbellino and Tadelakt are lime-based — naturally breathable and non-toxic.\n\nIs sustainability a key factor for your project?`, shouldEmail: false, collectEmail: false };
   }
 
   // ── Substrate question standalone ────────────────────────────────────────
@@ -507,10 +528,10 @@ function respond(message: string, history: { role: string; content: string }[], 
   }
 
   // ── Project type / general intent ────────────────────────────────────────
-  if (lower.match(/bathroom|shower/)) return { reply: `${hi}Bathrooms are one of our specialties. Two standout options:\n\n• **Tadelakt** — naturally waterproof, seamless, no grout lines. Traditional Moroccan technique.\n• **Marbellino** — polished stone look, works in wet areas with sealing.\n\nAre you after warm and organic, or polished and luxurious? And what's the substrate?`, shouldEmail: false, collectEmail: false };
-  if (lower.match(/\bfloor\b/)) return { reply: `${hi}For floors, **Marbellino** is the one — only TEM product approved for foot traffic. Polished stone-like finish, incredible result.\n\nResidential or commercial? And roughly what m²?`, shouldEmail: false, collectEmail: false };
-  if (lower.match(/exterior|outside|facade/)) return { reply: `${hi}Great options for exterior:\n\n• **Rokka** — textured stone effect, very robust\n• **Earthen Hemp Render** — rammed earth look, sustainable\n• **Concretum** — raw concrete, UV stable\n• **Marbellino** — polished, also approved exterior\n\nWhat style is the property?`, shouldEmail: false, collectEmail: false };
-  if (lower.match(/feature wall|living|lounge/)) return { reply: `${hi}Feature walls — what aesthetic are you after?\n\n• Polished & luxurious → **Marbellino**\n• Raw concrete → **Concretum**\n• Stone texture → **Rokka**\n• Earthy/rammed earth → **Earthen Hemp**\n• Metallic statement → **Troweled Metal** (copper, brass, bronze)\n• Classic European → **Antique Stucco**\n\nAny colour direction?`, shouldEmail: false, collectEmail: false };
+  if (lower.match(/bathroom|shower/)) return { reply: `${hi}Bathrooms are one of our specialties. Two standout options:\n\n• **Tadelakt** — naturally waterproof, seamless, no grout lines. [View Tadelakt →](/products/tadelakt)\n• **Marbellino** — polished stone look, works in wet areas with sealing. [View Marbellino →](/products/marbellino)\n\nAre you after warm and organic, or polished and luxurious? And what's the substrate?`, shouldEmail: false, collectEmail: false };
+  if (lower.match(/\bfloor\b/)) return { reply: `${hi}For floors, **Marbellino** is the one — only TEM product approved for foot traffic. Polished stone-like finish, incredible result.\n\n👉 [View Marbellino →](/products/marbellino)\n\nResidential or commercial? And roughly what m²?`, shouldEmail: false, collectEmail: false };
+  if (lower.match(/exterior|outside|facade/)) return { reply: `${hi}Great options for exterior:\n\n• **Rokka** — textured stone effect, very robust [View →](/products/rokka)\n• **Earthen Hemp Render** — rammed earth look, sustainable [View →](/products/earthen-renders)\n• **Concretum** — raw concrete, UV stable [View →](/products/concretum)\n• **Marbellino** — polished, also approved exterior [View →](/products/marbellino)\n\nWhat style is the property?`, shouldEmail: false, collectEmail: false };
+  if (lower.match(/feature wall|living|lounge/)) return { reply: `${hi}Feature walls — what aesthetic are you after?\n\n• Polished & luxurious → **Marbellino** [View →](/products/marbellino)\n• Raw concrete → **Concretum** [View →](/products/concretum)\n• Stone texture → **Rokka** [View →](/products/rokka)\n• Earthy/rammed earth → **Earthen Hemp** [View →](/products/earthen-renders)\n• Metallic statement → **Troweled Metal** [View →](/products/metallics)\n• Classic European → **Antique Stucco** [View →](/products/antique-stucco)\n\nAny colour direction?`, shouldEmail: false, collectEmail: false };
 
   // ── Default ───────────────────────────────────────────────────────────────
   return {

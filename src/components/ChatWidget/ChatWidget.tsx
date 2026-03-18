@@ -233,6 +233,8 @@ export default function ChatWidget() {
                        dangerouslySetInnerHTML={{ 
                          __html: msg.content
                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                           .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#c9a97a;text-decoration:underline">$1</a>')
+                           .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:#c9a97a;text-decoration:underline">$1</a>')
                            .replace(/\n/g, '<br/>') 
                        }}
                     />
