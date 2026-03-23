@@ -95,55 +95,77 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     }
 
     const body = await request.json();
-    const { image, selections } = body as { 
-      image: string; 
+    const { image, mask, selections } = body as {
+      image: string;
+      mask?: string;
       selections: Selection[];
     };
 
     if (!image || !selections || selections.length === 0) {
-      return new Response(JSON.stringify({ 
-        error: 'Missing required fields: image and selections' 
-      }), { 
+      return new Response(JSON.stringify({
+        error: 'Missing required fields: image and selections'
+      }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
     // Build a descriptive prompt from the selections
-    const finishDescriptions = selections.map(s => 
+    const finishDescriptions = selections.map(s =>
       `${s.textureCategory} ${s.textureName} plaster finish on ${s.location}`
     ).join(', ');
 
-    // Use trained Marbellino LoRA model when Marbellino is selected
+    // Use trained Marbellino LoRA model when Marbellino is selected (img2img only — no inpainting support)
     const hasMarbellino = selections.some((s: any) => s.textureCategory?.toLowerCase().includes('marbellino'));
 
     const prompt = hasMarbellino
       ? `Professional architectural photo. MARBTEM polished Venetian plaster finish on the walls. ${finishDescriptions}. Hand-troweled, stone-like surface with natural mineral depth and subtle tonal variation. Photorealistic, high quality architectural photography, natural lighting.`
       : `Professional architectural visualization photo. A building/room with ${finishDescriptions}. The walls have a beautiful hand-troweled artisan plaster texture with natural mineral variations and subtle tonal depth. Photorealistic, high quality, professional architectural photography, natural lighting, detailed wall textures visible.`;
 
-    const modelVersion = hasMarbellino
-      ? 'snappabot/marbellino-tem:9b83323cc7fdfdd9d7d91dc31dbeabdebe5eecb4b11e84c74bcf35afbbf2e4dd'
-      : 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b';
-
     const replicate = new Replicate({ auth: apiToken });
 
-    const output = await replicate.run(
-      modelVersion,
-      {
-        input: {
-          image: image,
-          prompt: prompt,
-          negative_prompt: 'ugly, blurry, low quality, distorted, deformed, cartoon, anime, illustration, painting, drawing, sketch, unrealistic, tiles, grout',
-          prompt_strength: 0.65,
-          num_inference_steps: 30,
-          guidance_scale: 7.5,
-          scheduler: 'K_EULER',
-          refine: 'expert_ensemble_refiner',
-          high_noise_frac: 0.8,
-          num_outputs: 1,
+    let output;
+
+    if (mask) {
+      // Inpainting — only modifies the white masked area, preserves everything else
+      output = await replicate.run(
+        'stability-ai/stable-diffusion-inpainting',
+        {
+          input: {
+            image: image,
+            mask: mask,
+            prompt: prompt,
+            negative_prompt: 'ugly, blurry, low quality, distorted, deformed, cartoon, anime, illustration, painting, drawing, sketch, unrealistic, tiles, grout',
+            num_inference_steps: 25,
+            guidance_scale: 7.5,
+            strength: 0.99,
+          }
         }
-      }
-    );
+      );
+    } else {
+      // No mask — img2img on full image (fallback)
+      const modelVersion = hasMarbellino
+        ? 'snappabot/marbellino-tem:9b83323cc7fdfdd9d7d91dc31dbeabdebe5eecb4b11e84c74bcf35afbbf2e4dd'
+        : 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b';
+
+      output = await replicate.run(
+        modelVersion,
+        {
+          input: {
+            image: image,
+            prompt: prompt,
+            negative_prompt: 'ugly, blurry, low quality, distorted, deformed, cartoon, anime, illustration, painting, drawing, sketch, unrealistic, tiles, grout',
+            prompt_strength: 0.65,
+            num_inference_steps: 30,
+            guidance_scale: 7.5,
+            scheduler: 'K_EULER',
+            refine: 'expert_ensemble_refiner',
+            high_noise_frac: 0.8,
+            num_outputs: 1,
+          }
+        }
+      );
+    }
 
     const rawOutput = Array.isArray(output) ? output[0] : output;
     // Replicate returns FileOutput objects - convert to string URL

@@ -378,6 +378,7 @@ export default function FinishVisualizer() {
   const [originalImageData, setOriginalImageData] = useState<ImageData | null>(null);
   const [boundaryMap, setBoundaryMap] = useState<ImageData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Touch tracking for tap detection
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -670,134 +671,89 @@ export default function FinishVisualizer() {
     });
   };
 
-  // Generate visualization using canvas compositing
+  // Generate visualization using Replicate AI inpainting
   const handleGenerate = async () => {
-    if (!uploadedImageObj || getSelectedLocationsCount() === 0) return;
-    
+    if (!uploadedImageObj || !uploadedImage || getSelectedLocationsCount() === 0) return;
+
     setGenerationError(null);
-    
+    setIsGenerating(true);
+
     try {
-      // Create the output canvas at full resolution
-      const outputCanvas = document.createElement('canvas');
-      outputCanvas.width = canvasSize.width;
-      outputCanvas.height = canvasSize.height;
-      const ctx = outputCanvas.getContext('2d');
-      if (!ctx) throw new Error('Could not get canvas context');
-      
-      // Draw original image
-      ctx.drawImage(uploadedImageObj, 0, 0);
-      
       // Check if any areas have been filled
-      const filledAreas = Object.entries(areaFills).filter(([area, mask]) => 
-        mask && mask.some(v => v) && locationSelections[area]
-      );
-      
-      if (filledAreas.length > 0) {
-        // Use filled masks for compositing
-        for (const [area, mask] of filledAreas) {
-          const textureId = locationSelections[area];
-          if (!textureId) continue;
-          
-          const texture = getTextureById(textureId);
-          if (!texture) continue;
-          
-          // Load texture image
-          const textureImg = await loadImage(texture.image);
-          
-          // Create temporary canvas for textured area
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = canvasSize.width;
-          tempCanvas.height = canvasSize.height;
-          const tempCtx = tempCanvas.getContext('2d');
-          if (!tempCtx) continue;
-          
-          // Create tiled pattern from texture
-          const pattern = tempCtx.createPattern(textureImg, 'repeat');
-          if (!pattern) continue;
-          
-          tempCtx.fillStyle = pattern;
-          tempCtx.fillRect(0, 0, canvasSize.width, canvasSize.height);
-          
-          // Create mask canvas from boolean array
-          const maskCanvas = document.createElement('canvas');
-          maskCanvas.width = canvasSize.width;
-          maskCanvas.height = canvasSize.height;
-          const maskCtx = maskCanvas.getContext('2d');
-          if (!maskCtx) continue;
-          
-          const maskData = maskCtx.createImageData(canvasSize.width, canvasSize.height);
-          for (let i = 0; i < mask.length; i++) {
-            if (mask[i]) {
-              const idx = i * 4;
-              maskData.data[idx] = 255;
-              maskData.data[idx + 1] = 255;
-              maskData.data[idx + 2] = 255;
-              maskData.data[idx + 3] = 255;
-            }
-          }
-          maskCtx.putImageData(maskData, 0, 0);
-          
-          // Use the mask to cut out the textured area
-          tempCtx.globalCompositeOperation = 'destination-in';
-          tempCtx.drawImage(maskCanvas, 0, 0);
-          
-          // Composite textured area onto main canvas with multiply blend
-          ctx.globalCompositeOperation = 'multiply';
-          ctx.drawImage(tempCanvas, 0, 0);
+      const hasFilledAreas = Object.values(areaFills).some(mask => mask && mask.some(v => v));
+
+      let maskBase64: string | null = null;
+
+      if (hasFilledAreas) {
+        // Build combined binary mask PNG: white = inpaint here, black = keep original
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = canvasSize.width;
+        maskCanvas.height = canvasSize.height;
+        const maskCtx = maskCanvas.getContext('2d');
+        if (!maskCtx) throw new Error('Could not get mask canvas context');
+
+        const maskImageData = maskCtx.createImageData(canvasSize.width, canvasSize.height);
+        const allMasks = Object.values(areaFills);
+        const total = canvasSize.width * canvasSize.height;
+
+        for (let i = 0; i < total; i++) {
+          const isFilled = allMasks.some(mask => mask && mask[i]);
+          const idx = i * 4;
+          const val = isFilled ? 255 : 0;
+          maskImageData.data[idx] = val;
+          maskImageData.data[idx + 1] = val;
+          maskImageData.data[idx + 2] = val;
+          maskImageData.data[idx + 3] = 255;
         }
-        
-        // Redraw original lines on top with reduced opacity for definition
-        ctx.globalCompositeOperation = 'multiply';
-        ctx.globalAlpha = 0.5;
-        ctx.drawImage(uploadedImageObj, 0, 0);
-        ctx.globalAlpha = 1.0;
-        ctx.globalCompositeOperation = 'source-over';
-        
-      } else {
-        // No filled areas - apply first texture as full overlay
-        const firstSelection = Object.entries(locationSelections).find(([_, id]) => id !== null);
-        if (firstSelection) {
-          const texture = getTextureById(firstSelection[1]!);
-          if (texture) {
-            const textureImg = await loadImage(texture.image);
-            
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvasSize.width;
-            tempCanvas.height = canvasSize.height;
-            const tempCtx = tempCanvas.getContext('2d');
-            if (tempCtx) {
-              const pattern = tempCtx.createPattern(textureImg, 'repeat');
-              if (pattern) {
-                tempCtx.fillStyle = pattern;
-                tempCtx.fillRect(0, 0, canvasSize.width, canvasSize.height);
-                
-                // Apply with multiply blend
-                ctx.globalCompositeOperation = 'multiply';
-                ctx.globalAlpha = 0.7;
-                ctx.drawImage(tempCanvas, 0, 0);
-                ctx.globalAlpha = 1.0;
-                
-                // Redraw lines
-                ctx.globalCompositeOperation = 'multiply';
-                ctx.globalAlpha = 0.4;
-                ctx.drawImage(uploadedImageObj, 0, 0);
-                ctx.globalAlpha = 1.0;
-                ctx.globalCompositeOperation = 'source-over';
-              }
-            }
-          }
-        }
+        maskCtx.putImageData(maskImageData, 0, 0);
+        maskBase64 = maskCanvas.toDataURL('image/png');
       }
-      
-      // Convert to data URL
-      const resultUrl = outputCanvas.toDataURL('image/jpeg', 0.92);
-      setGeneratedImage(resultUrl);
+
+      // Build selections array
+      const selections = Object.entries(locationSelections)
+        .filter(([_, textureId]) => textureId !== null)
+        .map(([area, textureId]) => {
+          const texture = getTextureById(textureId!);
+          return {
+            location: area,
+            textureName: texture?.name || '',
+            textureCategory: texture?.category || '',
+          };
+        });
+
+      const response = await fetch('/api/visualize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(userSession ? { 'Authorization': `Bearer ${userSession.token}` } : {}),
+        },
+        body: JSON.stringify({
+          image: uploadedImage,
+          mask: maskBase64,
+          selections,
+          sessionToken: userSession?.token,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Generation failed');
+      }
+
+      setGeneratedImage(data.imageUrl);
       setShowResult(true);
       setFillMode(null);
-      
+
+      if (data.remainingGenerations !== undefined && userSession) {
+        setUserSession(prev => prev ? { ...prev, remainingGenerations: data.remainingGenerations } : null);
+      }
+
     } catch (error) {
       console.error('Generation error:', error);
       setGenerationError(error instanceof Error ? error.message : 'Generation failed. Please try again.');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -1360,14 +1316,14 @@ export default function FinishVisualizer() {
             <div className="mt-6 flex gap-4">
               <button
                 onClick={handleGenerate}
-                disabled={!uploadedImage || getSelectedLocationsCount() === 0}
+                disabled={!uploadedImage || getSelectedLocationsCount() === 0 || isGenerating}
                 className={`flex-1 py-4 px-6 rounded-lg font-medium transition-all ${
-                  !uploadedImage || getSelectedLocationsCount() === 0
+                  !uploadedImage || getSelectedLocationsCount() === 0 || isGenerating
                     ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
                     : 'bg-white text-black hover:bg-neutral-200'
                 }`}
               >
-                Generate Visualization
+                {isGenerating ? 'Generating with AI (30–60 seconds)...' : 'Generate Visualization'}
               </button>
               
               {generatedImage && (
