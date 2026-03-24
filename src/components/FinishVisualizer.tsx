@@ -189,9 +189,20 @@ const createBoundaryMap = (imageData: ImageData): ImageData => {
     }
   }
   
+  // Detect if image is a line drawing (>40% near-white, <5% mid-tones)
+  let nearWhiteCount = 0;
+  let midToneCount = 0;
+  const totalPx = width * height;
+  for (let i = 0; i < totalPx; i++) {
+    const brightness = gray[i];
+    if (brightness > 200) nearWhiteCount++;
+    else if (brightness >= 80 && brightness <= 170) midToneCount++;
+  }
+  const isLineDrawing = (nearWhiteCount / totalPx > 0.40) && (midToneCount / totalPx < 0.05);
+  const edgeThreshold = isLineDrawing ? 15 : 40;
+
   // Create boundary image data - dark pixels where there are edges
   const boundaryData = new ImageData(width, height);
-  const edgeThreshold = 45; // adjusted for real photo colour variation
   for (let i = 0; i < width * height; i++) {
     const isEdge = dilated[i] > edgeThreshold;
     // Edge pixels become black (boundary), non-edge keep original color
@@ -380,9 +391,15 @@ export default function FinishVisualizer() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   
+  // Paint mode state
+  const [paintMode, setPaintMode] = useState<'brush' | 'fill'>('brush');
+  const [isErasing, setIsErasing] = useState(false);
+  const [brushCursorPos, setBrushCursorPos] = useState<{ x: number; y: number } | null>(null);
+  const isPaintingRef = useRef(false);
+
   // Touch tracking for tap detection
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  
+
   // Canvas refs
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -582,12 +599,38 @@ export default function FinishVisualizer() {
     return { x, y };
   };
 
-  // Handle touch start (track position for tap detection)
+  // Handle touch start (brush paint or tap detection)
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!fillMode) return;
+    e.preventDefault();
     const coords = getCoords(e);
-    if (coords) {
-      touchStartRef.current = coords;
+    if (!coords) return;
+    touchStartRef.current = coords;
+    if (paintMode === 'brush') {
+      isPaintingRef.current = true;
+      paintBrush(coords.x, coords.y, isErasing);
+    }
+  };
+
+  // Handle touch move for brush painting
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!fillMode) return;
+    e.preventDefault();
+    const displayCoords = getDisplayCoords(e);
+    setBrushCursorPos(displayCoords);
+    if (paintMode !== 'brush' || !isPaintingRef.current) return;
+    const coords = getCoords(e);
+    if (coords) paintBrush(coords.x, coords.y, isErasing);
+  };
+
+  // Handle touch end
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    isPaintingRef.current = false;
+    setBrushCursorPos(null);
+    if (paintMode === 'fill') {
+      handleCanvasTap(e);
+    } else {
+      touchStartRef.current = null;
     }
   };
 
@@ -651,6 +694,76 @@ export default function FinishVisualizer() {
         return { ...prev, [fillMode]: merged };
       });
     }
+  };
+
+  // Paint a circle of pixels into the current area mask
+  const paintBrush = useCallback((x: number, y: number, erase: boolean) => {
+    if (!fillMode) return;
+    const isMobile = window.innerWidth < 768;
+    const displayBrushRadius = isMobile ? 30 : 20;
+    // Scale display radius to full-resolution canvas pixels
+    const scaleX = canvasSize.width / displaySize.width;
+    const brushRadius = Math.round(displayBrushRadius * scaleX);
+
+    setAreaFills(prev => {
+      const existing = prev[fillMode] || new Array(canvasSize.width * canvasSize.height).fill(false);
+      const newMask = [...existing];
+      for (let dy = -brushRadius; dy <= brushRadius; dy++) {
+        for (let dx = -brushRadius; dx <= brushRadius; dx++) {
+          if (dx * dx + dy * dy <= brushRadius * brushRadius) {
+            const px = Math.round(x + dx);
+            const py = Math.round(y + dy);
+            if (px >= 0 && px < canvasSize.width && py >= 0 && py < canvasSize.height) {
+              newMask[py * canvasSize.width + px] = !erase;
+            }
+          }
+        }
+      }
+      return { ...prev, [fillMode]: newMask };
+    });
+  }, [fillMode, canvasSize, displaySize]);
+
+  // Get display-space coordinates for brush cursor
+  const getDisplayCoords = (e: React.MouseEvent | React.TouchEvent): { x: number; y: number } | null => {
+    const canvas = mainCanvasRef.current;
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    let clientX: number, clientY: number;
+    if ('touches' in e) {
+      if (e.touches.length === 0) return null;
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  };
+
+  // Mouse handlers for brush mode
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!fillMode || paintMode !== 'brush') return;
+    isPaintingRef.current = true;
+    const coords = getCoords(e);
+    if (coords) paintBrush(coords.x, coords.y, isErasing);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!fillMode) return;
+    const displayCoords = getDisplayCoords(e);
+    setBrushCursorPos(displayCoords);
+    if (paintMode !== 'brush' || !isPaintingRef.current) return;
+    const coords = getCoords(e);
+    if (coords) paintBrush(coords.x, coords.y, isErasing);
+  };
+
+  const handleMouseUp = () => {
+    isPaintingRef.current = false;
+  };
+
+  const handleMouseLeave = () => {
+    isPaintingRef.current = false;
+    setBrushCursorPos(null);
   };
 
   // Clear fill for an area
@@ -863,6 +976,8 @@ export default function FinishVisualizer() {
         setFillMode(null);
         setAreaFills({});
         setBoundaryMap(null);
+        setIsErasing(false);
+        setPaintMode('brush');
       };
       reader.readAsDataURL(file);
     }
@@ -910,6 +1025,8 @@ export default function FinishVisualizer() {
     setOriginalImageData(null);
     setBoundaryMap(null);
     setIsProcessing(false);
+    setIsErasing(false);
+    setPaintMode('brush');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -1095,7 +1212,7 @@ export default function FinishVisualizer() {
           transition={{ delay: 0.1 }}
           className="text-neutral-400 text-lg max-w-2xl mx-auto"
         >
-          Upload your elevation, tap to fill areas, and see instant results
+          Upload your elevation, paint the areas, and see instant results
         </motion.p>
         
         {/* User Info */}
@@ -1137,18 +1254,43 @@ export default function FinishVisualizer() {
                 <>
                   {/* Canvas for display and tap-to-fill */}
                   <div className="relative w-full h-full flex items-center justify-center bg-neutral-900">
+                    <div className="relative" style={{ width: displaySize.width, height: displaySize.height }}>
                     <canvas
                       ref={mainCanvasRef}
-                      className={`max-w-full max-h-full ${fillMode ? 'cursor-crosshair' : ''}`}
-                      style={{ 
-                        width: displaySize.width, 
+                      className={`max-w-full max-h-full ${fillMode ? (paintMode === 'brush' ? 'cursor-none' : 'cursor-crosshair') : ''}`}
+                      style={{
+                        width: displaySize.width,
                         height: displaySize.height,
-                        touchAction: fillMode ? 'none' : 'auto'
+                        touchAction: fillMode ? 'none' : 'auto',
+                        display: 'block'
                       }}
-                      onClick={handleCanvasTap}
+                      onClick={paintMode === 'fill' ? handleCanvasTap : undefined}
+                      onMouseDown={handleMouseDown}
+                      onMouseMove={handleMouseMove}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseLeave}
                       onTouchStart={handleTouchStart}
-                      onTouchEnd={handleCanvasTap}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
                     />
+                    {/* Brush cursor circle */}
+                    {fillMode && paintMode === 'brush' && brushCursorPos && (() => {
+                      const isMobile = window.innerWidth < 768;
+                      const radius = isMobile ? 30 : 20;
+                      return (
+                        <div
+                          className="pointer-events-none absolute rounded-full border-2 border-white mix-blend-difference"
+                          style={{
+                            width: radius * 2,
+                            height: radius * 2,
+                            left: brushCursorPos.x - radius,
+                            top: brushCursorPos.y - radius,
+                            backgroundColor: isErasing ? 'rgba(255,50,50,0.2)' : 'rgba(255,255,255,0.15)',
+                          }}
+                        />
+                      );
+                    })()}
+                    </div>
                     
                     {/* Show generated result overlay */}
                     {showResult && generatedImage && (
@@ -1176,22 +1318,45 @@ export default function FinishVisualizer() {
                     {!fillMode && !showResult && !isProcessing && (
                       <div className="absolute bottom-4 left-4 right-4 flex justify-center pointer-events-none">
                         <div className="bg-black/60 text-neutral-300 text-xs px-3 py-2 rounded-lg text-center">
-                          Select a finish and area first, then tap to fill
+                          Select a finish and area, then click the paint brush icon to start painting
                         </div>
                       </div>
                     )}
 
                     {/* Fill mode indicator and instruction */}
                     {fillMode && !isProcessing && (
-                      <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-                        <div className="bg-black/70 text-white text-xs px-3 py-2 rounded-lg flex items-center gap-2">
-                          <motion.span 
-                            className="w-3 h-3 rounded-full" 
+                      <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2">
+                        <div className="bg-black/70 text-white text-xs px-3 py-2 rounded-lg flex items-center gap-2 flex-shrink-0">
+                          <motion.span
+                            className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: AREA_COLORS[fillMode]?.hex }}
                             animate={{ scale: [1, 1.2, 1] }}
                             transition={{ repeat: Infinity, duration: 1.5 }}
                           />
-                          Tap to fill: {fillMode}
+                          {fillMode}
+                        </div>
+                        {/* Mode toggle */}
+                        <div className="flex items-center gap-1 bg-black/70 rounded-lg p-1 flex-shrink-0">
+                          <button
+                            onClick={() => setPaintMode('brush')}
+                            className={`px-2 py-1 rounded text-xs transition-colors ${paintMode === 'brush' ? 'bg-white text-black' : 'text-neutral-400 hover:text-white'}`}
+                          >
+                            ✏️ Brush
+                          </button>
+                          <button
+                            onClick={() => setPaintMode('fill')}
+                            className={`px-2 py-1 rounded text-xs transition-colors ${paintMode === 'fill' ? 'bg-white text-black' : 'text-neutral-400 hover:text-white'}`}
+                          >
+                            🪣 Fill
+                          </button>
+                          {paintMode === 'brush' && (
+                            <button
+                              onClick={() => setIsErasing(e => !e)}
+                              className={`px-2 py-1 rounded text-xs transition-colors ${isErasing ? 'bg-red-500 text-white' : 'text-neutral-400 hover:text-white'}`}
+                            >
+                              ⌫ Erase
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
@@ -1199,8 +1364,10 @@ export default function FinishVisualizer() {
                     {/* Fill mode instruction overlay */}
                     {fillMode && !hasAreaFill(fillMode) && !isProcessing && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="bg-black/50 text-white text-sm px-4 py-2 rounded-lg">
-                          Tap on the areas you want to fill
+                        <div className="bg-black/50 text-white text-sm px-4 py-2 rounded-lg text-center max-w-xs">
+                          {paintMode === 'brush'
+                            ? 'Drag to paint the area you want to finish'
+                            : 'Tap on the areas you want to fill'}
                         </div>
                       </div>
                     )}
@@ -1239,36 +1406,77 @@ export default function FinishVisualizer() {
               )}
             </div>
 
-            {/* Tolerance Slider (shows when in fill mode) */}
+            {/* Paint controls (shows when in fill mode) */}
             {uploadedImage && fillMode && (
-              <div className="mt-4 p-4 bg-neutral-900 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm text-neutral-400">Fill Tolerance</span>
-                  <span className="text-sm text-white">{tolerance}</span>
+              <div className="mt-4 p-4 bg-neutral-900 rounded-lg space-y-3">
+                {/* Mode toggle */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPaintMode('brush')}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                      paintMode === 'brush' ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                    }`}
+                  >
+                    ✏️ Brush Paint
+                  </button>
+                  <button
+                    onClick={() => setPaintMode('fill')}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                      paintMode === 'fill' ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                    }`}
+                  >
+                    🪣 Flood Fill
+                  </button>
                 </div>
-                <input
-                  type="range"
-                  min="10"
-                  max="80"
-                  value={tolerance}
-                  onChange={(e) => setTolerance(Number(e.target.value))}
-                  className="w-full accent-white"
-                />
-                <p className="text-xs text-neutral-500 mt-2">
-                  Lower = more precise, Higher = fills more similar colors
-                </p>
-                <div className="flex gap-2 mt-3">
+
+                {paintMode === 'brush' && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setIsErasing(e => !e)}
+                      className={`py-2 px-4 rounded-lg text-sm transition-colors ${
+                        isErasing ? 'bg-red-600 text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                      }`}
+                    >
+                      ⌫ {isErasing ? 'Erasing' : 'Eraser'}
+                    </button>
+                    <p className="text-xs text-neutral-500 self-center">
+                      {isErasing ? 'Drag to erase painted areas' : 'Drag to paint the area'}
+                    </p>
+                  </div>
+                )}
+
+                {paintMode === 'fill' && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-neutral-400">Fill Tolerance</span>
+                      <span className="text-sm text-white">{tolerance}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="10"
+                      max="80"
+                      value={tolerance}
+                      onChange={(e) => setTolerance(Number(e.target.value))}
+                      className="w-full accent-white"
+                    />
+                    <p className="text-xs text-neutral-500">
+                      Lower = more precise, Higher = fills more similar colors
+                    </p>
+                  </>
+                )}
+
+                <div className="flex gap-2 pt-1">
                   <button
                     onClick={() => clearAreaFill(fillMode)}
                     className="flex-1 py-2 px-4 bg-neutral-800 text-neutral-300 text-sm rounded-lg hover:bg-neutral-700 transition-colors"
                   >
-                    Clear This Area
+                    Clear Area
                   </button>
                   <button
-                    onClick={() => setFillMode(null)}
+                    onClick={() => { setFillMode(null); setIsErasing(false); }}
                     className="flex-1 py-2 px-4 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-500 transition-colors"
                   >
-                    Done Filling
+                    Done
                   </button>
                 </div>
               </div>
@@ -1306,7 +1514,7 @@ export default function FinishVisualizer() {
                             </p>
                             <p className="text-xs text-neutral-500">
                               {texture?.category} - {texture?.name}
-                              {!isFilled && <span className="text-amber-500 ml-1">(tap to fill)</span>}
+                              {!isFilled && <span className="text-amber-500 ml-1">(paint to fill)</span>}
                             </p>
                           </div>
                         </div>
@@ -1315,8 +1523,7 @@ export default function FinishVisualizer() {
                 </div>
                 {getFilledAreasCount() === 0 && getSelectedLocationsCount() > 0 && (
                   <p className="text-xs text-amber-500 mt-3">
-                    💡 Tip: Tap on areas in your image to fill them. 
-                    Without filling, the first texture will be applied as a full overlay.
+                    💡 Tip: Click the brush icon next to an area to paint it. Drag to paint, use Flood Fill for simpler photos.
                   </p>
                 )}
               </div>
@@ -1372,7 +1579,7 @@ export default function FinishVisualizer() {
           {/* Right: Location & Finish Selection */}
           <div className="lg:col-span-7">
             <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-4">
-              Step 2: Select areas, assign finishes, then tap to fill regions
+              Step 2: Select areas, assign finishes, then paint regions
             </h2>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -1618,8 +1825,8 @@ export default function FinishVisualizer() {
               <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
                 <span className="text-lg">3</span>
               </div>
-              <h3 className="font-medium mb-1 text-sm">Tap to Fill</h3>
-              <p className="text-neutral-400 text-xs">Tap regions to fill them</p>
+              <h3 className="font-medium mb-1 text-sm">Paint Areas</h3>
+              <p className="text-neutral-400 text-xs">Drag to brush-paint or tap to flood fill</p>
             </div>
             <div>
               <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
