@@ -128,17 +128,20 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
     if (mask) {
       // Inpainting — only modifies the white masked area, preserves everything else
+      const inpaintPrompt = `photorealistic interior room, ${finishDescriptions} on the wall surface only, seamless integration with surrounding architecture, professional photography`;
       output = await replicate.run(
         'stability-ai/stable-diffusion-inpainting',
         {
           input: {
             image: image,
             mask: mask,
-            prompt: prompt,
-            negative_prompt: 'ugly, blurry, low quality, distorted, deformed, cartoon, anime, illustration, painting, drawing, sketch, unrealistic, tiles, grout',
+            prompt: inpaintPrompt,
+            negative_prompt: 'ugly, blurry, low quality, distorted, deformed, cartoon, anime, illustration, painting, drawing, sketch, unrealistic, tiles, grout, distorted architecture, changed ceiling, changed floor, changed furniture, unrealistic',
             num_inference_steps: 25,
             guidance_scale: 7.5,
             strength: 0.99,
+            mask_blur: 4,
+            inpainting_fill: 1,
           }
         }
       );

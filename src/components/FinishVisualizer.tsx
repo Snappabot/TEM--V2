@@ -191,7 +191,7 @@ const createBoundaryMap = (imageData: ImageData): ImageData => {
   
   // Create boundary image data - dark pixels where there are edges
   const boundaryData = new ImageData(width, height);
-  const edgeThreshold = 30; // adjust this
+  const edgeThreshold = 45; // adjusted for real photo colour variation
   for (let i = 0; i < width * height; i++) {
     const isEdge = dilated[i] > edgeThreshold;
     // Edge pixels become black (boundary), non-edge keep original color
@@ -216,7 +216,7 @@ const floodFillWithBoundaries = (
   boundaryMap: ImageData,
   startX: number,
   startY: number,
-  tolerance: number = 20
+  tolerance: number = 35
 ): boolean[] => {
   const { width, height, data } = boundaryMap;
   const filled = new Array(width * height).fill(false);
@@ -374,7 +374,7 @@ export default function FinishVisualizer() {
   // Flood fill state (replaces paint mode)
   const [fillMode, setFillMode] = useState<string | null>(null);
   const [areaFills, setAreaFills] = useState<Record<string, boolean[]>>({});
-  const [tolerance, setTolerance] = useState(20);
+  const [tolerance, setTolerance] = useState(35);
   const [originalImageData, setOriginalImageData] = useState<ImageData | null>(null);
   const [boundaryMap, setBoundaryMap] = useState<ImageData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -575,11 +575,11 @@ export default function FinishVisualizer() {
     // Convert display coords to full-resolution coords
     const scaleX = canvasSize.width / rect.width;
     const scaleY = canvasSize.height / rect.height;
-    
-    return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY
-    };
+
+    const x = Math.max(0, Math.min(canvasSize.width - 1, (clientX - rect.left) * scaleX));
+    const y = Math.max(0, Math.min(canvasSize.height - 1, (clientY - rect.top) * scaleY));
+
+    return { x, y };
   };
 
   // Handle touch start (track position for tap detection)
@@ -635,7 +635,15 @@ export default function FinishVisualizer() {
     } else {
       // Run flood fill from tap point using boundary map (edge-strengthened)
       const filled = floodFillWithBoundaries(boundaryMap, x, y, tolerance);
-      
+
+      // Leak guard: if fill covers > 80% of total pixels it probably escaped the wall
+      const filledCount = filled.filter(Boolean).length;
+      const totalPixels = canvasSize.width * canvasSize.height;
+      if (filledCount > totalPixels * 0.8) {
+        setGenerationError('Fill leaked outside the wall area. Try tapping closer to the centre of the wall.');
+        return;
+      }
+
       // Merge with existing fills for this area (union)
       setAreaFills(prev => {
         const existing = prev[fillMode] || new Array(canvasSize.width * canvasSize.height).fill(false);
@@ -706,6 +714,12 @@ export default function FinishVisualizer() {
           maskImageData.data[idx + 3] = 255;
         }
         maskCtx.putImageData(maskImageData, 0, 0);
+
+        // Soften mask edges with a small blur so SD blends naturally at boundaries
+        maskCtx.filter = 'blur(3px)';
+        maskCtx.drawImage(maskCanvas, 0, 0);
+        maskCtx.filter = 'none';
+
         maskBase64 = maskCanvas.toDataURL('image/png');
       }
 
@@ -1158,6 +1172,15 @@ export default function FinishVisualizer() {
                       </div>
                     )}
                     
+                    {/* No fill mode hint */}
+                    {!fillMode && !showResult && !isProcessing && (
+                      <div className="absolute bottom-4 left-4 right-4 flex justify-center pointer-events-none">
+                        <div className="bg-black/60 text-neutral-300 text-xs px-3 py-2 rounded-lg text-center">
+                          Select a finish and area first, then tap to fill
+                        </div>
+                      </div>
+                    )}
+
                     {/* Fill mode indicator and instruction */}
                     {fillMode && !isProcessing && (
                       <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
