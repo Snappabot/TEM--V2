@@ -130,7 +130,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       // Inpainting — only modifies the white masked area, preserves everything else
       const inpaintPrompt = `photorealistic interior room, ${finishDescriptions} on the wall surface only, seamless integration with surrounding architecture, professional photography`;
       output = await replicate.run(
-        'stability-ai/stable-diffusion-inpainting',
+        'stability-ai/stable-diffusion-inpainting:95b7223104132402a9ae91cc677285bc5eb997834bd2349fa486f53910fd68b3',
         {
           input: {
             image: image,
