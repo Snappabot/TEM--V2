@@ -628,6 +628,32 @@ export default function FinishVisualizer() {
     return { x, y };
   };
 
+  // Paint a circle of pixels into the current area mask.
+  // pixelRadius: full-res pixels. If omitted, computed from brushSize + main canvas scale.
+  const paintBrush = useCallback((x: number, y: number, erase: boolean, pixelRadius?: number) => {
+    if (!fillMode) return;
+    const radius = pixelRadius !== undefined
+      ? pixelRadius
+      : Math.round(brushSize * (canvasSize.width / displaySize.width));
+
+    setAreaFills(prev => {
+      const existing = prev[fillMode] || new Array(canvasSize.width * canvasSize.height).fill(false);
+      const newMask = [...existing];
+      for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          if (dx * dx + dy * dy <= radius * radius) {
+            const px = Math.round(x + dx);
+            const py = Math.round(y + dy);
+            if (px >= 0 && px < canvasSize.width && py >= 0 && py < canvasSize.height) {
+              newMask[py * canvasSize.width + px] = !erase;
+            }
+          }
+        }
+      }
+      return { ...prev, [fillMode]: newMask };
+    });
+  }, [fillMode, canvasSize, displaySize, brushSize]);
+
   // Handle touch start (brush paint or tap detection)
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!fillMode) return;
@@ -825,32 +851,6 @@ export default function FinishVisualizer() {
       if (coords) performFloodFill(coords.x, coords.y);
     }
   }, [paintMode, getOverlayCoords, performFloodFill]);
-
-  // Paint a circle of pixels into the current area mask.
-  // pixelRadius: full-res pixels. If omitted, computed from brushSize + main canvas scale.
-  const paintBrush = useCallback((x: number, y: number, erase: boolean, pixelRadius?: number) => {
-    if (!fillMode) return;
-    const radius = pixelRadius !== undefined
-      ? pixelRadius
-      : Math.round(brushSize * (canvasSize.width / displaySize.width));
-
-    setAreaFills(prev => {
-      const existing = prev[fillMode] || new Array(canvasSize.width * canvasSize.height).fill(false);
-      const newMask = [...existing];
-      for (let dy = -radius; dy <= radius; dy++) {
-        for (let dx = -radius; dx <= radius; dx++) {
-          if (dx * dx + dy * dy <= radius * radius) {
-            const px = Math.round(x + dx);
-            const py = Math.round(y + dy);
-            if (px >= 0 && px < canvasSize.width && py >= 0 && py < canvasSize.height) {
-              newMask[py * canvasSize.width + px] = !erase;
-            }
-          }
-        }
-      }
-      return { ...prev, [fillMode]: newMask };
-    });
-  }, [fillMode, canvasSize, displaySize, brushSize]);
 
   // Get display-space coordinates for brush cursor
   const getDisplayCoords = (e: React.MouseEvent | React.TouchEvent): { x: number; y: number } | null => {
