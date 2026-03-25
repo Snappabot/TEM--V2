@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Troweled Earth Logo component
@@ -397,16 +397,44 @@ export default function FinishVisualizer() {
   const [brushCursorPos, setBrushCursorPos] = useState<{ x: number; y: number } | null>(null);
   const isPaintingRef = useRef(false);
 
+  // Paint overlay state
+  const [isPaintOverlayOpen, setIsPaintOverlayOpen] = useState(false);
+  const [brushSize, setBrushSize] = useState(30);
+  const [showBrushPicker, setShowBrushPicker] = useState(false);
+  const [overlayZoom, setOverlayZoom] = useState(1);
+  const [overlayPan, setOverlayPan] = useState({ x: 0, y: 0 });
+
   // Touch tracking for tap detection
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // Canvas refs
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayContainerRef = useRef<HTMLDivElement>(null);
+  const overlayPinchRef = useRef<{
+    startDist: number;
+    startMid: { x: number; y: number };
+    startZoom: number;
+    startPan: { x: number; y: number };
+  } | null>(null);
+  const overlayIsPaintingRef = useRef(false);
+
   // Image dimensions
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [displaySize, setDisplaySize] = useState({ width: 0, height: 0 });
+
+  // Overlay display size: canvas fits full screen minus top+bottom bars (~56px each)
+  const overlayDisplaySize = useMemo(() => {
+    if (!canvasSize.width || !canvasSize.height) return { width: 0, height: 0 };
+    const avW = typeof window !== 'undefined' ? window.innerWidth : 375;
+    const avH = typeof window !== 'undefined' ? window.innerHeight - 112 : 600;
+    const ar = canvasSize.width / canvasSize.height;
+    let w = avW;
+    let h = w / ar;
+    if (h > avH) { h = avH; w = h * ar; }
+    return { width: Math.floor(w), height: Math.floor(h) };
+  }, [canvasSize]);
 
   // Check session on mount
   useEffect(() => {
@@ -497,56 +525,41 @@ export default function FinishVisualizer() {
     img.src = uploadedImage;
   }, [uploadedImage]);
 
-  // Draw the main canvas with image and filled overlays
-  const drawMainCanvas = useCallback(() => {
-    const canvas = mainCanvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx || !uploadedImageObj) return;
-    
-    canvas.width = displaySize.width;
-    canvas.height = displaySize.height;
-    
-    // Draw the original image
-    ctx.drawImage(uploadedImageObj, 0, 0, displaySize.width, displaySize.height);
-    
-    // Draw all filled area overlays
+  // Shared canvas drawing helper — draws image + fill overlays to any canvas at given width/height
+  const drawToCanvas = useCallback((targetCanvas: HTMLCanvasElement, w: number, h: number) => {
+    const ctx = targetCanvas.getContext('2d');
+    if (!ctx || !uploadedImageObj) return;
+
+    targetCanvas.width = w;
+    targetCanvas.height = h;
+    ctx.drawImage(uploadedImageObj, 0, 0, w, h);
+
     Object.entries(areaFills).forEach(([area, mask]) => {
-      if (!mask || mask.length === 0) return;
-      
+      if (!mask || !mask.some(v => v)) return;
       const color = AREA_COLORS[area];
       if (!color) return;
-      
-      // Check if there are any filled pixels
-      const hasFill = mask.some(v => v);
-      if (!hasFill) return;
-      
-      // Create overlay image data at display size
-      const overlayCanvas = document.createElement('canvas');
-      overlayCanvas.width = displaySize.width;
-      overlayCanvas.height = displaySize.height;
-      const overlayCtx = overlayCanvas.getContext('2d');
-      if (!overlayCtx) return;
-      
-      const overlayData = overlayCtx.createImageData(displaySize.width, displaySize.height);
-      
-      // Parse color
+
+      const tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = w;
+      tmpCanvas.height = h;
+      const tmpCtx = tmpCanvas.getContext('2d');
+      if (!tmpCtx) return;
+
+      const overlayData = tmpCtx.createImageData(w, h);
       const r = parseInt(color.hex.slice(1, 3), 16);
       const g = parseInt(color.hex.slice(3, 5), 16);
       const b = parseInt(color.hex.slice(5, 7), 16);
       const a = Math.round(0.35 * 255);
-      
-      // Scale from full resolution to display size
-      const scaleX = canvasSize.width / displaySize.width;
-      const scaleY = canvasSize.height / displaySize.height;
-      
-      for (let dy = 0; dy < displaySize.height; dy++) {
-        for (let dx = 0; dx < displaySize.width; dx++) {
+      const scaleX = canvasSize.width / w;
+      const scaleY = canvasSize.height / h;
+
+      for (let dy = 0; dy < h; dy++) {
+        for (let dx = 0; dx < w; dx++) {
           const sx = Math.floor(dx * scaleX);
           const sy = Math.floor(dy * scaleY);
           const srcIdx = sy * canvasSize.width + sx;
-          
           if (mask[srcIdx]) {
-            const dstIdx = (dy * displaySize.width + dx) * 4;
+            const dstIdx = (dy * w + dx) * 4;
             overlayData.data[dstIdx] = r;
             overlayData.data[dstIdx + 1] = g;
             overlayData.data[dstIdx + 2] = b;
@@ -554,16 +567,32 @@ export default function FinishVisualizer() {
           }
         }
       }
-      
-      overlayCtx.putImageData(overlayData, 0, 0);
-      ctx.drawImage(overlayCanvas, 0, 0);
+      tmpCtx.putImageData(overlayData, 0, 0);
+      ctx.drawImage(tmpCanvas, 0, 0);
     });
-  }, [uploadedImageObj, displaySize, canvasSize, areaFills]);
+  }, [uploadedImageObj, canvasSize, areaFills]);
 
-  // Redraw canvas whenever dependencies change
+  // Draw the main canvas with image and filled overlays
+  const drawMainCanvas = useCallback(() => {
+    if (!mainCanvasRef.current || !displaySize.width) return;
+    drawToCanvas(mainCanvasRef.current, displaySize.width, displaySize.height);
+  }, [drawToCanvas, displaySize]);
+
+  // Draw the overlay canvas (full-screen paint mode)
+  const drawOverlayCanvas = useCallback(() => {
+    if (!overlayCanvasRef.current || !overlayDisplaySize.width) return;
+    drawToCanvas(overlayCanvasRef.current, overlayDisplaySize.width, overlayDisplaySize.height);
+  }, [drawToCanvas, overlayDisplaySize]);
+
+  // Redraw main canvas whenever dependencies change
   useEffect(() => {
     drawMainCanvas();
   }, [drawMainCanvas]);
+
+  // Redraw overlay canvas whenever areaFills change (when overlay is open)
+  useEffect(() => {
+    if (isPaintOverlayOpen) drawOverlayCanvas();
+  }, [isPaintOverlayOpen, drawOverlayCanvas]);
 
   // Get coordinates from mouse/touch event (full resolution coords)
   const getCoords = (e: React.MouseEvent | React.TouchEvent): { x: number; y: number } | null => {
@@ -634,83 +663,183 @@ export default function FinishVisualizer() {
     }
   };
 
-  // Handle canvas tap for flood fill
-  const handleCanvasTap = (e: React.MouseEvent | React.TouchEvent) => {
+  // Core flood fill logic at full-res coords
+  const performFloodFill = useCallback((x: number, y: number) => {
     if (!fillMode || !boundaryMap || isProcessing) return;
-    e.preventDefault();
-    
-    const coords = getCoords(e);
-    if (!coords) return;
-    
-    // For touch events, check if it was a tap (not a drag)
-    if ('touches' in e && touchStartRef.current) {
-      const dx = Math.abs(coords.x - touchStartRef.current.x);
-      const dy = Math.abs(coords.y - touchStartRef.current.y);
-      // If moved more than 20 pixels, it's a drag not a tap
-      if (dx > 20 || dy > 20) {
-        touchStartRef.current = null;
-        return;
-      }
-    }
-    touchStartRef.current = null;
-    
-    const x = Math.round(coords.x);
-    const y = Math.round(coords.y);
-    
-    // Check bounds
-    if (x < 0 || x >= canvasSize.width || y < 0 || y >= canvasSize.height) return;
-    
-    // Check if this pixel is already filled for this area - toggle it off
+    const px = Math.round(x);
+    const py = Math.round(y);
+    if (px < 0 || px >= canvasSize.width || py < 0 || py >= canvasSize.height) return;
+
     const existingMask = areaFills[fillMode];
-    const pixelIdx = y * canvasSize.width + x;
-    
+    const pixelIdx = py * canvasSize.width + px;
+
     if (existingMask && existingMask[pixelIdx]) {
-      // This spot is filled - run flood fill to find the connected region and remove it
-      // Use boundary map for consistent behavior
-      const regionToRemove = floodFillWithBoundaries(boundaryMap, x, y, tolerance);
-      
-      // Remove the region from the existing mask
+      const regionToRemove = floodFillWithBoundaries(boundaryMap, px, py, tolerance);
       setAreaFills(prev => {
         const existing = prev[fillMode] || [];
         const newMask = existing.map((v, i) => v && !regionToRemove[i]);
         return { ...prev, [fillMode]: newMask };
       });
     } else {
-      // Run flood fill from tap point using boundary map (edge-strengthened)
-      const filled = floodFillWithBoundaries(boundaryMap, x, y, tolerance);
-
-      // Leak guard: if fill covers > 80% of total pixels it probably escaped the wall
+      const filled = floodFillWithBoundaries(boundaryMap, px, py, tolerance);
       const filledCount = filled.filter(Boolean).length;
       const totalPixels = canvasSize.width * canvasSize.height;
       if (filledCount > totalPixels * 0.8) {
         setGenerationError('Fill leaked outside the wall area. Try tapping closer to the centre of the wall.');
         return;
       }
-
-      // Merge with existing fills for this area (union)
       setAreaFills(prev => {
         const existing = prev[fillMode] || new Array(canvasSize.width * canvasSize.height).fill(false);
         const merged = existing.map((v, i) => v || filled[i]);
         return { ...prev, [fillMode]: merged };
       });
     }
+  }, [fillMode, boundaryMap, isProcessing, canvasSize, areaFills, tolerance]);
+
+  // Handle canvas tap for flood fill
+  const handleCanvasTap = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!fillMode || !boundaryMap || isProcessing) return;
+    e.preventDefault();
+
+    const coords = getCoords(e);
+    if (!coords) return;
+
+    // For touch events, check if it was a tap (not a drag)
+    if ('touches' in e && touchStartRef.current) {
+      const dx = Math.abs(coords.x - touchStartRef.current.x);
+      const dy = Math.abs(coords.y - touchStartRef.current.y);
+      if (dx > 20 || dy > 20) {
+        touchStartRef.current = null;
+        return;
+      }
+    }
+    touchStartRef.current = null;
+    performFloodFill(coords.x, coords.y);
   };
 
-  // Paint a circle of pixels into the current area mask
-  const paintBrush = useCallback((x: number, y: number, erase: boolean) => {
+  // Get full-res canvas coords from a screen position, accounting for overlay zoom/pan
+  const getOverlayCoords = useCallback((clientX: number, clientY: number): { x: number; y: number } | null => {
+    const container = overlayContainerRef.current;
+    if (!container || overlayDisplaySize.width === 0) return null;
+
+    const cRect = container.getBoundingClientRect();
+    const cW = cRect.width;
+    const cH = cRect.height;
+    const dW = overlayDisplaySize.width;
+    const dH = overlayDisplaySize.height;
+
+    const tXRel = clientX - cRect.left;
+    const tYRel = clientY - cRect.top;
+
+    // Canvas edges on screen (flexbox centers it, then translate+scale applied)
+    const canvasLeft = cW / 2 + overlayPan.x - (dW * overlayZoom) / 2;
+    const canvasTop = cH / 2 + overlayPan.y - (dH * overlayZoom) / 2;
+
+    const xInScaled = tXRel - canvasLeft;
+    const yInScaled = tYRel - canvasTop;
+
+    const xInCanvas = xInScaled / overlayZoom;
+    const yInCanvas = yInScaled / overlayZoom;
+
+    const fullResX = xInCanvas * (canvasSize.width / dW);
+    const fullResY = yInCanvas * (canvasSize.height / dH);
+
+    return {
+      x: Math.max(0, Math.min(canvasSize.width - 1, fullResX)),
+      y: Math.max(0, Math.min(canvasSize.height - 1, fullResY)),
+    };
+  }, [overlayContainerRef, overlayDisplaySize, overlayPan, overlayZoom, canvasSize]);
+
+  // Overlay touch handlers
+  const handleOverlayTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    if (e.touches.length === 2) {
+      const t1 = e.touches[0], t2 = e.touches[1];
+      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const mid = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+      overlayPinchRef.current = { startDist: dist, startMid: mid, startZoom: overlayZoom, startPan: overlayPan };
+      overlayIsPaintingRef.current = false;
+    } else if (e.touches.length === 1) {
+      overlayPinchRef.current = null;
+      if (fillMode && paintMode === 'brush') {
+        overlayIsPaintingRef.current = true;
+        const coords = getOverlayCoords(e.touches[0].clientX, e.touches[0].clientY);
+        if (coords) {
+          const pixR = Math.round(brushSize * (canvasSize.width / overlayDisplaySize.width) / overlayZoom);
+          paintBrush(coords.x, coords.y, isErasing, pixR);
+        }
+      }
+    }
+  }, [fillMode, paintMode, overlayZoom, overlayPan, brushSize, canvasSize, overlayDisplaySize, isErasing, getOverlayCoords, paintBrush]);
+
+  const handleOverlayTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    if (e.touches.length === 2 && overlayPinchRef.current) {
+      const container = overlayContainerRef.current;
+      if (!container) return;
+      const cRect = container.getBoundingClientRect();
+      const { startDist, startMid, startZoom, startPan } = overlayPinchRef.current;
+      const t1 = e.touches[0], t2 = e.touches[1];
+      const newDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const newMid = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+      const newZoom = Math.max(1, Math.min(5, startZoom * newDist / startDist));
+
+      // Adjust pan to keep startMid canvas-point fixed as zoom changes
+      const cW = cRect.width;
+      const cH = cRect.height;
+      const dW = overlayDisplaySize.width;
+      const dH = overlayDisplaySize.height;
+      const pivX = startMid.x - cRect.left;
+      const pivY = startMid.y - cRect.top;
+      const fx = (pivX - cW / 2 - startPan.x + dW * startZoom / 2) / (dW * startZoom);
+      const fy = (pivY - cH / 2 - startPan.y + dH * startZoom / 2) / (dH * startZoom);
+
+      let newPanX = pivX - cW / 2 + dW * newZoom * (0.5 - fx) + (newMid.x - startMid.x);
+      let newPanY = pivY - cH / 2 + dH * newZoom * (0.5 - fy) + (newMid.y - startMid.y);
+
+      // Clamp pan so canvas doesn't go fully off-screen
+      const maxPanX = (dW * newZoom) / 2;
+      const maxPanY = (dH * newZoom) / 2;
+      newPanX = Math.max(-maxPanX, Math.min(maxPanX, newPanX));
+      newPanY = Math.max(-maxPanY, Math.min(maxPanY, newPanY));
+
+      setOverlayZoom(newZoom);
+      setOverlayPan({ x: newPanX, y: newPanY });
+    } else if (e.touches.length === 1 && overlayIsPaintingRef.current && fillMode && paintMode === 'brush') {
+      const coords = getOverlayCoords(e.touches[0].clientX, e.touches[0].clientY);
+      if (coords) {
+        const pixR = Math.round(brushSize * (canvasSize.width / overlayDisplaySize.width) / overlayZoom);
+        paintBrush(coords.x, coords.y, isErasing, pixR);
+      }
+    }
+  }, [fillMode, paintMode, overlayDisplaySize, overlayZoom, brushSize, canvasSize, isErasing, getOverlayCoords, paintBrush]);
+
+  const handleOverlayTouchEnd = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    overlayIsPaintingRef.current = false;
+    if (e.touches.length === 0) overlayPinchRef.current = null;
+    // Fill mode tap
+    if (paintMode === 'fill' && e.changedTouches.length > 0) {
+      const t = e.changedTouches[0];
+      const coords = getOverlayCoords(t.clientX, t.clientY);
+      if (coords) performFloodFill(coords.x, coords.y);
+    }
+  }, [paintMode, getOverlayCoords, performFloodFill]);
+
+  // Paint a circle of pixels into the current area mask.
+  // pixelRadius: full-res pixels. If omitted, computed from brushSize + main canvas scale.
+  const paintBrush = useCallback((x: number, y: number, erase: boolean, pixelRadius?: number) => {
     if (!fillMode) return;
-    const isMobile = window.innerWidth < 768;
-    const displayBrushRadius = isMobile ? 30 : 20;
-    // Scale display radius to full-resolution canvas pixels
-    const scaleX = canvasSize.width / displaySize.width;
-    const brushRadius = Math.round(displayBrushRadius * scaleX);
+    const radius = pixelRadius !== undefined
+      ? pixelRadius
+      : Math.round(brushSize * (canvasSize.width / displaySize.width));
 
     setAreaFills(prev => {
       const existing = prev[fillMode] || new Array(canvasSize.width * canvasSize.height).fill(false);
       const newMask = [...existing];
-      for (let dy = -brushRadius; dy <= brushRadius; dy++) {
-        for (let dx = -brushRadius; dx <= brushRadius; dx++) {
-          if (dx * dx + dy * dy <= brushRadius * brushRadius) {
+      for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          if (dx * dx + dy * dy <= radius * radius) {
             const px = Math.round(x + dx);
             const py = Math.round(y + dy);
             if (px >= 0 && px < canvasSize.width && py >= 0 && py < canvasSize.height) {
@@ -721,7 +850,7 @@ export default function FinishVisualizer() {
       }
       return { ...prev, [fillMode]: newMask };
     });
-  }, [fillMode, canvasSize, displaySize]);
+  }, [fillMode, canvasSize, displaySize, brushSize]);
 
   // Get display-space coordinates for brush cursor
   const getDisplayCoords = (e: React.MouseEvent | React.TouchEvent): { x: number; y: number } | null => {
@@ -978,6 +1107,9 @@ export default function FinishVisualizer() {
         setBoundaryMap(null);
         setIsErasing(false);
         setPaintMode('brush');
+        setIsPaintOverlayOpen(false);
+        setOverlayZoom(1);
+        setOverlayPan({ x: 0, y: 0 });
       };
       reader.readAsDataURL(file);
     }
@@ -1027,6 +1159,9 @@ export default function FinishVisualizer() {
     setIsProcessing(false);
     setIsErasing(false);
     setPaintMode('brush');
+    setIsPaintOverlayOpen(false);
+    setOverlayZoom(1);
+    setOverlayPan({ x: 0, y: 0 });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -1274,22 +1409,18 @@ export default function FinishVisualizer() {
                       onTouchEnd={handleTouchEnd}
                     />
                     {/* Brush cursor circle */}
-                    {fillMode && paintMode === 'brush' && brushCursorPos && (() => {
-                      const isMobile = window.innerWidth < 768;
-                      const radius = isMobile ? 30 : 20;
-                      return (
-                        <div
-                          className="pointer-events-none absolute rounded-full border-2 border-white mix-blend-difference"
-                          style={{
-                            width: radius * 2,
-                            height: radius * 2,
-                            left: brushCursorPos.x - radius,
-                            top: brushCursorPos.y - radius,
-                            backgroundColor: isErasing ? 'rgba(255,50,50,0.2)' : 'rgba(255,255,255,0.15)',
-                          }}
-                        />
-                      );
-                    })()}
+                    {fillMode && paintMode === 'brush' && brushCursorPos && (
+                      <div
+                        className="pointer-events-none absolute rounded-full border-2 border-white mix-blend-difference"
+                        style={{
+                          width: brushSize * 2,
+                          height: brushSize * 2,
+                          left: brushCursorPos.x - brushSize,
+                          top: brushCursorPos.y - brushSize,
+                          backgroundColor: isErasing ? 'rgba(255,50,50,0.2)' : 'rgba(255,255,255,0.15)',
+                        }}
+                      />
+                    )}
                     </div>
                     
                     {/* Show generated result overlay */}
@@ -1321,6 +1452,16 @@ export default function FinishVisualizer() {
                           Select a finish and area, then click the paint brush icon to start painting
                         </div>
                       </div>
+                    )}
+
+                    {/* Paint full-screen button */}
+                    {fillMode && !isProcessing && (
+                      <button
+                        onClick={() => { setIsPaintOverlayOpen(true); setOverlayZoom(1); setOverlayPan({ x: 0, y: 0 }); }}
+                        className="absolute bottom-4 right-4 bg-amber-500 hover:bg-amber-400 text-white text-xs px-3 py-2 rounded-lg font-medium flex items-center gap-1 shadow-lg z-10"
+                      >
+                        ✏️ Full Screen
+                      </button>
                     )}
 
                     {/* Fill mode indicator and instruction */}
@@ -1430,7 +1571,7 @@ export default function FinishVisualizer() {
                 </div>
 
                 {paintMode === 'brush' && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap items-center">
                     <button
                       onClick={() => setIsErasing(e => !e)}
                       className={`py-2 px-4 rounded-lg text-sm transition-colors ${
@@ -1439,6 +1580,30 @@ export default function FinishVisualizer() {
                     >
                       ⌫ {isErasing ? 'Erasing' : 'Eraser'}
                     </button>
+                    {/* Brush size picker */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowBrushPicker(p => !p)}
+                        className={`py-2 px-3 rounded-lg text-sm transition-colors flex items-center gap-1 ${showBrushPicker ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'}`}
+                        title="Brush size"
+                      >
+                        🖌️ <span className="text-xs">{brushSize}px</span>
+                      </button>
+                      {showBrushPicker && (
+                        <div className="absolute bottom-full mb-2 left-0 bg-neutral-800 rounded-xl p-3 shadow-xl z-50 flex items-end gap-3">
+                          {([8,16,30,50,80] as const).map((sz, i) => {
+                            const labels = ['XS','S','M','L','XL'];
+                            const dispSz = Math.max(8, Math.min(sz, 44));
+                            return (
+                              <button key={sz} onClick={() => { setBrushSize(sz); setShowBrushPicker(false); }} className="flex flex-col items-center gap-1">
+                                <div className={`rounded-full bg-white transition-all ${brushSize === sz ? 'ring-2 ring-yellow-400 ring-offset-1 ring-offset-neutral-800' : ''}`} style={{ width: dispSz, height: dispSz }} />
+                                <span className="text-xs text-neutral-400">{labels[i]}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                     <p className="text-xs text-neutral-500 self-center">
                       {isErasing ? 'Drag to erase painted areas' : 'Drag to paint the area'}
                     </p>
@@ -1801,6 +1966,154 @@ export default function FinishVisualizer() {
           </div>
         </div>
       </div>
+
+      {/* Full-screen paint overlay */}
+      {isPaintOverlayOpen && (
+        <div className="fixed inset-0 z-[9999] bg-neutral-950 flex flex-col" style={{ height: '100dvh' }}>
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-4 py-3 bg-neutral-900 border-b border-neutral-800 flex-shrink-0" style={{ minHeight: 56 }}>
+            <button
+              onClick={() => setIsPaintOverlayOpen(false)}
+              className="flex items-center gap-2 text-white font-medium text-sm px-3 py-1.5 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+            >
+              ← Done
+            </button>
+            <div className="flex items-center gap-2">
+              {paintMode === 'brush' && (
+                <button
+                  onClick={() => setIsErasing(e => !e)}
+                  className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${isErasing ? 'bg-red-500 text-white' : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'}`}
+                >
+                  ⌫ Erase
+                </button>
+              )}
+              <div className="flex bg-neutral-800 rounded-lg p-0.5">
+                <button
+                  onClick={() => setPaintMode('brush')}
+                  className={`px-2 py-1 rounded text-xs transition-colors ${paintMode === 'brush' ? 'bg-white text-black' : 'text-neutral-400 hover:text-white'}`}
+                >
+                  ✏️ Brush
+                </button>
+                <button
+                  onClick={() => setPaintMode('fill')}
+                  className={`px-2 py-1 rounded text-xs transition-colors ${paintMode === 'fill' ? 'bg-white text-black' : 'text-neutral-400 hover:text-white'}`}
+                >
+                  🪣 Fill
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Canvas area */}
+          <div
+            ref={overlayContainerRef}
+            className="flex-1 flex items-center justify-center overflow-hidden relative bg-neutral-950"
+            onTouchStart={handleOverlayTouchStart}
+            onTouchMove={handleOverlayTouchMove}
+            onTouchEnd={handleOverlayTouchEnd}
+          >
+            <div
+              style={{
+                transform: `translate(${overlayPan.x}px, ${overlayPan.y}px) scale(${overlayZoom})`,
+                transformOrigin: 'center center',
+                flexShrink: 0,
+                willChange: 'transform',
+              }}
+            >
+              <canvas
+                ref={overlayCanvasRef}
+                style={{
+                  width: overlayDisplaySize.width,
+                  height: overlayDisplaySize.height,
+                  display: 'block',
+                  touchAction: 'none',
+                  cursor: paintMode === 'brush' ? 'crosshair' : 'crosshair',
+                }}
+              />
+            </div>
+
+            {/* Instruction hint when no fill yet */}
+            {fillMode && !hasAreaFill(fillMode) && (
+              <div className="absolute bottom-4 left-4 right-4 flex justify-center pointer-events-none">
+                <div className="bg-black/60 text-white text-xs px-3 py-2 rounded-lg text-center">
+                  {paintMode === 'brush'
+                    ? 'Drag to paint · Pinch to zoom · Two fingers to pan'
+                    : 'Tap to flood fill'}
+                </div>
+              </div>
+            )}
+
+            {/* Area indicator */}
+            {fillMode && (
+              <div className="absolute top-3 left-3 pointer-events-none">
+                <div className="bg-black/70 text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1.5">
+                  <motion.span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: AREA_COLORS[fillMode]?.hex }}
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  />
+                  {fillMode}
+                </div>
+              </div>
+            )}
+
+            {/* Zoom indicator */}
+            {overlayZoom > 1 && (
+              <div className="absolute top-3 right-3 pointer-events-none">
+                <div className="bg-black/60 text-white text-xs px-2 py-1 rounded-lg">
+                  {overlayZoom.toFixed(1)}×
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom bar */}
+          <div className="flex items-center justify-between px-4 py-3 bg-neutral-900 border-t border-neutral-800 flex-shrink-0" style={{ minHeight: 56 }}>
+            {/* Brush size picker */}
+            <div className="relative">
+              <button
+                onClick={() => setShowBrushPicker(p => !p)}
+                className={`py-2 px-3 rounded-lg text-sm transition-colors flex items-center gap-1.5 ${showBrushPicker ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'}`}
+              >
+                🖌️ <span className="text-xs font-medium">{brushSize}px</span>
+              </button>
+              {showBrushPicker && (
+                <div className="absolute bottom-full mb-2 left-0 bg-neutral-800 rounded-xl p-3 shadow-xl z-50 flex items-end gap-3">
+                  {([8,16,30,50,80] as const).map((sz, i) => {
+                    const labels = ['XS','S','M','L','XL'];
+                    const dispSz = Math.max(8, Math.min(sz, 44));
+                    return (
+                      <button key={sz} onClick={() => { setBrushSize(sz); setShowBrushPicker(false); }} className="flex flex-col items-center gap-1">
+                        <div className={`rounded-full bg-white transition-all ${brushSize === sz ? 'ring-2 ring-yellow-400 ring-offset-1 ring-offset-neutral-800' : ''}`} style={{ width: dispSz, height: dispSz }} />
+                        <span className="text-xs text-neutral-400">{labels[i]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Current finish name */}
+            <div className="flex items-center gap-2 overflow-hidden">
+              {fillMode && AREA_COLORS[fillMode] && (
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: AREA_COLORS[fillMode].hex }} />
+              )}
+              <span className="text-sm text-neutral-300 truncate">{fillMode || 'No area selected'}</span>
+            </div>
+
+            {/* Reset zoom */}
+            {overlayZoom > 1 && (
+              <button
+                onClick={() => { setOverlayZoom(1); setOverlayPan({ x: 0, y: 0 }); }}
+                className="px-3 py-1.5 bg-neutral-800 text-neutral-300 text-xs rounded-lg hover:bg-neutral-700 transition-colors"
+              >
+                Reset zoom
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Info Section */}
       <div className="border-t border-neutral-800 py-12 px-8 mt-8">
