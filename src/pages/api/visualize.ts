@@ -209,11 +209,14 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     console.error('Visualization API error:', error);
     
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const isRateLimit = errorMessage.includes('429') || errorMessage.includes('throttled') || errorMessage.includes('rate limit');
     
     return new Response(JSON.stringify({ 
-      error: `Generation failed: ${errorMessage}` 
+      error: isRateLimit
+        ? 'The AI is busy — please wait 30 seconds and try again.'
+        : `Generation failed: ${errorMessage}`
     }), { 
-      status: 500,
+      status: isRateLimit ? 429 : 500,
       headers: { 'Content-Type': 'application/json' }
     });
   }
