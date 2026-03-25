@@ -1099,7 +1099,22 @@ export default function FinishVisualizer() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setUploadedImage(event.target?.result as string);
+        // Resize to max 1024px before storing — keeps payload small for Replicate API
+        const raw = event.target?.result as string;
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 1024;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+            else { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d')!.drawImage(img, 0, 0, w, h);
+          setUploadedImage(c.toDataURL('image/jpeg', 0.92));
+        };
+        img.src = raw;
         setGeneratedImage(null);
         setShowResult(false);
         setFillMode(null);
