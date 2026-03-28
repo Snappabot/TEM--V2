@@ -28,11 +28,11 @@ const products = [
     color: '#a67c52'
   },
   { 
-    name: 'Tadelakt', 
-    slug: 'tadelakt',
+    name: 'Tadellino', 
+    slug: 'tadellino',
     tagline: 'Moroccan luxury, modern durability',
     description: 'Traditional Moroccan plastering reimagined. Water-resistant, UV stable acrylic-based formula. Smooth polished finish, internal and external.',
-    image: '/images/products/tadelakt.png',
+    image: '/images/products/tadellino.png',
     color: '#4a7c59'
   },
   { 

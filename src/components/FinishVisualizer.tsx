@@ -105,11 +105,11 @@ const textures: Texture[] = [
   { id: 'metallic-steel', name: 'Steel', category: 'Metallics', image: '/images/visualizer/metallic-steel.jpg' },
   { id: 'metallic-verdigris', name: 'Verdigris', category: 'Metallics', image: '/images/visualizer/metallic-verdigris.jpg' },
   
-  // Tadelakt
-  { id: 'tadelakt-natural', name: 'Natural', category: 'Tadelakt', image: '/images/visualizer/tadelakt-natural.png' },
-  { id: 'tadelakt-green', name: 'Sage', category: 'Tadelakt', image: '/images/visualizer/tadelakt-green.png' },
-  { id: 'tadelakt-blush', name: 'Blush', category: 'Tadelakt', image: '/images/visualizer/tadelakt-blush.png' },
-  { id: 'tadelakt-white', name: 'Ivory', category: 'Tadelakt', image: '/images/visualizer/tadelakt-white.png' },
+  // Tadellino
+  { id: 'tadellino-natural', name: 'Natural', category: 'Tadellino', image: '/images/visualizer/tadellino-natural.png' },
+  { id: 'tadellino-green', name: 'Sage', category: 'Tadellino', image: '/images/visualizer/tadellino-green.png' },
+  { id: 'tadellino-blush', name: 'Blush', category: 'Tadellino', image: '/images/visualizer/tadellino-blush.png' },
+  { id: 'tadellino-white', name: 'Ivory', category: 'Tadellino', image: '/images/visualizer/tadellino-white.png' },
   
   // Antique Stucco
   { id: 'stucco-raw', name: 'Raw', category: 'Antique Stucco', image: '/images/visualizer/stucco-raw.png' },
@@ -136,7 +136,7 @@ const textures: Texture[] = [
   { id: 'custom-decay', name: 'State of Decay', category: 'Custom', image: '/images/visualizer/custom-decay.png' },
 ];
 
-const textureCategories = ['All', 'Marbellino', 'Concretum', 'Rokka', 'Metallics', 'Tadelakt', 'Antique Stucco', 'Earthen Hemp', 'Custom'];
+const textureCategories = ['All', 'Marbellino', 'Concretum', 'Rokka', 'Metallics', 'Tadellino', 'Antique Stucco', 'Earthen Hemp', 'Custom'];
 
 // Auth form modes
 type AuthMode = 'register' | 'login';

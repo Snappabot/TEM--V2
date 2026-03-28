@@ -9,7 +9,7 @@ const blogSlugs = [
   'hemp-render-sustainability',
   'marbellino-vs-microcement',
   'marbellino-workshop',
-  'tadelakt-moroccan-classic',
+  'tadellino-moroccan-classic',
 ];
 
 const staticPages = [
@@ -22,8 +22,8 @@ const staticPages = [
   { url: '/suppliers/', priority: '0.6', changefreq: 'monthly' },
   // Product pages
   { url: '/products/marbellino/', priority: '0.9', changefreq: 'monthly' },
-  { url: '/products/tadelakt/', priority: '0.9', changefreq: 'monthly' },
-  { url: '/products/tadelino/', priority: '0.9', changefreq: 'monthly' },
+  { url: '/products/tadellino/', priority: '0.9', changefreq: 'monthly' },
+  { url: '/products/tadellino/', priority: '0.9', changefreq: 'monthly' },
   { url: '/products/concretum/', priority: '0.9', changefreq: 'monthly' },
   { url: '/products/rokka/', priority: '0.8', changefreq: 'monthly' },
   { url: '/products/earthen-renders/', priority: '0.8', changefreq: 'monthly' },

@@ -44,23 +44,23 @@ Here's a breakdown of our core finishes and their ideal applications:
 
 *Choose Marbellino when you want a wall to become art.*
 
-#### Tadelakt (Moroccan Waterproof Plaster)
+#### Tadellino (Moroccan Waterproof Plaster)
 
 **Character:** Smooth, seamless, waterproof, organic warmth  
 **Best For:** Bathrooms, showers, hammams, pools, sinks  
 **Avoid:** High-impact areas, floors with heavy furniture  
 **Maintenance:** Moderate — occasional soap treatment  
 
-*Choose Tadelakt for wet areas where you refuse to compromise on beauty.*
+*Choose Tadellino for wet areas where you refuse to compromise on beauty.*
 
-#### Tadelino (Contemporary Polished Lime)
+#### Tadellino (Contemporary Polished Lime)
 
 **Character:** Refined, subtle variation, versatile  
 **Best For:** Whole-room applications, contemporary interiors, commercial  
 **Avoid:** Direct water immersion  
 **Maintenance:** Low  
 
-*Choose Tadelino for elegant restraint across larger surface areas.*
+*Choose Tadellino for elegant restraint across larger surface areas.*
 
 #### Rokka (Textured Earth Finish)
 
@@ -96,8 +96,8 @@ Here's a breakdown of our core finishes and their ideal applications:
 | Finish | Impact Resistance | Moisture Resistance | UV Stability |
 |--------|-------------------|---------------------|--------------|
 | Marbellino | Moderate | Low | Good |
-| Tadelakt | Moderate | Excellent | Good |
-| Tadelino | Moderate | Moderate | Good |
+| Tadellino | Moderate | Excellent | Good |
+| Tadellino | Moderate | Moderate | Good |
 | Rokka | Good | Moderate | Excellent |
 | Concretum | Good | Moderate | Good |
 | Earthen | Moderate | Variable | Good |
@@ -158,7 +158,7 @@ Artisan plasters are an investment. Unlike paint, you're paying for:
 **Rough Guide (per m²):**
 - Basic textured finish: $$
 - Polished plaster: $$$
-- Tadelakt (wet areas): $$$$
+- Tadellino (wet areas): $$$$
 
 The value lies in longevity and uniqueness. A Marbellino wall will still be beautiful in 50 years; a painted wall will need refreshing in 5-10.
 
@@ -167,11 +167,11 @@ The value lies in longevity and uniqueness. A Marbellino wall will still be beau
 | Your Priority | Recommended Finish |
 |---------------|-------------------|
 | Luxury feel | Marbellino |
-| Waterproof beauty | Tadelakt |
+| Waterproof beauty | Tadellino |
 | Sustainable build | Earthen Renders |
 | Bold statement | Rokka |
 | Modern minimalism | Concretum |
-| Versatile elegance | Tadelino |
+| Versatile elegance | Tadellino |
 
 ### Still Unsure?
 

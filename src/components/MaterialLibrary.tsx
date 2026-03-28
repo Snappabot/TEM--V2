@@ -29,8 +29,8 @@ const materials = [
   { 
     name: 'TADELAKT', 
     subtitle: 'Moroccan // Waterproof',
-    image: '/images/products/tadelakt/Tadelakt+moody+shower.jpg',
-    href: '/products/tadelakt'
+    image: '/images/products/tadellino/Tadellino+moody+shower.jpg',
+    href: '/products/tadellino'
   },
   { 
     name: 'CUSTOM', 

@@ -72,7 +72,7 @@ export const products: ProductInfo[] = [
     }
   },
   {
-    name: "Tadelakt",
+    name: "Tadellino",
     category: "Waterproof Plaster",
     overview: "Traditional Moroccan lime plaster known for its waterproof properties and luxurious appearance. Creates a seamless, naturally waterproof surface perfect for wet areas.",
     applications: [
@@ -100,9 +100,9 @@ export const products: ProductInfo[] = [
     }
   },
   {
-    name: "Tadelino",
+    name: "Tadellino",
     category: "Polished Plaster",
-    overview: "A refined variation of Tadelakt offering a smoother, more contemporary finish while maintaining excellent water resistance. Perfect for modern bathrooms.",
+    overview: "A refined variation of Tadellino offering a smoother, more contemporary finish while maintaining excellent water resistance. Perfect for modern bathrooms.",
     applications: [
       "Modern bathrooms",
       "Feature walls",
@@ -110,7 +110,7 @@ export const products: ProductInfo[] = [
       "Contemporary interiors"
     ],
     keyFeatures: [
-      "Smoother than traditional Tadelakt",
+      "Smoother than traditional Tadellino",
       "Contemporary aesthetic",
       "Water resistant",
       "Seamless finish",
@@ -227,7 +227,7 @@ export const companyInfo = {
 export const faqs = [
   {
     question: "What areas can your finishes be used in?",
-    answer: "Our finishes can be used both internally and externally. Products like Marbellino and Tadelakt are suitable for wet areas including bathrooms and showers. Marbellino can even be used on floors."
+    answer: "Our finishes can be used both internally and externally. Products like Marbellino and Tadellino are suitable for wet areas including bathrooms and showers. Marbellino can even be used on floors."
   },
   {
     question: "How long does the finish last?",
@@ -246,8 +246,8 @@ export const faqs = [
     answer: "Yes, we run workshops for plasterers, builders, and DIY enthusiasts. Check our website or Instagram @troweled_earth_melbourne for upcoming dates."
   },
   {
-    question: "What's the difference between Tadelakt and Marbellino?",
-    answer: "Tadelakt is a traditional Moroccan waterproof lime plaster - naturally waterproof, polished with stones. Marbellino gives a stone-like marbled effect and can be used on floors. Both work in wet areas, but Tadelakt is the premium choice for showers."
+    question: "What's the difference between Tadellino and Marbellino?",
+    answer: "Tadellino is a traditional Moroccan waterproof lime plaster - naturally waterproof, polished with stones. Marbellino gives a stone-like marbled effect and can be used on floors. Both work in wet areas, but Tadellino is the premium choice for showers."
   },
   {
     question: "How much does it cost?",

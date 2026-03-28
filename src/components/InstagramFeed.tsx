@@ -6,7 +6,7 @@ import { useInView } from 'framer-motion';
 const fallbackPosts = [
   { image: '/images/gallery/gallery-01.jpg', caption: 'Artisan plaster finish' },
   { image: '/images/gallery/gallery-02.jpg', caption: 'Venetian plaster feature wall' },
-  { image: '/images/gallery/gallery-03.jpg', caption: 'Tadelakt bathroom' },
+  { image: '/images/gallery/gallery-03.jpg', caption: 'Tadellino bathroom' },
   { image: '/images/gallery/gallery-04.jpg', caption: 'Custom render finish' },
   { image: '/images/gallery/gallery-05.jpg', caption: 'Concretum effect' },
   { image: '/images/gallery/gallery-06.jpg', caption: 'Earthen render application' },

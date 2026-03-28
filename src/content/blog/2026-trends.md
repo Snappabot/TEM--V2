@@ -71,7 +71,7 @@ Forget subtle. **Rokka-style dramatic texture** is making statements in commerci
 
 #### Monolithic Bathrooms
 
-**Tadelakt and seamless wet room** finishes continue to grow. The tile-free bathroom is no longer niche — it's aspirational mainstream.
+**Tadellino and seamless wet room** finishes continue to grow. The tile-free bathroom is no longer niche — it's aspirational mainstream.
 
 The appeal:
 - No grout lines to clean
@@ -90,7 +90,7 @@ Forget grey. 2026 embraces:
 - Mushroom and taupe
 
 **Black Makes a Statement**  
-Polished black plaster — think Tadelakt in charcoal — offers drama without being stark. It absorbs light in ways that matte black paint cannot.
+Polished black plaster — think Tadellino in charcoal — offers drama without being stark. It absorbs light in ways that matte black paint cannot.
 
 **Natural Greens**  
 Sage, olive, eucalyptus. Earth greens that reference nature without shouting.
