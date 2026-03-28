@@ -20,7 +20,7 @@ export default function ChatWidget() {
     {
       id: '1',
       role: 'assistant',
-      content: "G'day! 👋 I'm the Troweled Earth assistant. I can help you find the perfect plaster finish for your project.\n\nWhat are you working on today?",
+      content: "G'day! 👋 I'm Jose, the Troweled Earth assistant — I know the full product range inside out and I'm here to help.\n\nWhat can I help you with today? And what's your name?",
       timestamp: new Date()
     }
   ]);

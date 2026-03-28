@@ -308,9 +308,20 @@ function respond(message: string, history: { role: string; content: string }[], 
   let shouldEmail = false;
   let collectEmail = false;
 
-  // ── Greeting ──────────────────────────────────────────────────────────────
+  // ── Greeting only ─────────────────────────────────────────────────────────
   if (msgs <= 1 || lower.match(/^(hi+|hello|hey|g'?day|yo|howdy|hiya|sup)[\s!.]*$/i)) {
-    return { reply: `G'day! 👋 I'm the Troweled Earth assistant — I know our full range inside out and I'm here to help you find the perfect finish.\n\nWhat's your name, and what are you working on?`, shouldEmail: false, collectEmail: false };
+    return { reply: `G'day! 👋 I'm Jose, the Troweled Earth assistant — I know the full product range inside out and I'm here to help.\n\nWhat can I help you with today? And what's your name?`, shouldEmail: false, collectEmail: false };
+  }
+
+  // ── First message is a product question (no greeting, straight to it) ─────
+  // Answer the question first, then ask for name
+  if (msgs <= 1 && !brief.name) {
+    const firstProdKey = findProduct(lower);
+    if (firstProdKey || lower.match(/bathroom|shower|floor|exterior|feature wall|price|cost|quote|colour|compare|difference/)) {
+      // They asked a real question straight away — answer it, then ask their name
+      // Fall through to the normal response logic below, but append name request
+      // We handle this by setting a flag — answered below via answerThenAskName
+    }
   }
 
   // ── Name + project together ───────────────────────────────────────────────
@@ -613,7 +624,15 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const brief = extractBrief([...conversationHistory, { role: 'user', content: message }]);
-    const { reply, shouldEmail, collectEmail } = respond(message, conversationHistory, brief);
+    let { reply, shouldEmail, collectEmail } = respond(message, conversationHistory, brief);
+
+    // If first message and no name yet, and they asked a real question (not just a greeting),
+    // append a name request after answering their question
+    const isFirstRealMessage = conversationHistory.length <= 1 && !brief.name;
+    const isJustGreeting = message.toLowerCase().match(/^(hi+|hello|hey|g'?day|yo|howdy|hiya|sup)[\s!.]*$/i);
+    if (isFirstRealMessage && !isJustGreeting && !reply.includes("What's your name") && !reply.includes("what's your name") && !reply.includes("your name")) {
+      reply = reply + `\n\n---\nBy the way, I'd love to know your name and what you're working on so I can give you more tailored advice! 😊`;
+    }
 
     if (shouldEmail) {
       sendProjectBrief(brief, [...conversationHistory, { role: 'user', content: message }]).catch(console.error);
