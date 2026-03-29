@@ -27,8 +27,8 @@ const materials = [
     href: '/products/rokka'
   },
   { 
-    name: 'TADELAKT', 
-    subtitle: 'Moroccan // Waterproof',
+    name: 'TADELLINO', 
+    subtitle: 'Tadelakt Inspired // Water Rejecting',
     image: '/images/products/tadellino/Tadellino+moody+shower.jpg',
     href: '/products/tadellino'
   },
