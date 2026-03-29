@@ -4,94 +4,178 @@ import CustomCursor from '../../components/CustomCursor';
 import ScrollProgress from '../../components/ScrollProgress';
 import AnimatedFooter from '../../components/AnimatedFooter';
 import GalleryWithLightbox from '../../components/GalleryWithLightbox';
+import InfiniteZoomTadellino from '../../components/InfiniteZoomTadellino';
 
 const product = {
   name: 'Tadellino',
   tagline: 'Tadelakt Inspired',
-  description: 'Our signature bathroom finish — Tadelakt inspired. High-performance decorative coating delivering polished, naturally waterproof finishes ideal for wet areas. The Moroccan technique reimagined for Australian projects — seamless, no grout lines, polishable to a beautiful glossy finish.',
-  image: '/images/products/tadellino/Tadellino+moody+shower.jpg',
+  badge: 'Water Rejecting',
+  description: 'Our signature bathroom finish. Tadellino is Tadelakt inspired — a high-performance waterproof plaster for showers, baths, and wet areas. Seamless, no grout lines, naturally water-rejecting. The ancient Moroccan technique reimagined for modern Australian homes.',
+  image: '/images/products/tadellino/07-tadelakt-bathroom-shower.jpg',
   features: [
+    'Naturally water-rejecting — no sealer needed in wet areas',
+    'Completely seamless — no grout lines',
     'Polishable to a beautiful glossy finish',
-    'Ideal for bathrooms and wet areas',
-    'Suitable for walls, ceilings, and internal floors',
+    'Antibacterial surface (high-pH lime)',
+    'Ideal for showers, baths, splash zones, pools',
     'Interior and exterior use',
     'Low VOC — Green Star compliant',
     'Non-combustible (AS 1530.1 certified)',
-    'Wide range of colours available',
     '10-Year Limited Warranty'
   ],
   benefits: [
-    'Perfect for bathrooms — the traditional choice for wet areas',
-    'Floor application available for seamless spaces',
-    'Traditional Moroccan luxury with modern durability',
-    'Polished stone can create a stunning glossy finish',
-    'UV stable — maintains colour in direct sunlight',
-    'Suitable for hotels, restaurants, and high-end residential',
-    'Made in Western Australia'
+    'Looks like stone — feels like luxury',
+    'One continuous surface from floor to ceiling',
+    'No tiles to crack, no grout to stain',
+    'Ages beautifully — develops character over time',
+    'Can be re-polished to restore the finish',
+    'Suitable for residential and commercial wet areas',
+    'Tadelakt inspired — ancient Moroccan craftsmanship'
+  ],
+  colours: [
+    { name: 'Bone White', swatch: '#f0ede6' },
+    { name: 'Warm Ivory', swatch: '#e8e0cc' },
+    { name: 'Stone Grey', swatch: '#c8c0b0' },
+    { name: 'Charcoal', swatch: '#4a4a4a' },
+    { name: 'Sage Green', swatch: '#8a9e80' },
+    { name: 'Blush Pink', swatch: '#d4a4a0' },
+    { name: 'Terracotta', swatch: '#b86040' },
+    { name: 'Midnight', swatch: '#2a2a3a' },
   ],
   gallery: [
-    { src: '/images/products/tadellino/Tadellino+moody+shower.jpg', title: 'Moody Shower' },
-    { src: '/images/products/tadellino/Tadellino+bathroom+1.png', title: 'Bathroom' },
-    { src: '/images/products/tadellino/Tadellino+green.png', title: 'Green Tadellino' },
-    { src: '/images/products/tadellino/Tadellino+pink+blush.png', title: 'Pink Blush' },
+    { src: '/images/products/tadellino/07-tadelakt-bathroom-shower.jpg', title: 'Modern Bathroom' },
+    { src: '/images/products/tadellino/1771138149522-IMG_8341.jpeg', title: 'Moody Shower' },
+    { src: '/images/products/tadellino/manual-dark-shower.jpg', title: 'Dark Shower' },
+    { src: '/images/products/tadellino/manual-outdoor-shower-vines.jpg', title: 'Outdoor Shower' },
+    { src: '/images/products/tadellino/Tadelakt+moody+shower.jpg', title: 'Atmospheric Shower' },
+    { src: '/images/products/tadellino/Tadelakt+bathroom+1.png', title: 'Bathroom' },
+    { src: '/images/products/tadellino/Tadelakt+green.png', title: 'Sage Green' },
+    { src: '/images/products/tadellino/Tadelakt+pink+blush.png', title: 'Blush Pink' },
     { src: '/images/products/tadellino/TADELAKT1.png', title: 'Classic Finish' },
+    { src: '/images/products/tadellino/1771138437581-Screenshot_20240108_131944_Instagram.jpg', title: 'Instagram — Finish' },
+    { src: '/images/products/tadellino/1771138437589-Screenshot_20240108_132044_Instagram.jpg', title: 'Instagram — Detail' },
   ]
 };
+
 ---
 
-<Layout title={`${product.name} | Troweled Earth Melbourne`}>
+<Layout title={`${product.name} — Tadelakt Inspired | Troweled Earth Melbourne`}>
   <CustomCursor client:load />
   <ScrollProgress client:load />
 
-  <section class="relative h-[70vh] min-h-[500px] flex items-end bg-[#0a0a0a] overflow-hidden">
+  <!-- Hero -->
+  <section class="relative h-[80vh] min-h-[560px] flex items-end bg-[#0a0a0a] overflow-hidden">
     <div class="absolute inset-0">
-      <img src={product.image} alt={product.name} class="w-full h-full object-cover opacity-60" />
-      <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
+      <img src={product.image} alt={product.name} class="w-full h-full object-cover opacity-70" />
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
     </div>
     <div class="relative z-10 max-w-7xl mx-auto px-6 pb-16 w-full">
-      <a href="/#finishes" class="inline-flex items-center gap-2 text-white/60 hover:text-white mb-6 transition-colors">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <a href="/#finishes" class="inline-flex items-center gap-2 text-white/60 hover:text-white mb-6 transition-colors text-sm">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
         Back to Finishes
       </a>
-      <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">{product.tagline}</span>
-      <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight">{product.name}</h1>
-      <p class="text-xl text-white/70 mt-6 max-w-2xl">{product.description}</p>
+      <div class="flex items-center gap-4 mb-4 flex-wrap">
+        <span class="text-[#8b7355] text-xs uppercase tracking-[0.4em]">{product.tagline}</span>
+        <span class="text-xs uppercase tracking-[0.3em] px-3 py-1 border border-white/30 text-white/70 rounded-full">
+          {product.badge}
+        </span>
+      </div>
+      <h1 class="text-6xl md:text-8xl lg:text-9xl font-bold text-white tracking-tight leading-none">{product.name}</h1>
+      <p class="text-lg text-white/70 mt-6 max-w-2xl leading-relaxed">{product.description}</p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/#contact" class="inline-flex items-center gap-3 px-7 py-3.5 bg-[#8b7355] text-white font-medium uppercase tracking-widest text-xs hover:bg-[#a68b6a] transition-colors">
+          Get a Quote
+        </a>
+        <a href="/visualizer" class="inline-flex items-center gap-3 px-7 py-3.5 border border-white/30 text-white font-medium uppercase tracking-widest text-xs hover:border-white/60 transition-colors">
+          Try Visualizer
+        </a>
+      </div>
     </div>
   </section>
 
+  <!-- Infinite Zoom showcase -->
+  <InfiniteZoomTadellino client:load />
+
+  <!-- The Story -->
+  <section class="py-24 bg-[#0a0a0a]">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-16 items-center">
+        <div>
+          <span class="text-[#8b7355] text-xs uppercase tracking-[0.4em] mb-6 block">The Technique</span>
+          <h2 class="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">Ancient Craft.<br/>Modern Bathroom.</h2>
+          <div class="space-y-4 text-white/60 leading-relaxed">
+            <p>Tadellino takes its inspiration from Tadelakt — a traditional Moroccan lime plaster used in hammams for centuries. The lime reacts during application to form a naturally water-rejecting surface.</p>
+            <p>No grout lines. No sealer. No tiles cracking at the joints. Just one continuous surface, hand-applied and polished with a stone.</p>
+            <p>Every wall is unique. The natural variation in the finish is part of its beauty.</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          {product.gallery.slice(0, 4).map(img => (
+            <div class="aspect-square overflow-hidden">
+              <img src={img.src} alt={img.title} class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features & Benefits -->
   <section class="py-24 bg-[#f5f5f0]">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid lg:grid-cols-2 gap-16">
         <div>
-          <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Features</span>
-          <h2 class="text-4xl font-bold text-[#1a1a1a] mb-8">Key Features</h2>
+          <span class="text-[#8b7355] text-xs uppercase tracking-[0.4em] mb-6 block">What You Get</span>
+          <h2 class="text-4xl font-bold text-[#1a1a1a] mb-8">Features</h2>
           <ul class="space-y-4">
             {product.features.map(feature => (
               <li class="flex items-start gap-4">
-                <svg class="w-6 h-6 text-[#8b7355] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-5 h-5 text-[#8b7355] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                <span class="text-[#1a1a1a]/70">{feature}</span>
+                <span class="text-[#1a1a1a]/70 text-sm leading-relaxed">{feature}</span>
               </li>
             ))}
           </ul>
         </div>
         <div>
-          <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Why Choose</span>
+          <span class="text-[#8b7355] text-xs uppercase tracking-[0.4em] mb-6 block">Why Choose It</span>
           <h2 class="text-4xl font-bold text-[#1a1a1a] mb-8">Benefits</h2>
           <ul class="space-y-4">
             {product.benefits.map(benefit => (
               <li class="flex items-start gap-4">
-                <svg class="w-6 h-6 text-[#8b7355] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-5 h-5 text-[#8b7355] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span class="text-[#1a1a1a]/70">{benefit}</span>
+                <span class="text-[#1a1a1a]/70 text-sm leading-relaxed">{benefit}</span>
               </li>
             ))}
           </ul>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Colour range -->
+  <section class="py-24 bg-[#1a1a1a]">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-12">
+        <span class="text-[#8b7355] text-xs uppercase tracking-[0.4em] mb-4 block">Colour Range</span>
+        <h2 class="text-4xl font-bold text-white">Available Colours</h2>
+        <p class="text-white/50 mt-4 max-w-xl mx-auto text-sm">Custom colours available — we can match any Dulux or Resene code.</p>
+      </div>
+      <div class="grid grid-cols-4 md:grid-cols-8 gap-4">
+        {product.colours.map(colour => (
+          <div class="flex flex-col items-center gap-3">
+            <div
+              class="w-14 h-14 md:w-16 md:h-16 rounded-full border border-white/10 shadow-lg"
+              style={`background-color: ${colour.swatch};`}
+            />
+            <span class="text-white/50 text-xs text-center leading-tight">{colour.name}</span>
+          </div>
+        ))}
       </div>
     </div>
   </section>
@@ -100,24 +184,51 @@ const product = {
   <section class="py-24 bg-[#0a0a0a]">
     <div class="max-w-7xl mx-auto px-6">
       <div class="text-center mb-12">
-        <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">Inspiration</span>
+        <span class="text-[#8b7355] text-xs uppercase tracking-[0.4em] mb-4 block">Inspiration</span>
         <h2 class="text-4xl font-bold text-white">Project Gallery</h2>
       </div>
       <GalleryWithLightbox client:load gallery={product.gallery} />
     </div>
   </section>
 
+  <!-- FAQ strip -->
+  <section class="py-16 bg-[#f5f5f0]">
+    <div class="max-w-3xl mx-auto px-6">
+      <h2 class="text-3xl font-bold text-[#1a1a1a] mb-10 text-center">Common Questions</h2>
+      <div class="space-y-6">
+        {[
+          { q: 'Does it need a sealer in the shower?', a: 'No — Tadellino is water-rejecting through its application process. The lime reacts to form a naturally waterproof surface. No sealer needed in wet areas.' },
+          { q: 'Are there grout lines?', a: 'None. It\'s a completely seamless surface — one continuous finish from floor to ceiling if you choose.' },
+          { q: 'What\'s the substrate?', a: 'Tadellino requires a render coat first — it doesn\'t go direct to plasterboard. A waterproofing membrane is recommended under the render in wet areas.' },
+          { q: 'Can it be any colour?', a: 'Yes — wide standard range plus custom colours to match any Dulux, Resene, or Porter\'s code.' },
+          { q: 'How long does it last?', a: '10-Year Limited Warranty when applied by our trained applicators. Properly maintained, it lasts indefinitely — and can be re-polished if needed.' },
+        ].map(faq => (
+          <div class="border-b border-[#1a1a1a]/10 pb-6">
+            <p class="font-semibold text-[#1a1a1a] mb-2">{faq.q}</p>
+            <p class="text-[#1a1a1a]/60 text-sm leading-relaxed">{faq.a}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
   <!-- CTA -->
   <section class="py-24 bg-[#1a1a1a]">
     <div class="max-w-4xl mx-auto px-6 text-center">
-      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Interested in {product.name}?</h2>
-      <p class="text-xl text-white/60 mb-8">Get in touch to discuss your project and receive a quote.</p>
-      <a href="/#contact" class="inline-flex items-center gap-3 px-8 py-4 bg-[#8b7355] text-white font-medium uppercase tracking-widest text-sm hover:bg-[#a68b6a] transition-colors">
-        Get a Quote
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-        </svg>
-      </a>
+      <span class="text-[#8b7355] text-xs uppercase tracking-[0.4em] mb-6 block">Ready to Start?</span>
+      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Transform Your Bathroom</h2>
+      <p class="text-xl text-white/60 mb-8 max-w-2xl mx-auto">Talk to Matt about your project — he can walk you through the product, colours, and give you a realistic quote.</p>
+      <div class="flex flex-wrap gap-4 justify-center">
+        <a href="/#contact" class="inline-flex items-center gap-3 px-8 py-4 bg-[#8b7355] text-white font-medium uppercase tracking-widest text-sm hover:bg-[#a68b6a] transition-colors">
+          Get a Quote
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </a>
+        <a href="/visualizer" class="inline-flex items-center gap-3 px-8 py-4 border border-white/30 text-white font-medium uppercase tracking-widest text-sm hover:border-white/60 transition-colors">
+          Try Visualizer
+        </a>
+      </div>
     </div>
   </section>
 
