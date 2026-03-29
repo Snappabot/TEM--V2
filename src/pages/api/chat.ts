@@ -189,9 +189,38 @@ function extractBrief(history: { role: string; content: string }[]): ProjectBrie
   const fullText = history.filter(m => m.role === 'user').map(m => m.content).join(' ').toLowerCase();
   const allText = history.map(m => m.content).join(' ').toLowerCase();
 
-  // Name
-  const nameMatch = allText.match(/(?:i'?m|i am|my name(?:'s| is)?|it'?s|call me|name'?s)\s+([A-Za-z]+)/i);
-  if (nameMatch) brief.name = nameMatch[1].charAt(0).toUpperCase() + nameMatch[1].slice(1);
+  // Name — check multiple patterns across all user messages
+  const userMessages = history.filter(m => m.role === 'user');
+  const botMessages = history.filter(m => m.role === 'assistant');
+
+  // Pattern 1: explicit intro ("I'm Joe", "my name is Joe", "call me Joe")
+  const explicitName = allText.match(/(?:i'?m|i am|my name(?:'s| is)?|it'?s|call me|name'?s)\s+([A-Za-z]{2,14})\b/i);
+  if (explicitName) {
+    brief.name = explicitName[1].charAt(0).toUpperCase() + explicitName[1].slice(1);
+  }
+
+  // Pattern 2: bare name reply — single capitalised word sent after bot asked for name
+  // Look for a user message that is just a name (1-2 words, no question marks, no product keywords)
+  if (!brief.name) {
+    const productKeywords = /bathroom|shower|floor|wall|exterior|marbellino|concretum|rokka|tadellino|metallic|stucco|hemp|price|cost|quote|colour|color|render|plaster|feature/i;
+    const botAskedName = botMessages.some(m => /your name|what.*name|name.*you|who.*i.*speak/i.test(m.content));
+    
+    for (const msg of userMessages) {
+      const trimmed = msg.content.trim();
+      // Single word, starts with capital, 2-14 chars, no product keywords, not a common word
+      const commonWords = /^(hi|hello|hey|yes|no|ok|okay|sure|thanks|great|good|fine|done|the|and|for|are|how|what|when|where|why|who|can|will|do|be|to|of|in|it|is|he|she|we|they|all|one|two|three|four|five|yes)$/i;
+      if (/^[A-Z][a-z]{1,13}$/.test(trimmed) && !productKeywords.test(trimmed) && !commonWords.test(trimmed)) {
+        brief.name = trimmed;
+        break;
+      }
+      // "It's Joe" or "It is Joe" pattern
+      const itsMatch = trimmed.match(/^(?:it'?s|it is)\s+([A-Z][a-z]{1,13})$/i);
+      if (itsMatch) {
+        brief.name = itsMatch[1].charAt(0).toUpperCase() + itsMatch[1].slice(1);
+        break;
+      }
+    }
+  }
 
   // Email
   const emailMatch = fullText.match(/[\w.+-]+@[\w-]+\.[a-z]{2,}/);
@@ -333,10 +362,17 @@ function respond(message: string, history: { role: string; content: string }[], 
   }
 
   // ── Name only ─────────────────────────────────────────────────────────────
-  const justName = message.match(/^(?:i'?m\s+|my name(?:'s| is)?\s+)?([A-Z][a-z]{1,14})\.?$/) ||
+  const productKeywordsRx = /bathroom|shower|floor|wall|exterior|marbellino|concretum|rokka|tadellino|metallic|stucco|hemp|price|cost|quote|colour|color|render|plaster|feature/i;
+  const commonWordsRx = /^(hi|hello|hey|yes|no|ok|okay|sure|thanks|great|good|fine|done|the|and|for|are|how|what|when|where|why|who|can|will|do|be|to|of|in|it|is|he|she|we|they|all|one|two|three|four|five)$/i;
+  const justNameRaw = message.trim();
+  const isBareName = /^[A-Z][a-z]{1,13}$/.test(justNameRaw) && !productKeywordsRx.test(justNameRaw) && !commonWordsRx.test(justNameRaw);
+  const justName = isBareName ? [justNameRaw, justNameRaw] :
+    message.match(/^(?:i'?m\s+|it'?s\s+|my name(?:'s| is)?\s+|call me\s+|name'?s\s+)([A-Za-z]{2,14})[\s.,!?]*$/i) ||
     message.match(/(?:i'?m|i am|my name(?:'s| is)?|call me|name'?s)\s+([A-Za-z]+)/i);
   if (justName && !brief.name) {
-    const name = justName[1].charAt(0).toUpperCase() + justName[1].slice(1);
+    const name = (justName[1] || justName[0]).charAt(0).toUpperCase() + (justName[1] || justName[0]).slice(1).toLowerCase();
+    // Update brief.name so hi prefix works in all subsequent logic
+    brief.name = name;
     return { reply: `Great to meet you, ${name}! 😊 What are you working on? A bathroom, feature wall, floors, exterior, or something else?\n\nAnd is it a residential reno, new build, or commercial project?`, shouldEmail: false, collectEmail: false };
   }
 
