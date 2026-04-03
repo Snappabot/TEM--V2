@@ -33,6 +33,9 @@ export default function BrandIntro() {
             >
               Artisan finishes.
             </h2>
+            <p className="text-white/40 italic text-xl mt-4" style={{ fontWeight: 300 }}>
+              Applied by hand.
+            </p>
           </div>
 
           {/* Right — story copy */}
@@ -50,23 +53,7 @@ export default function BrandIntro() {
               A household name associated with style and class in design aesthetics. Now expanding into Melbourne, offering training, product sales, and personalised application services.
             </p>
 
-            {/* Stats strip */}
-            <div className="grid grid-cols-2 gap-6 pt-10 border-t border-white/10">
-              {[
-                { stat: '7', label: 'Product finishes' },
-                { stat: 'Melbourne', label: 'Based & applied' },
-              ].map(item => (
-                <div key={item.label}>
-                  <p className="text-white text-2xl font-bold mb-1">{item.stat}</p>
-                  <p className="text-white/30 text-xs uppercase tracking-[0.3em]">{item.label}</p>
-                </div>
-              ))}
-            </div>
 
-            {/* Moved tagline */}
-            <p className="text-white/30 italic text-xl mt-8" style={{ fontWeight: 300 }}>
-              Applied by hand.
-            </p>
           </div>
 
         </div>
