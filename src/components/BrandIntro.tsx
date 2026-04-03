@@ -61,7 +61,7 @@ export default function BrandIntro() {
       <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/60 to-transparent" />
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-28 md:py-40">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-40 md:py-56">
         <div className="grid md:grid-cols-2 gap-16 md:gap-24 items-center">
 
           {/* Left */}
