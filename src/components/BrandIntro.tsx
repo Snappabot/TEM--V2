@@ -31,8 +31,7 @@ export default function BrandIntro() {
               className="text-white leading-tight tracking-tight"
               style={{ fontSize: 'clamp(2.8rem, 6vw, 5rem)', fontWeight: 700 }}
             >
-              Artisan finishes.<br />
-              <span className="italic font-light text-white/60">Applied by hand.</span>
+              Artisan finishes.
             </h2>
           </div>
 
@@ -52,9 +51,8 @@ export default function BrandIntro() {
             </p>
 
             {/* Stats strip */}
-            <div className="grid grid-cols-3 gap-6 pt-10 border-t border-white/10">
+            <div className="grid grid-cols-2 gap-6 pt-10 border-t border-white/10">
               {[
-                { stat: '20+', label: 'Years crafting' },
                 { stat: '7', label: 'Product finishes' },
                 { stat: 'Melbourne', label: 'Based & applied' },
               ].map(item => (
@@ -64,6 +62,11 @@ export default function BrandIntro() {
                 </div>
               ))}
             </div>
+
+            {/* Moved tagline */}
+            <p className="text-white/30 italic text-xl mt-8" style={{ fontWeight: 300 }}>
+              Applied by hand.
+            </p>
           </div>
 
         </div>
