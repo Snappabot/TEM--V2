@@ -4,6 +4,7 @@ import AnimatedHero from '../components/AnimatedHero';
 import ScrollZoomHero from '../components/ScrollZoomHero';
 import ScrollZoomStatement from '../components/ScrollZoomStatement';
 import MaterialLibrary from '../components/MaterialLibrary';
+import BrandIntro from '../components/BrandIntro';
 
 import InstagramFeed from '../components/InstagramFeed';
 import EditorialContact from '../components/EditorialContact';
@@ -21,7 +22,10 @@ import ExclusiveFinishes from '../components/ExclusiveFinishes';
   <!-- Section 3: Animated "TROWELED Earth." Hero with scroll-zoom images -->
   <ScrollZoomHero client:load />
 
-  <!-- Section 4: Material Library with zoom animation per product -->
+  <!-- Section 4: Brand Introduction -->
+  <BrandIntro client:visible />
+
+  <!-- Section 5: Material Library with zoom animation per product -->
   <MaterialLibrary client:load />
 
   <!-- Section 5: Exclusive Finishes by Jose -->
