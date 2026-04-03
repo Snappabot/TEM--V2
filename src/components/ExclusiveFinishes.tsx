@@ -104,30 +104,16 @@ export default function ExclusiveFinishes() {
 
           {/* Sub */}
           <p className="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-6">
-            Bespoke creations by Jose — private collaboration only
+            Bespoke creations — private collaboration only
           </p>
 
           {/* Body */}
           <p className="text-white/50 leading-relaxed text-base max-w-md mb-10">
-            Developed in intimate partnership with our principal artist Jose, these finishes are crafted for visionary architects, designers, and clients who demand absolute singularity. Each piece is born from deep creativity and significant time — an experience reserved for those who require true exclusivity.
+            Developed in intimate partnership with our principal artists at Troweled Earth, these finishes are crafted for visionary architects, designers, and clients who demand absolute singularity. Each piece is born from deep creativity and significant time — an experience reserved for those who require true exclusivity.
           </p>
 
           {/* Divider */}
           <div className="w-full h-px bg-white/10 mb-10" />
-
-          {/* Three pillars */}
-          <div className="grid grid-cols-3 gap-6 mb-12">
-            {[
-              { label: 'Singular', desc: 'One surface. Never repeated.' },
-              { label: 'Private', desc: 'Not available online.' },
-              { label: 'Artisanal', desc: 'Weeks of creative work.' },
-            ].map(p => (
-              <div key={p.label}>
-                <p className="text-white text-sm font-medium mb-1">{p.label}</p>
-                <p className="text-white/30 text-xs leading-relaxed">{p.desc}</p>
-              </div>
-            ))}
-          </div>
 
           {/* CTA */}
           <a
@@ -171,9 +157,9 @@ export default function ExclusiveFinishes() {
 
             {/* Jose credit */}
             <div className="absolute top-6 right-6 flex items-center gap-2">
-              <span className="text-white/40 text-xs tracking-[0.3em] uppercase">Jose</span>
+              <span className="text-white/40 text-xs tracking-[0.3em] uppercase">Principal Artists</span>
               <div className="w-4 h-px bg-white/30" />
-              <span className="text-white/40 text-xs tracking-[0.3em] uppercase">Principal Artist</span>
+              <span className="text-white/40 text-xs tracking-[0.3em] uppercase">Troweled Earth</span>
             </div>
           </div>
 
