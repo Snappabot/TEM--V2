@@ -4,35 +4,32 @@ import AnimatedHero from '../components/AnimatedHero';
 import ScrollZoomHero from '../components/ScrollZoomHero';
 import ScrollZoomStatement from '../components/ScrollZoomStatement';
 import MaterialLibrary from '../components/MaterialLibrary';
-import FeaturedWork from '../components/FeaturedWork';
+
 import InstagramFeed from '../components/InstagramFeed';
 import EditorialContact from '../components/EditorialContact';
 import ExclusiveFinishes from '../components/ExclusiveFinishes';
 ---
 
 <Layout title="Troweled Earth Melbourne | Artisan Plaster Finishes">
-  
+
   <!-- Section 1: Video Hero with "Raw. Bold. Brutal." -->
   <AnimatedHero client:load />
-  
+
   <!-- Section 2: Scroll-zoom statement text -->
   <ScrollZoomStatement client:load />
-  
+
   <!-- Section 3: Animated "TROWELED Earth." Hero with scroll-zoom images -->
   <ScrollZoomHero client:load />
-  
+
   <!-- Section 4: Material Library with zoom animation per product -->
   <MaterialLibrary client:load />
-  
-  <!-- Section 5: Featured Work -->
-  <FeaturedWork client:visible />
-  
-  <!-- Section 6: Exclusive Finishes by Jose -->
+
+  <!-- Section 5: Exclusive Finishes by Jose -->
   <ExclusiveFinishes client:visible />
 
   <!-- Section 7: Instagram Feed -->
   <InstagramFeed client:visible />
-  
+
   <!-- Section 7: Contact -->
   <EditorialContact client:visible />
 </Layout>
