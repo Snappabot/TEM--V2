@@ -99,9 +99,13 @@ export default function BrandIntro() {
                style={{ fontSize: 'clamp(1rem, 2vw, 1.15rem)' }}>
               Established in 2002 in Perth, Western Australia, Troweled Earth have created a unique and customisable product range — from Venetian plaster and textured renders to concrete finishes and stucco.
             </p>
-            <p className="text-white/35 leading-relaxed"
+            <p className="text-white/35 leading-relaxed mb-6"
                style={{ fontSize: 'clamp(0.9rem, 1.8vw, 1rem)' }}>
               A household name associated with style and class in design aesthetics. Now expanding into Melbourne, offering training, product sales, and personalised application services.
+            </p>
+            <p className="text-white/35 leading-relaxed"
+               style={{ fontSize: 'clamp(0.9rem, 1.8vw, 1rem)' }}>
+              Many of our products have been created for and featured in a number of award-winning architectural and interior design projects.
             </p>
           </div>
 
