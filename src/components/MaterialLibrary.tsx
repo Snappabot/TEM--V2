@@ -126,7 +126,7 @@ function ZoomingBackground({
   const scale = useTransform(
     scrollYProgress,
     [start, start + segmentSize * 0.3, mid, end - segmentSize * 0.1, end],
-    [1, 1.2, 1.5, 1.3, 1.1]
+    [1, 1.8, 2.5, 2, 1.2]
   );
 
   // Opacity: fade in and out
