@@ -73,19 +73,25 @@ function FieldInput({
   placeholder?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
-        {label}{required && <span className="ml-1" style={{ color: '#8b7355' }}>*</span>}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '4px' }}>
+      <label style={{ color: 'rgba(139,115,85,0.9)', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', display: 'block' }}>
+        {label}{required && <span style={{ color: '#8b7355', marginLeft: '4px' }}>*</span>}
       </label>
       <input
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-4 py-3 rounded text-white text-sm outline-none transition-all duration-200"
         style={{
+          display: 'block',
+          width: '100%',
+          padding: '14px 16px',
           background: '#111',
           border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '4px',
+          color: 'white',
+          fontSize: '0.95rem',
+          outline: 'none',
         }}
         onFocus={e => { e.target.style.borderColor = '#8b7355'; }}
         onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; }}
@@ -306,7 +312,7 @@ export default function ExclusiveForm() {
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             >
               {step === 1 && (
-                <div className="flex flex-col gap-10">
+                <div style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}>
                   <FieldInput
                     label="Full Name"
                     value={form.fullName}
