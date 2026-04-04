@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 
 const pieces = [
   {
-    src: '/images/products/custom-finishes/exclusive-copper-water.jpg',
-    name: 'Copper & Water',
+    src: '/images/products/custom-finishes/exclusive-copper-v2.jpg',
+    name: 'Burnt Copper',
     detail: 'Private residence — Melbourne',
   },
   {
