@@ -9,7 +9,7 @@ export default function ScrollZoomHero() {
   });
 
   // Text zoom - starts small, gets HUGE as you scroll
-  const textScale = useTransform(scrollYProgress, [0, 0.08, 0.5], [0.9, 1, 3]);
+  const textScale = useTransform(scrollYProgress, [0, 0.08, 0.5], [0.85, 1, 4]);
   const textOpacity = useTransform(scrollYProgress, [0, 0.08, 0.35, 0.5], [0, 1, 1, 0]);
   const textY = useTransform(scrollYProgress, [0, 0.5], ['0%', '-20%']);
   

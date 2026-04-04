@@ -101,6 +101,10 @@ export default function MaterialLibrary() {
               src={material.image}
               alt=""
               className="w-full h-full object-cover"
+              style={{
+                transform: activeIndex === index ? 'scale(1.08)' : 'scale(1)',
+                transition: 'transform 6s ease-out',
+              }}
             />
           </div>
         ))}
