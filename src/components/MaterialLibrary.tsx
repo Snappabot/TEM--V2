@@ -19,7 +19,7 @@ const materials = [
   {
     name: 'METALS',
     subtitle: 'Copper, Brass, Steel',
-    image: '/images/products/metallics/Troweled+Metal+copper.jpg',
+    image: '/images/products/metallics/metallics-timber-wall.png',
     href: '/products/metallics'
   },
   {
