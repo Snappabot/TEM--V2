@@ -83,7 +83,7 @@ export default function MaterialLibrary() {
     <section
       ref={sectionRef}
       className="relative"
-      style={{ height: `${materials.length * 75}vh` }}
+      style={{ height: `${materials.length * 40}vh` }}
     >
       {/* Sticky viewport panel */}
       <div className="sticky top-0 h-screen overflow-hidden bg-black">
