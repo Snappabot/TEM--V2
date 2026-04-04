@@ -30,7 +30,7 @@ export default function ScrollZoomStatement() {
             className="font-serif text-3xl md:text-5xl lg:text-6xl text-[#FAF9F6] leading-tight mb-4 md:mb-6"
             style={{ scale: scale1, opacity: opacity1 }}
           >
-            It's never just a home.
+            Walls don't need to be transformed.
           </motion.p>
           
           {/* Line 2 */}
@@ -38,7 +38,7 @@ export default function ScrollZoomStatement() {
             className="font-serif text-3xl md:text-5xl lg:text-6xl text-[#FAF9F6] leading-tight mb-4 md:mb-6 italic"
             style={{ scale: scale2, opacity: opacity2 }}
           >
-            We sculpt atmosphere.
+            They just need to hold the atmosphere
           </motion.p>
           
           {/* Line 3 */}
@@ -46,7 +46,7 @@ export default function ScrollZoomStatement() {
             className="font-serif text-xl md:text-2xl lg:text-3xl text-[#FAF9F6]/70 leading-relaxed max-w-3xl mx-auto"
             style={{ scale: scale3, opacity: opacity3 }}
           >
-            Our Finishes don't imitate time. They carry it.
+            the moment you step inside.
           </motion.p>
         </div>
       </div>
