@@ -60,7 +60,7 @@ export default function ScrollZoomHero() {
 
         {/* Logo - fades in after text disappears */}
         <motion.div 
-          className="absolute inset-0 flex items-end justify-center z-15 pointer-events-none" style={{ paddingBottom: "18%", paddingLeft: "8%" }}
+          className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none"
           style={{ opacity: logoOpacity, scale: logoScale }}
         >
           <img 
