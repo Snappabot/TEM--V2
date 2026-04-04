@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 // Left fades in 0–75vh, right fades in 75–150vh, stays on screen after
-const TOTAL_VH = 150;
+const TOTAL_VH = 200;
 
 export default function BrandIntro() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -13,8 +13,8 @@ export default function BrandIntro() {
   });
 
   // Left column: "Artisan finishes. / Applied by hand." — fades in first 50%
-  const leftOpacity = useTransform(scrollYProgress, [0, 0.4], [0, 1]);
-  const leftY       = useTransform(scrollYProgress, [0, 0.4], ['40px', '0px']);
+  const leftOpacity = useTransform(scrollYProgress, [0, 0.5], [0, 1]);
+  const leftY       = useTransform(scrollYProgress, [0, 0.5], ['40px', '0px']);
 
   // Right column: paragraphs — fades in second 50%
   const rightOpacity = useTransform(scrollYProgress, [0.5, 1], [0, 1]);
