@@ -47,11 +47,11 @@ export default function ScrollZoomHero() {
             }}
             className="text-center"
           >
-            <h1 className="font-serif text-6xl md:text-8xl lg:text-9xl text-[#1a1a1a] tracking-tight leading-none">
+            <h1 className="font-serif text-[4.8rem] md:text-[6.4rem] lg:text-[8rem] text-[#1a1a1a] tracking-tight leading-none">
               TROWELED
             </h1>
-            <h1 className="font-serif text-6xl md:text-8xl lg:text-9xl text-[#1a1a1a] tracking-tight leading-none italic">
-              Earth.
+            <h1 className="font-serif text-[4.8rem] md:text-[6.4rem] lg:text-[8rem] text-[#1a1a1a] tracking-tight leading-none">
+              EARTH.
             </h1>
           </motion.div>
         </div>
