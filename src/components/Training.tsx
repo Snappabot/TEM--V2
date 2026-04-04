@@ -7,7 +7,7 @@ export default function Training() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   
   return (
-    <section ref={ref} className="relative w-full py-32 overflow-hidden bg-[#1a1a1a]">
+    <section ref={ref} className="relative w-full py-32 overflow-hidden bg-black">
       {/* Animated gradient background */}
       <div className="absolute inset-0">
         <motion.div
