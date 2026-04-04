@@ -20,6 +20,7 @@ const materials = [
     name: 'METALS',
     subtitle: 'Copper, Brass, Steel',
     image: '/images/products/metallics/metallics-greenery.png',
+    objectPosition: 'center bottom',
     href: '/products/metallics'
   },
   {
@@ -102,6 +103,7 @@ export default function MaterialLibrary() {
               alt=""
               className="w-full h-full object-cover"
               style={{
+                objectPosition: (material as any).objectPosition || 'center center',
                 transform: activeIndex === index ? 'scale(1.18)' : 'scale(1)',
                 transition: 'transform 6s ease-out',
               }}
