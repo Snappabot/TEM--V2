@@ -179,7 +179,7 @@ export default function Header() {
                       <a
                         href={link.href}
                         onClick={closeMenu}
-                        className="block text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light tracking-tight hover:text-[#8b7355] transition-colors duration-300"
+                        className="block text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light font-sans tracking-tight hover:text-[#8b7355] transition-colors duration-300"
                       >
                         {link.label}
                       </a>
