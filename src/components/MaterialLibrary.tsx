@@ -56,8 +56,7 @@ const materials = [
 const AUTO_CYCLE_MS = 4000;
 
 export default function MaterialLibrary() {
-  const [revealed, setRevealed] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -99,16 +98,7 @@ export default function MaterialLibrary() {
     setIsTouchDevice(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsTouchDevice(e.matches);
     mq.addEventListener('change', handler);
-    useEffect(() => {
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setRevealed(true); },
-      { threshold: 0, rootMargin: '0px 0px -50px 0px' }
-    );
-    if (sectionRef.current) obs.observe(sectionRef.current);
-    return () => obs.disconnect();
-  }, []);
-
-  return () => mq.removeEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
   }, []);
 
   // Auto-play only on touch devices
@@ -134,7 +124,12 @@ export default function MaterialLibrary() {
   };
 
   return (
-    <section ref={sectionRef} className="relative bg-black h-screen" style={{ height: '100dvh', opacity: revealed ? 1 : 0, transition: 'opacity 1.2s ease' }}>
+    <>
+      <style>{`
+        .mat-lib-fade { animation: matLibFadeIn 1.4s ease both; }
+        @keyframes matLibFadeIn { from { opacity: 0; } to { opacity: 1; } }
+      `}</style>
+      <section className="relative bg-black h-screen mat-lib-fade" style={{ height: '100dvh' }}>
       {/* Background images — crossfade */}
       {materials.map((material, index) => (
         <div
@@ -236,5 +231,6 @@ export default function MaterialLibrary() {
         )}
       </div>
     </section>
+    </>
   );
 }
