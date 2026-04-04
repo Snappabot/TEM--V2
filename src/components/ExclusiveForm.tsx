@@ -306,7 +306,7 @@ export default function ExclusiveForm() {
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             >
               {step === 1 && (
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-10">
                   <FieldInput
                     label="Full Name"
                     value={form.fullName}
