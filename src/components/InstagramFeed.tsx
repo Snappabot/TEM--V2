@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 
-// Fallback gallery images (real TEM project photos)
+// Latest 12 TEM Instagram posts (gallery)
 const fallbackPosts = [
   { image: '/images/gallery/gallery-01.jpg', caption: 'Artisan plaster finish' },
   { image: '/images/gallery/gallery-02.jpg', caption: 'Venetian plaster feature wall' },
@@ -12,10 +12,14 @@ const fallbackPosts = [
   { image: '/images/gallery/gallery-06.jpg', caption: 'Earthen render application' },
   { image: '/images/gallery/gallery-07.jpg', caption: 'Polished plaster detail' },
   { image: '/images/gallery/gallery-08.jpg', caption: 'Marbellino finish' },
+  { image: '/images/gallery/gallery-09.jpg', caption: 'Earthen hemp render exterior' },
+  { image: '/images/gallery/gallery-10.jpg', caption: 'Feature wall detail' },
+  { image: '/images/gallery/gallery-11.jpg', caption: 'Rokka finish' },
+  { image: '/images/gallery/gallery-12.jpg', caption: 'Concretum interior' },
 ];
 
 // Behold.so live Instagram feed
-const BEHOLD_FEED_ID = 'kukf4pCxjEVWGXm3wGB0';
+const BEHOLD_FEED_ID = '';
 
 function BeholdFeed() {
   useEffect(() => {
@@ -41,7 +45,7 @@ function FallbackGrid() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <div ref={ref} className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+    <div ref={ref} className="grid grid-cols-3 md:grid-cols-6 gap-2">
       {fallbackPosts.map((post, index) => (
         <motion.a
           key={index}
