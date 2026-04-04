@@ -12,9 +12,9 @@ const pieces = [
     detail: 'Private residence commission',
   },
   {
-    src: '/images/products/custom-finishes/Custom+finish+bathroom+1.png',
-    name: 'Shadow Plaster',
-    detail: 'Architectural collaboration — Toorak',
+    src: '/images/products/custom-finishes/exclusive-giorgi.jpg',
+    name: 'Giorgi Curves',
+    detail: 'Architectural collaboration — Melbourne',
   },
   {
     src: '/images/products/custom-finishes/Custom+moon+finish.jpg',
