@@ -19,7 +19,7 @@ const materials = [
   {
     name: 'METALS',
     subtitle: 'Copper, Brass, Steel',
-    image: '/images/products/metallics/metallics-timber-wall.png',
+    image: '/images/products/metallics/metallics-greenery.png',
     href: '/products/metallics'
   },
   {
