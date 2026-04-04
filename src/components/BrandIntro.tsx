@@ -35,9 +35,9 @@ export default function BrandIntro() {
         {/* Background slideshow — cycles independently of scroll */}
         <motion.div className="absolute inset-0" style={{ opacity: bgOpacity }}>
           {[
-            '/images/products/marbellino/Marbellino+texture+cream.jpg',
+            '/images/products/concretum/Concretum+with+light.png',
             '/images/gallery/gallery-03.jpg',
-            '/images/products/marbellino/Marbellino+curved+sunset.jpg',
+            '/images/products/earthen-renders/hemp-livingroom.jpg',
             '/images/gallery/gallery-07.jpg',
             '/images/products/marbellino/Marbellino+common+grey+hallway.jpg',
           ].map((src, i) => (
