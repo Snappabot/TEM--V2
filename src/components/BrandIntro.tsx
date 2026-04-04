@@ -103,11 +103,11 @@ export default function BrandIntro() {
 
       <style>{`
         @keyframes bgCycle {
-          0%   { opacity: 1; transform: scale(1.08); }
-          18%  { opacity: 1; transform: scale(1.14); }
-          22%  { opacity: 0; transform: scale(1.14); }
-          98%  { opacity: 0; transform: scale(1.08); }
-          100% { opacity: 1; transform: scale(1.08); }
+          0%   { opacity: 1; transform: scale(1.09); }
+          18%  { opacity: 1; transform: scale(1.25); }
+          22%  { opacity: 0; transform: scale(1.25); }
+          98%  { opacity: 0; transform: scale(1.09); }
+          100% { opacity: 1; transform: scale(1.09); }
         }
       `}</style>
     </section>
