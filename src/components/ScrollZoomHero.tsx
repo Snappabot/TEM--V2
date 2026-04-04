@@ -66,7 +66,7 @@ export default function ScrollZoomHero() {
           <img 
             src="/images/logo.png" 
             alt="Troweled Earth" 
-            className="w-48 md:w-64 lg:w-80 h-auto"
+            className="w-32 md:w-44 lg:w-56 h-auto"
           />
         </motion.div>
 
