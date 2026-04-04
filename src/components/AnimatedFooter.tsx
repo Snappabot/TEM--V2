@@ -21,7 +21,7 @@ export default function AnimatedFooter() {
               className="h-16 w-16 mb-6 invert" 
             />
             <p className="text-white/50 text-lg max-w-sm leading-relaxed">
-              Brutalist finishes for architects who refuse to settle. Melbourne's leader in innovative wall coatings.
+              Brutalist finishes for those who refuse to settle. Melbourne's leader in innovative wall coatings.
             </p>
             
             {/* Social Links */}

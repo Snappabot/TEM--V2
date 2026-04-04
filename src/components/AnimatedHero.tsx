@@ -116,7 +116,7 @@ export default function AnimatedHero() {
           animate={isLoaded ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 1 }}
         >
-          Brutalist finishes for architects who refuse to settle.
+          Brutalist finishes for those who refuse to settle.
         </motion.p>
         
         {/* Scroll Indicator */}
