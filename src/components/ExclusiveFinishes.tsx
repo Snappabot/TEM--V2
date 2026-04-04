@@ -2,14 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 
 const pieces = [
   {
-    src: '/images/products/custom-finishes/Custom+lunar+wide.jpg',
-    name: 'Lunar',
+    src: '/images/products/custom-finishes/exclusive-copper-water.jpg',
+    name: 'Copper & Water',
     detail: 'Private residence — Melbourne',
   },
   {
-    src: '/images/products/custom-finishes/Custom+finish+2.png',
-    name: 'Oxidised Copper',
-    detail: 'Hospitality commission — Collingwood',
+    src: '/images/products/custom-finishes/exclusive-fireplace.jpg',
+    name: 'Earthen Fireplace',
+    detail: 'Private residence commission',
   },
   {
     src: '/images/products/custom-finishes/Custom+finish+bathroom+1.png',
