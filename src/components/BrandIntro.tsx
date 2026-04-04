@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 // Left fades in 0–75vh, right fades in 75–150vh, stays on screen after
-const TOTAL_VH = 200;
+const TOTAL_VH = 300;
 
 export default function BrandIntro() {
   const containerRef = useRef<HTMLDivElement>(null);

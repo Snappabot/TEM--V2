@@ -51,9 +51,12 @@ export default function ExclusiveFinishes() {
   return (
     <section
       ref={sectionRef}
-      className="relative bg-[#080808] overflow-hidden"
-      style={{ minHeight: '115vh' }}
+      className="relative"
+      style={{ height: '250vh' }}
     >
+      {/* Sticky panel */}
+      <div className="sticky top-0 h-screen overflow-hidden bg-[#080808]">
+
       {/* Background image — full bleed, slow pan */}
       <div className="absolute inset-0">
         {pieces.map((p, i) => (
@@ -192,6 +195,7 @@ export default function ExclusiveFinishes() {
         <div className="w-6 h-px bg-white/40" />
         <span className="text-white/60 text-xs tracking-[0.4em] uppercase">Limited Commissions — 2026</span>
       </div>
+      </div>{/* /sticky */}
     </section>
   );
 }
