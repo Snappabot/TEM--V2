@@ -64,7 +64,7 @@ export default function MaterialLibrary() {
     <section 
       ref={containerRef} 
       className="relative bg-[#1a1a1a]" 
-      style={{ height: `${materials.length * 500}vh` }}
+      style={{ height: `${materials.length * 250}vh` }}
     >
       {/* Sticky container */}
       <div className="sticky top-0 h-screen overflow-hidden">
@@ -126,7 +126,7 @@ function ZoomingBackground({
   const scale = useTransform(
     scrollYProgress,
     [start, start + segmentSize * 0.3, mid, end - segmentSize * 0.1, end],
-    [1, 1.8, 2.5, 2, 1.2]
+    [1, 1.2, 1.5, 1.3, 1.1]
   );
 
   // Opacity: fade in and out
