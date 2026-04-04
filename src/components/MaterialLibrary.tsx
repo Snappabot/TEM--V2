@@ -126,15 +126,16 @@ export default function MaterialLibrary() {
           <div className="space-y-1 md:space-y-2">
             {materials.map((material, index) => {
               const isActive = activeIndex === index;
+              const isHovered = hoveredIndex === index;
               return (
                 <a
                   key={index}
                   href={material.href}
                   className="block origin-left select-none"
                   style={{
-                    transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                    transform: isHovered ? 'scale(1.12)' : isActive ? 'scale(1.05)' : 'scale(1)',
                     opacity: isActive ? 1 : 0.35,
-                    transition: 'transform 300ms ease, opacity 300ms ease',
+                    transition: 'transform 200ms ease, opacity 300ms ease',
                   }}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
