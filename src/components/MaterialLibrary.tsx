@@ -4,7 +4,7 @@ import { useRef } from 'react';
 const materials = [
   { 
     name: 'MARBELLINO', 
-    subtitle: 'Venetian // High Polish',
+    subtitle: 'Venetian // Matte',
     image: '/images/products/marbellino/Marbellino+state+of+kin.jpg',
     href: '/products/marbellino'
   },
