@@ -18,7 +18,7 @@ export default function ScrollZoomHero() {
   const logoScale = useTransform(scrollYProgress, [0.4, 0.6], [0.8, 1]);
   
   // Background image zoom - no fade out
-  const bgScale = useTransform(scrollYProgress, [0, 1], [0.75, 1.05]);
+  const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
   // Fade in from black on entry
   const bgOpacity = useTransform(scrollYProgress, [0, 0.12], [0, 1]);
 
@@ -33,9 +33,9 @@ export default function ScrollZoomHero() {
           style={{ scale: bgScale, opacity: bgOpacity }}
         >
           <img 
-            src="/images/giorgi-city-beach.jpg"
+            src="/images/products/marbellino/Marbellino+curved+sunset.jpg"
             alt=""
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
           />
         </motion.div>
 
