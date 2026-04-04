@@ -19,6 +19,8 @@ export default function ScrollZoomHero() {
   
   // Background image zoom - no fade out
   const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.3]);
+  // Fade in from black on entry
+  const bgOpacity = useTransform(scrollYProgress, [0, 0.12], [0, 1]);
 
   return (
     <section ref={containerRef} className="relative h-[360vh]">
@@ -28,7 +30,7 @@ export default function ScrollZoomHero() {
         {/* Background image with zoom */}
         <motion.div 
           className="absolute inset-0 z-0"
-          style={{ scale: bgScale }}
+          style={{ scale: bgScale, opacity: bgOpacity }}
         >
           <img 
             src="/images/giorgi-city-beach.jpg"
