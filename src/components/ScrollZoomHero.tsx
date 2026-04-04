@@ -35,7 +35,7 @@ export default function ScrollZoomHero() {
           <img 
             src="/images/products/marbellino/Marbellino+curved+sunset.jpg"
             alt=""
-            className="w-full h-full object-cover" style={{ objectPosition: 'center 35%' }}
+            className="w-full h-full object-cover" style={{ objectPosition: 'center 72%' }}
           />
         </motion.div>
 
@@ -60,7 +60,7 @@ export default function ScrollZoomHero() {
 
         {/* Logo - fades in after text disappears */}
         <motion.div 
-          className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none"
+          className="absolute inset-0 flex items-end justify-center z-15 pointer-events-none" style={{ paddingBottom: "18%", paddingLeft: "8%" }}
           style={{ opacity: logoOpacity, scale: logoScale }}
         >
           <img 
