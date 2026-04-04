@@ -35,7 +35,7 @@ export default function ScrollZoomHero() {
           <img 
             src="/images/products/marbellino/Marbellino+curved+sunset.jpg"
             alt=""
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover" style={{ objectPosition: 'center 65%' }}
           />
         </motion.div>
 
