@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 
 const images = [
-  { src: '/images/products/metallics/Troweled+Metal+copper.png', label: 'True Copper' },
-  { src: '/images/products/metallics/Troweled+metal+copper+with+ageing+patina.png', label: 'Copper Patina' },
-  { src: '/images/products/metallics/Troweled+Metals+Scorched+copper+1.png', label: 'Scorched Copper' },
-  { src: '/images/products/metallics/Troweled+Metal+brass+gold+combination.png', label: 'Brass & Gold' },
-  { src: '/images/products/metallics/Troweled+Metal+verdigris.jpg', label: 'Verdigris' },
-  { src: '/images/products/metallics/Troweled+metal+scorch+steel.png', label: 'Scorched Steel' },
-  { src: '/images/products/metallics/14-metallics-rust-patina-closeup.jpg', label: 'Rust Patina' },
+  { src: '/images/products/metallics/1771138421678-Screenshot_20240108_130151_Instagram.jpg', label: 'Copper Patina' },
+  { src: '/images/products/metallics/1771138421619-Screenshot_20240108_130306_Instagram.jpg', label: 'Verdigris' },
+  { src: '/images/products/metallics/1771138405012-Screenshot_20240108_124708_Instagram.jpg', label: 'Burnished Bronze' },
+  { src: '/images/products/metallics/Troweled+Metal+verdigris.jpg', label: 'Activated Copper' },
+  { src: '/images/products/metallics/exclusive-copper-v2.jpg', label: 'Scorched Copper' },
 ];
 
 const ZOOM_DURATION = 6000;   // ms to zoom from 1x → 8x
