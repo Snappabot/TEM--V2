@@ -56,14 +56,14 @@ export default function CustomCursor() {
     <>
       {/* Main cursor dot */}
       <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
+        className="fixed top-0 left-0 pointer-events-none z-[9999]"
         style={{
           x: cursorXSpring,
           y: cursorYSpring,
         }}
       >
         <motion.div
-          className="relative -translate-x-1/2 -translate-y-1/2 rounded-full bg-white"
+          className="relative -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#8b7355]"
           animate={{
             width: isHovering ? 60 : 12,
             height: isHovering ? 60 : 12,
@@ -81,7 +81,7 @@ export default function CustomCursor() {
         }}
       >
         <motion.div
-          className="relative -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/30"
+          className="relative -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8b7355]/60"
           animate={{
             width: isHovering ? 80 : 40,
             height: isHovering ? 80 : 40,
