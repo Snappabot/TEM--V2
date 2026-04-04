@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { ViewTransitions } from 'astro:transitions';
 import Header from '../components/Header';
 import ChatWidget from '../components/ChatWidget/ChatWidget';
+import CustomCursor from '../components/CustomCursor';
 
 interface Props {
   title: string;
@@ -152,6 +153,7 @@ if (jsonLd) {
     <ViewTransitions />
   </head>
   <body class="antialiased scroll-smooth w-full min-w-full bg-black text-white">
+    <CustomCursor client:load />
     {!hideHeader && <Header client:load />}
     <main class="w-full">
       <slot />
