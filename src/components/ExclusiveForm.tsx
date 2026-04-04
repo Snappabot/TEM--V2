@@ -167,7 +167,7 @@ function SuccessState({ name }: { name: string }) {
         </p>
         <h2
           className="mb-6 leading-tight"
-          style={{ fontFamily: 'Inter', system-ui, sans-serif, fontSize: 'clamp(2rem, 5vw, 3.5rem)', color: 'white', fontWeight: 600 }}
+          style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 'clamp(2rem, 5vw, 3.5rem)', color: 'white', fontWeight: 600 }}
         >
           Thank you, {name.split(' ')[0]}.
         </h2>
@@ -290,7 +290,7 @@ export default function ExclusiveForm() {
         <h2
           className="text-center mb-10"
           style={{
-            fontFamily: 'Inter', system-ui, sans-serif,
+            fontFamily: "'Inter', system-ui, sans-serif",
             fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
             color: 'white',
             fontWeight: 500,
