@@ -126,7 +126,7 @@ function ZoomingBackground({
   const scale = useTransform(
     scrollYProgress,
     [start, start + segmentSize * 0.3, mid, end - segmentSize * 0.1, end],
-    [1, 1.8, 2.5, 2, 1.2]
+    [1, 1.1, 1.3, 1.15, 1.05]
   );
 
   // Opacity: fade in and out
@@ -171,14 +171,14 @@ function ProductItem({
   const scale = useTransform(
     scrollYProgress,
     [start, start + segmentSize * 0.2, mid, end - segmentSize * 0.2, end],
-    [0.9, 1.1, 1.4, 1.1, 0.9]
+    [0.85, 1.0, 1.15, 1.0, 0.85]
   );
 
   // Move to center when active
   const x = useTransform(
     scrollYProgress,
     [start, start + segmentSize * 0.2, mid, end - segmentSize * 0.2, end],
-    ['0%', '8%', '12%', '8%', '0%']
+    ['0%', '3%', '5%', '3%', '0%']
   );
 
   // Opacity boost when active
