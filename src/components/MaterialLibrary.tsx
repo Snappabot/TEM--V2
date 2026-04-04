@@ -29,7 +29,7 @@ const materials = [
   { 
     name: 'TADELLINO', 
     subtitle: 'Tadelakt Inspired // Water Resistant',
-    image: '/images/products/tadellino/07-tadelakt-bathroom-shower.jpg',
+    image: '/images/products/tadellino/tadellino-shower-skylight.jpg',
     href: '/products/tadellino'
   },
   { 
