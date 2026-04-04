@@ -28,7 +28,7 @@ const materials = [
   },
   { 
     name: 'TADELLINO', 
-    subtitle: 'Tadelakt Inspired // Water Rejecting',
+    subtitle: 'Tadelakt Inspired // Water Resistant',
     image: '/images/products/tadellino/Tadellino+moody+shower.jpg',
     href: '/products/tadellino'
   },

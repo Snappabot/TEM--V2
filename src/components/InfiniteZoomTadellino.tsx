@@ -66,7 +66,7 @@ export default function InfiniteZoomTadellino() {
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <span className="text-[#8b7355] text-xs uppercase tracking-[0.5em] mb-3">The Finish</span>
         <h2 className="text-white text-4xl md:text-6xl font-bold tracking-tight text-center px-8 drop-shadow-2xl">
-          Seamless. Waterproof.<br className="hidden md:block" /> Alive.
+          Seamless. Water Resistant.<br className="hidden md:block" /> Alive.
         </h2>
         <p className="text-white/40 text-sm mt-5 max-w-sm text-center px-8">
           No grout lines. One continuous surface, hand-polished with stone.
