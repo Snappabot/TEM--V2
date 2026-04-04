@@ -9,7 +9,13 @@ import InfiniteZoomHemp from '../../components/InfiniteZoomHemp';
 const product = {
   name: 'Earthen Hemp Render',
   tagline: 'Sustainable Rammed Earth Aesthetic',
-  description: 'High-performance decorative wall coating delivering modern, classic, or rustic rammed earth finishes. Contains sustainable hemp fibres for enhanced durability — perfect for creating authentic earthen aesthetics without traditional rammed earth construction.',
+  description: 'Stand apart with our regenerative hemp trowelled earth plaster — a rare building material that doesn\'t just minimise harm, but actively gives back to the planet.',
+  descriptionFull: [
+    'Each bucket locks away approximately 2.5 kg of atmospheric CO₂ through the plant\'s rapid photosynthesis.',
+    'Breathable, flexible, and mould-resistant, this lightweight render brings superior vapour permeability, thermal comfort, and durability to earth or natural walls — without the heavy carbon footprint of conventional cement products.',
+    'In a market dominated by emitting materials, this is one of the only trowelable plasters designed to sequester carbon and support truly regenerative builds.',
+    'Trowel on a legacy that stores carbon for generations.',
+  ],
   image: '/images/products/earthen-renders/hemp-hero.jpg',
   features: [
     'Authentic rammed earth aesthetic',
@@ -63,7 +69,12 @@ const product = {
       </a>
       <span class="text-[#8b7355] text-sm uppercase tracking-[0.3em] mb-4 block">{product.tagline}</span>
       <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight">{product.name}</h1>
-      <p class="text-xl text-white/70 mt-6 max-w-2xl">{product.description}</p>
+      <p class="text-xl text-white/80 mt-6 max-w-2xl font-medium">{product.description}</p>
+      <div class="mt-6 max-w-2xl space-y-4">
+        {product.descriptionFull.map((para: string) => (
+          <p class="text-base text-white/55 leading-relaxed">{para}</p>
+        ))}
+      </div>
     </div>
   </section>
 
