@@ -117,7 +117,7 @@ export default function ExclusiveFinishes() {
 
           {/* CTA */}
           <a
-            href="/#contact"
+            href="/exclusive"
             className="group inline-flex items-center gap-4 text-white"
           >
             <span className="text-xs uppercase tracking-[0.4em] border-b border-[#8b7355] pb-0.5 group-hover:border-white transition-colors">
