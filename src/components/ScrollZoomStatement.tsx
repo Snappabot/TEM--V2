@@ -19,7 +19,7 @@ export default function ScrollZoomStatement() {
   const opacity3 = useTransform(scrollYProgress, [0.4, 0.55, 0.8, 0.9], [0, 1, 1, 0]);
 
   return (
-    <section ref={containerRef} className="relative h-[300vh] bg-[#1a1a1a]">
+    <section ref={containerRef} className="relative h-[270vh] bg-[#1a1a1a]">
       {/* Sticky container */}
       <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
         {/* Statement lines - each zooms in sequence */}

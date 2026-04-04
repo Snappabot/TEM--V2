@@ -21,7 +21,7 @@ export default function ScrollZoomHero() {
   const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.3]);
 
   return (
-    <section ref={containerRef} className="relative h-[400vh]">
+    <section ref={containerRef} className="relative h-[360vh]">
       {/* Sticky container */}
       <div className="sticky top-0 h-screen overflow-hidden bg-[#FAF9F6]">
         
