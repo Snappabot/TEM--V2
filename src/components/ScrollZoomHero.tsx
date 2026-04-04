@@ -9,8 +9,8 @@ export default function ScrollZoomHero() {
   });
 
   // Text zoom - starts small, gets HUGE as you scroll
-  const textScale = useTransform(scrollYProgress, [0, 0.5], [1, 3]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.3, 0.5], [1, 1, 0]);
+  const textScale = useTransform(scrollYProgress, [0, 0.08, 0.5], [0.9, 1, 3]);
+  const textOpacity = useTransform(scrollYProgress, [0, 0.08, 0.35, 0.5], [0, 1, 1, 0]);
   const textY = useTransform(scrollYProgress, [0, 0.5], ['0%', '-20%']);
   
   // Logo fades in as text fades out
@@ -25,7 +25,7 @@ export default function ScrollZoomHero() {
   return (
     <section ref={containerRef} className="relative h-[360vh]">
       {/* Sticky container */}
-      <div className="sticky top-0 h-screen overflow-hidden bg-[#FAF9F6]">
+      <div className="sticky top-0 h-screen overflow-hidden bg-black">
         
         {/* Background image with zoom */}
         <motion.div 
