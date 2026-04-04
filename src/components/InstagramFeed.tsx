@@ -76,7 +76,8 @@ export default function InstagramFeed() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="w-full py-24 bg-[#0a0a0a]">
+    <section ref={ref} className="relative" style={{ height: '300vh' }}>
+      <div className="sticky top-0 h-screen overflow-hidden bg-[#0a0a0a] flex flex-col justify-center">
       <div className="max-w-7xl mx-auto px-6">
 
         {/* Header */}
@@ -139,6 +140,7 @@ export default function InstagramFeed() {
         </motion.div>
 
       </div>
+      </div>{/* /sticky */}
     </section>
   );
 }
