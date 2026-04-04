@@ -32,14 +32,26 @@ export default function BrandIntro() {
       {/* Sticky panel */}
       <div className="sticky top-0 h-screen overflow-hidden bg-black">
 
-        {/* Background */}
+        {/* Background slideshow — cycles independently of scroll */}
         <motion.div className="absolute inset-0" style={{ opacity: bgOpacity }}>
-          <img
-            src="/images/products/marbellino/Marbellino+texture+cream.jpg"
-            alt=""
-            className="w-full h-full object-cover"
-            style={{ filter: 'brightness(0.18)', transform: 'scale(1.08)', animation: 'kenBurns 20s ease-in-out forwards' }}
-          />
+          {[
+            '/images/products/marbellino/Marbellino+texture+cream.jpg',
+            '/images/gallery/gallery-03.jpg',
+            '/images/products/marbellino/Marbellino+curved+sunset.jpg',
+            '/images/gallery/gallery-07.jpg',
+            '/images/products/marbellino/Marbellino+common+grey+hallway.jpg',
+          ].map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                filter: 'brightness(0.18)',
+                animation: `bgCycle 25s ${i * 5}s infinite`,
+              }}
+            />
+          ))}
         </motion.div>
 
         {/* Gradients */}
@@ -90,9 +102,12 @@ export default function BrandIntro() {
       </div>
 
       <style>{`
-        @keyframes kenBurns {
-          from { transform: scale(1.08); }
-          to   { transform: scale(1.22); }
+        @keyframes bgCycle {
+          0%   { opacity: 1; transform: scale(1.08); }
+          18%  { opacity: 1; transform: scale(1.14); }
+          22%  { opacity: 0; transform: scale(1.14); }
+          98%  { opacity: 0; transform: scale(1.08); }
+          100% { opacity: 1; transform: scale(1.08); }
         }
       `}</style>
     </section>
