@@ -9,8 +9,8 @@ export default function ScrollZoomHero() {
   });
 
   // Text zoom - starts small, gets HUGE as you scroll
-  const textScale = useTransform(scrollYProgress, [0, 0.08, 0.5], [0.85, 1, 4]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.08, 0.35, 0.5], [0, 1, 1, 0]);
+  const textScale = useTransform(scrollYProgress, [0, 0.08, 0.45], [0.85, 1, 1.85]);
+  const textOpacity = useTransform(scrollYProgress, [0, 0.08, 0.38, 0.52], [0, 1, 1, 0]);
   const textY = useTransform(scrollYProgress, [0, 0.5], ['0%', '-20%']);
   
   // Logo fades in as text fades out
@@ -35,7 +35,7 @@ export default function ScrollZoomHero() {
           <img 
             src="/images/products/marbellino/Marbellino+curved+sunset.jpg"
             alt=""
-            className="w-full h-full object-cover" style={{ objectPosition: 'center 65%' }}
+            className="w-full h-full object-cover" style={{ objectPosition: 'center 35%' }}
           />
         </motion.div>
 
