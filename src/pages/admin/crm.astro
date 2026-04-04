@@ -1,0 +1,817 @@
+---
+/*
+  SQL MIGRATION — run in Supabase SQL editor before using this page:
+
+  create table if not exists contacts (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    company text,
+    role text,
+    state text,
+    instagram_handle text,
+    website text,
+    email text,
+    phone text,
+    source text,
+    finish_affinity text[] default '{}',
+    style_tags text[] default '{}',
+    tem_used bool default false,
+    priority text default 'cold',
+    status text default 'identified',
+    notes text,
+    created_at timestamptz default now(),
+    last_contacted date
+  );
+
+  create table if not exists outreach_emails (
+    id uuid default gen_random_uuid() primary key,
+    contact_id uuid references contacts(id) on delete cascade,
+    campaign_name text,
+    email_subject text,
+    sent_date date,
+    opened bool default false,
+    replied bool default false,
+    reply_date date,
+    outcome text,
+    follow_up_date date,
+    notes text,
+    created_at timestamptz default now()
+  );
+
+  create table if not exists tem_clients (
+    id uuid default gen_random_uuid() primary key,
+    contact_id uuid references contacts(id) on delete set null,
+    name text not null,
+    company text,
+    role text,
+    project_name text,
+    project_location text,
+    finishes_used text[] default '{}',
+    project_date date,
+    instagram_handle text,
+    website text,
+    portfolio_images text[] default '{}',
+    notes text,
+    created_at timestamptz default now()
+  );
+*/
+export const prerender = false;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRM | TEM Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a0a; color: #e5e5e5; font-family: Inter, system-ui, sans-serif; min-height: 100vh; }
+    a { color: #8b7355; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .gate-box { width: 100%; max-width: 380px; padding: 2rem; }
+    .gate-box h1 { font-weight: 300; font-size: 1.75rem; margin-bottom: 1.5rem; text-align: center; }
+    .gate-box input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; margin-bottom: 0.75rem; outline: none; }
+    .gate-box input:focus { border-color: #8b7355; }
+    .gate-box button { width: 100%; padding: 0.875rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+    .gate-box button:hover { background: #a08060; }
+    .error-msg { color: #f87171; font-size: 0.85rem; margin-bottom: 0.75rem; }
+
+    .header { padding: 1.25rem 2rem; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .header h1 { font-weight: 300; font-size: 1.25rem; }
+    .nav-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .nav-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+    .nav-links { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+    .nav-link { padding: 0.25rem 0.625rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 4px; color: #888; font-size: 0.75rem; text-decoration: none; transition: all 0.15s; }
+    .nav-link:hover, .nav-link.active { border-color: #8b7355; color: #e5e5e5; text-decoration: none; }
+    .nav-header { display: flex; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
+    .logout-btn { background: none; border: none; color: #666; cursor: pointer; font-size: 0.85rem; padding: 0; }
+    .logout-btn:hover { color: #fff; }
+    .content { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid #1e1e1e; }
+    .tab-btn { padding: 0.75rem 1.25rem; background: none; border: none; color: #666; cursor: pointer; font-size: 0.9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+    .tab-btn:hover { color: #e5e5e5; }
+    .tab-btn.active { color: #8b7355; border-bottom-color: #8b7355; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .filters { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center; }
+    .filter-select { padding: 0.5rem 0.75rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e5e5; font-size: 0.8rem; outline: none; cursor: pointer; }
+    .filter-select:focus { border-color: #8b7355; }
+
+    /* Pipeline */
+    .pipeline { display: flex; gap: 0; margin-bottom: 1.5rem; overflow-x: auto; }
+    .pipe-stage { flex: 1; min-width: 140px; text-align: center; padding: 0.625rem; background: #141414; border: 1px solid #1e1e1e; border-right: none; font-size: 0.75rem; color: #888; cursor: pointer; transition: all 0.15s; }
+    .pipe-stage:last-child { border-right: 1px solid #1e1e1e; }
+    .pipe-stage.active { background: #1a1a0a; border-color: #8b7355; color: #8b7355; }
+    .pipe-stage .count { font-size: 1.1rem; font-weight: 600; color: #e5e5e5; display: block; }
+
+    /* Contact list */
+    .contact-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .contact-row { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 1rem; cursor: pointer; transition: border-color 0.15s; }
+    .contact-row:hover { border-color: #2a2a2a; }
+    .contact-row.expanded { border-color: #8b7355; }
+    .contact-row-main { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .contact-name { font-weight: 500; font-size: 0.95rem; min-width: 160px; }
+    .contact-company { color: #888; font-size: 0.85rem; flex: 1; }
+    .contact-row-meta { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    .contact-detail { display: none; padding-top: 1rem; border-top: 1px solid #1e1e1e; margin-top: 1rem; }
+    .contact-detail.show { display: block; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .detail-item label { font-size: 0.7rem; color: #666; display: block; margin-bottom: 0.2rem; }
+    .detail-item span { font-size: 0.85rem; }
+
+    /* Email history */
+    .email-history { margin-top: 1rem; }
+    .email-history h4 { font-size: 0.8rem; color: #888; margin-bottom: 0.5rem; }
+    .email-item { padding: 0.625rem; background: #1a1a1a; border-radius: 6px; margin-bottom: 0.375rem; font-size: 0.8rem; }
+    .email-item-header { display: flex; justify-content: space-between; margin-bottom: 0.25rem; }
+
+    /* Badge */
+    .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
+    .badge-hot { background: #3a0a0a; color: #f87171; }
+    .badge-warm { background: #2a1a00; color: #fb923c; }
+    .badge-cold { background: #1a1a2a; color: #818cf8; }
+    .badge-identified { background: #1e1e2e; color: #a78bfa; }
+    .badge-emailed { background: #1a2a3a; color: #67e8f9; }
+    .badge-responded { background: #1a2a2a; color: #34d399; }
+    .badge-meeting_booked { background: #1a3a1a; color: #4ade80; }
+    .badge-client { background: #1a3a0a; color: #86efac; }
+    .badge-passed { background: #1a1a1a; color: #555; }
+    .badge-follow-up { background: #3a1a00; color: #fb923c; border: 1px solid #fb923c; }
+    .badge-finish { background: #2a1a1a; color: #fca5a5; }
+
+    /* Alert */
+    .alert-banner { background: #2a1a00; border: 1px solid #fb923c; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: #fb923c; }
+
+    /* Buttons */
+    .btn-primary { padding: 0.625rem 1.25rem; background: #8b7355; color: #fff; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .btn-primary:hover { background: #a08060; }
+    .btn-secondary { padding: 0.625rem 1.25rem; background: #1a1a1a; color: #aaa; border: 1px solid #2a2a2a; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .btn-secondary:hover { border-color: #8b7355; color: #fff; }
+    .btn-sm { padding: 0.3rem 0.625rem; font-size: 0.75rem; border-radius: 4px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #aaa; cursor: pointer; }
+    .btn-sm:hover { border-color: #8b7355; color: #fff; }
+
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
+    .section-header h2 { font-weight: 400; font-size: 1.1rem; }
+    .empty { color: #555; text-align: center; padding: 3rem 0; font-size: 0.9rem; }
+
+    /* Form modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .modal { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 1.75rem; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { font-weight: 500; font-size: 1rem; margin-bottom: 1.25rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+    .form-group label { font-size: 0.75rem; color: #888; }
+    .form-group input, .form-group select, .form-group textarea { padding: 0.625rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e5e5; font-size: 0.85rem; outline: none; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+
+    /* Portfolio grid */
+    .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .portfolio-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 10px; padding: 1.25rem; }
+    .portfolio-card h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.25rem; }
+    .portfolio-card .sub { font-size: 0.8rem; color: #888; margin-bottom: 0.75rem; }
+
+    /* CSV export */
+    .export-btn { padding: 0.5rem 1rem; background: #1a1a2a; border: 1px solid #2a2a4a; border-radius: 6px; color: #a78bfa; font-size: 0.8rem; cursor: pointer; }
+    .export-btn:hover { background: #2a2a4a; }
+  </style>
+</head>
+<body>
+
+<div id="gate" class="gate">
+  <div class="gate-box">
+    <h1>Admin Access</h1>
+    <input type="password" id="pw-input" placeholder="Admin password" />
+    <p id="pw-error" class="error-msg" style="display:none"></p>
+    <button id="pw-btn">Enter</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="header">
+    <h1>TEM Admin — CRM</h1>
+    <div class="nav-header">
+      <div class="nav-group">
+        <span class="nav-label">SEO &amp; Campaigns</span>
+        <div class="nav-links">
+          <a href="/admin/campaigns" class="nav-link">Campaigns</a>
+          <a href="/admin/strategy" class="nav-link">Strategy</a>
+          <a href="/admin/content" class="nav-link">Content</a>
+          <a href="/admin/links" class="nav-link">Links</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Tracking</span>
+        <div class="nav-links">
+          <a href="/admin/analytics" class="nav-link">Analytics</a>
+          <a href="/admin/cro" class="nav-link">CRO</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Operations</span>
+        <div class="nav-links">
+          <a href="/admin/team" class="nav-link">Team</a>
+          <a href="/admin/future" class="nav-link">AI Future</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Intelligence</span>
+        <div class="nav-links">
+          <a href="/admin/trends" class="nav-link">Trends</a>
+          <a href="/admin/crm" class="nav-link active">CRM</a>
+          <a href="/admin/portfolio" class="nav-link">Portfolio</a>
+          <a href="/admin/mentions" class="nav-link">Mentions</a>
+          <a href="/admin/competitors-state" class="nav-link">Competitors</a>
+        </div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Log out</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="contacts">Contact Database</button>
+      <button class="tab-btn" data-tab="outreach">Email Campaigns</button>
+      <button class="tab-btn" data-tab="clients">TEM Used By</button>
+    </div>
+
+    <!-- CONTACTS TAB -->
+    <div id="tab-contacts" class="tab-panel active">
+      <div id="followup-banner" class="alert-banner" style="display:none"></div>
+
+      <!-- Pipeline -->
+      <div class="pipeline" id="pipeline">
+        <div class="pipe-stage" data-status=""><span class="count" id="pipe-all">—</span>All</div>
+        <div class="pipe-stage" data-status="identified"><span class="count" id="pipe-identified">—</span>Identified</div>
+        <div class="pipe-stage" data-status="emailed"><span class="count" id="pipe-emailed">—</span>Emailed</div>
+        <div class="pipe-stage" data-status="responded"><span class="count" id="pipe-responded">—</span>Responded</div>
+        <div class="pipe-stage" data-status="meeting_booked"><span class="count" id="pipe-meeting_booked">—</span>Meeting</div>
+        <div class="pipe-stage" data-status="client"><span class="count" id="pipe-client">—</span>Client</div>
+      </div>
+
+      <div class="filters">
+        <select class="filter-select" id="filter-state">
+          <option value="">All states</option>
+          <option>VIC</option><option>NSW</option><option>QLD</option><option>SA</option><option>WA</option><option>TAS</option><option>ACT</option><option>NT</option>
+        </select>
+        <select class="filter-select" id="filter-role">
+          <option value="">All roles</option>
+          <option value="architect">Architect</option>
+          <option value="interior_designer">Interior Designer</option>
+          <option value="builder">Builder</option>
+          <option value="developer">Developer</option>
+          <option value="journalist">Journalist</option>
+          <option value="influencer">Influencer</option>
+        </select>
+        <select class="filter-select" id="filter-priority">
+          <option value="">All priority</option>
+          <option value="hot">Hot</option>
+          <option value="warm">Warm</option>
+          <option value="cold">Cold</option>
+        </select>
+        <button class="export-btn" id="export-csv-btn">Export CSV</button>
+        <button class="btn-primary" id="seed-contacts-btn" style="margin-left:auto">Seed 20 Targets</button>
+        <button class="btn-primary" id="add-contact-btn">+ Add Contact</button>
+      </div>
+
+      <div class="contact-list" id="contact-list">
+        <div class="empty">Loading contacts...</div>
+      </div>
+    </div>
+
+    <!-- OUTREACH TAB -->
+    <div id="tab-outreach" class="tab-panel">
+      <div class="section-header">
+        <h2>Cold Email Campaign Tracker</h2>
+        <button class="btn-primary" id="log-email-btn">+ Log Email</button>
+      </div>
+      <div id="outreach-list"><div class="empty">Loading outreach history...</div></div>
+    </div>
+
+    <!-- TEM CLIENTS TAB -->
+    <div id="tab-clients" class="tab-panel">
+      <div class="section-header">
+        <h2>TEM Used By</h2>
+        <button class="btn-primary" id="add-client-btn">+ Add Client</button>
+      </div>
+      <div class="portfolio-grid" id="clients-grid"><div class="empty">Loading clients...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Log Email Modal -->
+<div id="email-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>Log Email / Outreach</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Contact</label>
+        <select id="email-contact-id"></select>
+      </div>
+      <div class="form-group">
+        <label>Campaign Name</label>
+        <input type="text" id="email-campaign" placeholder="e.g. Architects Round 1" />
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Email Subject</label>
+        <input type="text" id="email-subject" placeholder="Subject line" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Sent Date</label>
+        <input type="date" id="email-sent-date" />
+      </div>
+      <div class="form-group">
+        <label>Follow-up Date</label>
+        <input type="date" id="email-followup-date" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Opened?</label>
+        <select id="email-opened"><option value="false">No</option><option value="true">Yes</option></select>
+      </div>
+      <div class="form-group">
+        <label>Replied?</label>
+        <select id="email-replied"><option value="false">No</option><option value="true">Yes</option></select>
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Notes / Outcome</label>
+        <textarea id="email-notes" placeholder="What happened?"></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" id="save-email-btn">Save</button>
+      <button class="btn-secondary" id="cancel-email-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Contact Modal -->
+<div id="contact-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>Add Contact</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Name *</label><input type="text" id="c-name" placeholder="Full name" /></div>
+      <div class="form-group"><label>Company</label><input type="text" id="c-company" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Role</label>
+        <select id="c-role"><option value="architect">Architect</option><option value="interior_designer">Interior Designer</option><option value="builder">Builder</option><option value="developer">Developer</option><option value="journalist">Journalist</option><option value="influencer">Influencer</option><option value="other">Other</option></select>
+      </div>
+      <div class="form-group"><label>State</label>
+        <select id="c-state"><option value="VIC">VIC</option><option value="NSW">NSW</option><option value="QLD">QLD</option><option value="SA">SA</option><option value="WA">WA</option><option value="TAS">TAS</option><option value="ACT">ACT</option><option value="NT">NT</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Instagram Handle</label><input type="text" id="c-insta" placeholder="@handle" /></div>
+      <div class="form-group"><label>Website</label><input type="url" id="c-website" placeholder="https://..." /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Email</label><input type="email" id="c-email" /></div>
+      <div class="form-group"><label>Phone</label><input type="text" id="c-phone" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Priority</label>
+        <select id="c-priority"><option value="cold">Cold</option><option value="warm">Warm</option><option value="hot">Hot</option></select>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="c-status"><option value="identified">Identified</option><option value="emailed">Emailed</option><option value="responded">Responded</option><option value="meeting_booked">Meeting Booked</option><option value="client">Client</option><option value="passed">Passed</option></select>
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Notes</label><textarea id="c-notes" placeholder="Style notes, finish affinity, context..."></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" id="save-contact-btn">Save Contact</button>
+      <button class="btn-secondary" id="cancel-contact-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Client Modal -->
+<div id="client-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>Add TEM Client / Collaborator</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Name *</label><input type="text" id="cl-name" /></div>
+      <div class="form-group"><label>Company</label><input type="text" id="cl-company" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Role</label><input type="text" id="cl-role" placeholder="architect, designer..." /></div>
+      <div class="form-group"><label>Project Name</label><input type="text" id="cl-project" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Project Location</label><input type="text" id="cl-location" /></div>
+      <div class="form-group"><label>Project Date</label><input type="date" id="cl-date" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Finishes Used (comma-sep)</label><input type="text" id="cl-finishes" placeholder="venetian, lime" /></div>
+      <div class="form-group"><label>Instagram Handle</label><input type="text" id="cl-insta" /></div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Notes</label><textarea id="cl-notes"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" id="save-client-btn">Save</button>
+      <button class="btn-secondary" id="cancel-client-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PW = 'TEM-admin-2026!';
+  const SB_URL = 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdHhib2hqanBraHpod2xucnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDgzMjEsImV4cCI6MjA4NjYyNDMyMX0.UWgOz-9ZAy0xxVH-VTTysFzvrbD1CX0a459rNC391Hw';
+
+  const SEED_CONTACTS = [
+    { name: 'Foolscap Studio', company: 'Foolscap Studio', role: 'architect', state: 'VIC', instagram_handle: '@foolscap_studio', priority: 'hot', status: 'identified', style_tags: ['contemporary','luxury'] },
+    { name: 'Pandolfini Architects', company: 'Pandolfini Architects', role: 'architect', state: 'VIC', instagram_handle: '@pandolfini_architects', priority: 'hot', status: 'identified' },
+    { name: 'Carr Design Group', company: 'Carr Design Group', role: 'architect', state: 'VIC', instagram_handle: '@carrdesigngroup', priority: 'hot', status: 'identified' },
+    { name: 'Kennedy Nolan', company: 'Kennedy Nolan', role: 'architect', state: 'VIC', instagram_handle: '@kennedynolan', priority: 'hot', status: 'identified' },
+    { name: 'Mim Design', company: 'Mim Design', role: 'interior_designer', state: 'VIC', instagram_handle: '@mimdesign', priority: 'hot', status: 'identified' },
+    { name: 'Studio Tate', company: 'Studio Tate', role: 'interior_designer', state: 'VIC', instagram_handle: '@studiotate', priority: 'warm', status: 'identified' },
+    { name: 'Flack Studio', company: 'Flack Studio', role: 'interior_designer', state: 'VIC', instagram_handle: '@flackstudio', priority: 'hot', status: 'identified' },
+    { name: 'Fiona Lynch Studio', company: 'Fiona Lynch Studio', role: 'interior_designer', state: 'VIC', instagram_handle: '@fionalynchoffice', priority: 'warm', status: 'identified' },
+    { name: 'Studio Minosa', company: 'Studio Minosa', role: 'interior_designer', state: 'NSW', instagram_handle: '@studiominosa', priority: 'warm', status: 'identified' },
+    { name: 'Arent & Pyke', company: 'Arent & Pyke', role: 'interior_designer', state: 'NSW', instagram_handle: '@arentandpyke', priority: 'hot', status: 'identified' },
+    { name: 'SJB Architects', company: 'SJB', role: 'architect', state: 'VIC', instagram_handle: '@sjb_arch', priority: 'warm', status: 'identified' },
+    { name: 'Technē Architecture', company: 'Technē Architecture', role: 'architect', state: 'VIC', instagram_handle: '@techne_architecture', priority: 'warm', status: 'identified' },
+    { name: 'Nic Graham & Associates', company: 'Nic Graham & Associates', role: 'interior_designer', state: 'VIC', instagram_handle: '@nicgrahamassociates', priority: 'warm', status: 'identified' },
+    { name: 'Six Degrees Architects', company: 'Six Degrees Architects', role: 'architect', state: 'VIC', instagram_handle: '@sixdegreesarchitects', priority: 'warm', status: 'identified' },
+    { name: 'Clare Cousins Architects', company: 'Clare Cousins Architects', role: 'architect', state: 'VIC', instagram_handle: '@clarecousinsarchitects', priority: 'warm', status: 'identified' },
+    { name: 'Robson Rak Architects', company: 'Robson Rak', role: 'architect', state: 'VIC', instagram_handle: '@robsonrak', priority: 'warm', status: 'identified' },
+    { name: 'Hecker Guthrie', company: 'Hecker Guthrie', role: 'interior_designer', state: 'VIC', instagram_handle: '@heckerguthrie', priority: 'hot', status: 'identified' },
+    { name: 'Eckersley Garden Architecture', company: 'EGA', role: 'architect', state: 'VIC', instagram_handle: '@ega_landscape', priority: 'cold', status: 'identified' },
+    { name: 'Joost Bakker', company: 'Independent', role: 'other', state: 'VIC', instagram_handle: '@joostbakker', priority: 'hot', status: 'identified', notes: 'Sustainability/hemp angle — strong alignment', finish_affinity: ['hemp','clay'] },
+    { name: 'Amber Road', company: 'Amber Road', role: 'interior_designer', state: 'NSW', instagram_handle: '@amber_road', priority: 'warm', status: 'identified' },
+  ];
+
+  function sbH() {
+    return { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+  }
+  async function sbGet(table: string, q = '') {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}?${q}`, { headers: sbH() });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+  async function sbInsert(table: string, data: any) {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method: 'POST', headers: sbH(), body: JSON.stringify(data) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+  async function sbPatch(table: string, id: string, data: any) {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'PATCH', headers: sbH(), body: JSON.stringify(data) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+
+  function priorityBadge(p: string) {
+    const m: any = { hot: 'badge-hot', warm: 'badge-warm', cold: 'badge-cold' };
+    return `<span class="badge ${m[p]||'badge-cold'}">${p||'cold'}</span>`;
+  }
+  function statusBadge(s: string) {
+    const m: any = { identified:'badge-identified', emailed:'badge-emailed', responded:'badge-responded', meeting_booked:'badge-meeting_booked', client:'badge-client', passed:'badge-passed' };
+    return `<span class="badge ${m[s]||'badge-identified'}">${(s||'identified').replace('_',' ')}</span>`;
+  }
+
+  let allContacts: any[] = [];
+  let pipeFilter = '';
+  let emailHistory: any[] = [];
+
+  async function loadContacts() {
+    const list = document.getElementById('contact-list')!;
+    try {
+      allContacts = await sbGet('contacts', 'order=created_at.asc');
+      updatePipeline();
+      checkFollowUps();
+      renderContacts();
+      populateEmailContactSelect();
+    } catch(e) {
+      list.innerHTML = '<div class="empty">Error loading. Check Supabase table exists.</div>';
+    }
+  }
+
+  function updatePipeline() {
+    const counts: any = { '': allContacts.length };
+    ['identified','emailed','responded','meeting_booked','client'].forEach(s => {
+      counts[s] = allContacts.filter(c => c.status === s).length;
+    });
+    document.getElementById('pipe-all')!.textContent = counts[''];
+    ['identified','emailed','responded','meeting_booked','client'].forEach(s => {
+      document.getElementById(`pipe-${s}`)!.textContent = counts[s];
+    });
+  }
+
+  function checkFollowUps() {
+    const today = new Date().toISOString().split('T')[0];
+    const due = allContacts.filter(c => c.last_contacted && c.status === 'emailed');
+    if (due.length) {
+      document.getElementById('followup-banner')!.style.display = 'block';
+      document.getElementById('followup-banner')!.textContent = `${due.length} contact(s) emailed — check follow-up dates in Email Campaigns tab.`;
+    }
+  }
+
+  function renderContacts() {
+    const list = document.getElementById('contact-list')!;
+    const stateF = (document.getElementById('filter-state') as HTMLSelectElement).value;
+    const roleF = (document.getElementById('filter-role') as HTMLSelectElement).value;
+    const priF = (document.getElementById('filter-priority') as HTMLSelectElement).value;
+
+    let cs = allContacts;
+    if (pipeFilter) cs = cs.filter(c => c.status === pipeFilter);
+    if (stateF) cs = cs.filter(c => c.state === stateF);
+    if (roleF) cs = cs.filter(c => c.role === roleF);
+    if (priF) cs = cs.filter(c => c.priority === priF);
+
+    if (!cs.length) { list.innerHTML = '<div class="empty">No contacts found.</div>'; return; }
+
+    list.innerHTML = cs.map(c => `
+      <div class="contact-row" id="row-${c.id}">
+        <div class="contact-row-main" onclick="toggleDetail('${c.id}')">
+          <span class="contact-name">${c.name}</span>
+          <span class="contact-company">${c.company||''} ${c.state ? `· ${c.state}` : ''}</span>
+          <div class="contact-row-meta">
+            ${priorityBadge(c.priority)} ${statusBadge(c.status)}
+            ${c.instagram_handle ? `<span style="font-size:0.75rem;color:#8b7355">${c.instagram_handle}</span>` : ''}
+          </div>
+        </div>
+        <div class="contact-detail" id="detail-${c.id}">
+          <div class="detail-grid">
+            <div class="detail-item"><label>Role</label><span>${c.role?.replace(/_/g,' ')||'—'}</span></div>
+            <div class="detail-item"><label>Email</label><span>${c.email||'—'}</span></div>
+            <div class="detail-item"><label>Website</label><span>${c.website ? `<a href="${c.website}" target="_blank">${c.website}</a>` : '—'}</span></div>
+            <div class="detail-item"><label>Source</label><span>${c.source||'—'}</span></div>
+            <div class="detail-item"><label>Last Contacted</label><span>${c.last_contacted||'—'}</span></div>
+            <div class="detail-item"><label>TEM Used</label><span>${c.tem_used ? '✓ Yes' : 'No'}</span></div>
+          </div>
+          ${c.notes ? `<div style="font-size:0.82rem;color:#888;margin-bottom:0.75rem;padding:0.625rem;background:#1a1a1a;border-radius:6px">${c.notes}</div>` : ''}
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <select class="filter-select" onchange="updateStatus('${c.id}', this.value)" style="font-size:0.75rem;padding:0.25rem 0.5rem">
+              ${['identified','emailed','responded','meeting_booked','client','passed'].map(s=>`<option value="${s}" ${c.status===s?'selected':''}>${s.replace('_',' ')}</option>`).join('')}
+            </select>
+            <button class="btn-sm" onclick="openLogEmail('${c.id}')">Log Email</button>
+            <div id="emails-${c.id}" style="width:100%;margin-top:0.5rem"></div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  (window as any).toggleDetail = async function(id: string) {
+    const detail = document.getElementById(`detail-${id}`)!;
+    const row = document.getElementById(`row-${id}`)!;
+    const isOpen = detail.classList.contains('show');
+    document.querySelectorAll('.contact-detail').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.contact-row').forEach(r => r.classList.remove('expanded'));
+    if (!isOpen) {
+      detail.classList.add('show');
+      row.classList.add('expanded');
+      await loadContactEmails(id);
+    }
+  };
+
+  async function loadContactEmails(contactId: string) {
+    const container = document.getElementById(`emails-${contactId}`)!;
+    try {
+      const emails = await sbGet('outreach_emails', `contact_id=eq.${contactId}&order=sent_date.desc`);
+      if (!emails.length) { container.innerHTML = '<div style="font-size:0.78rem;color:#555">No emails logged yet.</div>'; return; }
+      container.innerHTML = `<div class="email-history"><h4>Email History</h4>${emails.map((e: any) => `
+        <div class="email-item">
+          <div class="email-item-header">
+            <span>${e.email_subject||'(no subject)'}</span>
+            <span style="color:#555">${e.sent_date||''}</span>
+          </div>
+          <div style="color:#888;font-size:0.75rem">${e.campaign_name||''} · Opened: ${e.opened?'Yes':'No'} · Replied: ${e.replied?'Yes':'No'}${e.follow_up_date ? ` · Follow-up: ${e.follow_up_date}` : ''}</div>
+          ${e.notes ? `<div style="margin-top:0.25rem;color:#aaa">${e.notes}</div>` : ''}
+        </div>`).join('')}</div>`;
+    } catch(e) { container.innerHTML = ''; }
+  }
+
+  (window as any).updateStatus = async function(id: string, status: string) {
+    await sbPatch('contacts', id, { status });
+    const c = allContacts.find(c => c.id === id);
+    if (c) c.status = status;
+    updatePipeline();
+    renderContacts();
+  };
+
+  function openLogEmail(contactId: string = '') {
+    document.getElementById('email-modal')!.style.display = 'flex';
+    if (contactId) (document.getElementById('email-contact-id') as HTMLSelectElement).value = contactId;
+    const today = new Date().toISOString().split('T')[0];
+    (document.getElementById('email-sent-date') as HTMLInputElement).value = today;
+  }
+  (window as any).openLogEmail = openLogEmail;
+
+  function populateEmailContactSelect() {
+    const sel = document.getElementById('email-contact-id') as HTMLSelectElement;
+    sel.innerHTML = allContacts.map(c => `<option value="${c.id}">${c.name}${c.company ? ` (${c.company})` : ''}</option>`).join('');
+  }
+
+  async function loadOutreach() {
+    const list = document.getElementById('outreach-list')!;
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      const emails = await sbGet('outreach_emails', 'order=sent_date.desc');
+      if (!emails.length) { list.innerHTML = '<div class="empty">No outreach logged yet.</div>'; return; }
+      const contactMap: any = {};
+      allContacts.forEach(c => contactMap[c.id] = c);
+      list.innerHTML = `<div class="contact-list">${emails.map((e: any) => {
+        const c = contactMap[e.contact_id];
+        const overdue = e.follow_up_date && e.follow_up_date <= today && !e.replied;
+        return `<div class="contact-row">
+          <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+            <span style="font-weight:500">${c?.name||'Unknown'}</span>
+            <span style="color:#888;font-size:0.85rem">${e.email_subject||'(no subject)'}</span>
+            <span style="color:#555;font-size:0.8rem">${e.sent_date||''}</span>
+            ${overdue ? '<span class="badge badge-follow-up">Follow-up Due</span>' : ''}
+            <span class="badge ${e.replied ? 'badge-responded' : e.opened ? 'badge-emailed' : 'badge-identified'}">${e.replied ? 'Replied' : e.opened ? 'Opened' : 'Sent'}</span>
+          </div>
+          ${e.notes ? `<div style="font-size:0.8rem;color:#888;margin-top:0.5rem">${e.notes}</div>` : ''}
+        </div>`;
+      }).join('')}</div>`;
+    } catch(e) {
+      list.innerHTML = '<div class="empty">Error loading outreach.</div>';
+    }
+  }
+
+  async function loadClients() {
+    const grid = document.getElementById('clients-grid')!;
+    try {
+      const clients = await sbGet('tem_clients', 'order=created_at.desc');
+      if (!clients.length) { grid.innerHTML = '<div class="empty">No TEM clients logged yet.</div>'; return; }
+      grid.innerHTML = clients.map((c: any) => `
+        <div class="portfolio-card">
+          <h3>${c.name}</h3>
+          <div class="sub">${c.company||''} ${c.role ? `· ${c.role}` : ''}</div>
+          ${c.project_name ? `<div style="font-size:0.8rem;margin-bottom:0.5rem"><strong>Project:</strong> ${c.project_name}${c.project_location ? ` · ${c.project_location}` : ''}</div>` : ''}
+          <div style="display:flex;flex-wrap:wrap;gap:0.375rem;margin-bottom:0.5rem">
+            ${(c.finishes_used||[]).map((f: string)=>`<span class="badge badge-finish">${f}</span>`).join('')}
+          </div>
+          ${c.instagram_handle ? `<a href="https://instagram.com/${c.instagram_handle.replace('@','')}" target="_blank" style="font-size:0.78rem">${c.instagram_handle}</a>` : ''}
+          ${c.notes ? `<div style="font-size:0.78rem;color:#888;margin-top:0.5rem">${c.notes}</div>` : ''}
+        </div>
+      `).join('');
+    } catch(e) {
+      grid.innerHTML = '<div class="empty">Error loading clients.</div>';
+    }
+  }
+
+  // Export CSV
+  document.getElementById('export-csv-btn')!.addEventListener('click', () => {
+    const headers = ['Name','Company','Role','State','Instagram','Email','Priority','Status','Notes'];
+    const rows = allContacts.map(c => [c.name,c.company,c.role,c.state,c.instagram_handle,c.email,c.priority,c.status,c.notes].map(v => `"${(v||'').replace(/"/g,'""')}"`));
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'tem-contacts.csv';
+    a.click();
+  });
+
+  // Seed contacts
+  document.getElementById('seed-contacts-btn')!.addEventListener('click', async () => {
+    if (!confirm('Seed 20 target contacts? This adds them to the database.')) return;
+    for (const c of SEED_CONTACTS) await sbInsert('contacts', c);
+    loadContacts();
+  });
+
+  // Pipeline filter
+  document.querySelectorAll('.pipe-stage').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      pipeFilter = (e.currentTarget as HTMLElement).dataset.status!;
+      document.querySelectorAll('.pipe-stage').forEach(b => b.classList.remove('active'));
+      (e.currentTarget as HTMLElement).classList.add('active');
+      renderContacts();
+    });
+  });
+
+  ['filter-state','filter-role','filter-priority'].forEach(id => {
+    document.getElementById(id)!.addEventListener('change', renderContacts);
+  });
+
+  // Add contact modal
+  document.getElementById('add-contact-btn')!.addEventListener('click', () => { document.getElementById('contact-modal')!.style.display = 'flex'; });
+  document.getElementById('cancel-contact-btn')!.addEventListener('click', () => { document.getElementById('contact-modal')!.style.display = 'none'; });
+  document.getElementById('save-contact-btn')!.addEventListener('click', async () => {
+    const name = (document.getElementById('c-name') as HTMLInputElement).value.trim();
+    if (!name) { alert('Name required'); return; }
+    await sbInsert('contacts', {
+      name,
+      company: (document.getElementById('c-company') as HTMLInputElement).value||null,
+      role: (document.getElementById('c-role') as HTMLSelectElement).value,
+      state: (document.getElementById('c-state') as HTMLSelectElement).value,
+      instagram_handle: (document.getElementById('c-insta') as HTMLInputElement).value||null,
+      website: (document.getElementById('c-website') as HTMLInputElement).value||null,
+      email: (document.getElementById('c-email') as HTMLInputElement).value||null,
+      phone: (document.getElementById('c-phone') as HTMLInputElement).value||null,
+      priority: (document.getElementById('c-priority') as HTMLSelectElement).value,
+      status: (document.getElementById('c-status') as HTMLSelectElement).value,
+      notes: (document.getElementById('c-notes') as HTMLTextAreaElement).value||null,
+    });
+    document.getElementById('contact-modal')!.style.display = 'none';
+    loadContacts();
+  });
+
+  // Log email modal
+  document.getElementById('log-email-btn')!.addEventListener('click', () => openLogEmail());
+  document.getElementById('cancel-email-btn')!.addEventListener('click', () => { document.getElementById('email-modal')!.style.display = 'none'; });
+  document.getElementById('save-email-btn')!.addEventListener('click', async () => {
+    const contactId = (document.getElementById('email-contact-id') as HTMLSelectElement).value;
+    await sbInsert('outreach_emails', {
+      contact_id: contactId||null,
+      campaign_name: (document.getElementById('email-campaign') as HTMLInputElement).value||null,
+      email_subject: (document.getElementById('email-subject') as HTMLInputElement).value||null,
+      sent_date: (document.getElementById('email-sent-date') as HTMLInputElement).value||null,
+      opened: (document.getElementById('email-opened') as HTMLSelectElement).value === 'true',
+      replied: (document.getElementById('email-replied') as HTMLSelectElement).value === 'true',
+      follow_up_date: (document.getElementById('email-followup-date') as HTMLInputElement).value||null,
+      notes: (document.getElementById('email-notes') as HTMLTextAreaElement).value||null,
+    });
+    if (contactId) await sbPatch('contacts', contactId, { status: 'emailed', last_contacted: new Date().toISOString().split('T')[0] });
+    document.getElementById('email-modal')!.style.display = 'none';
+    loadContacts();
+  });
+
+  // Add client modal
+  document.getElementById('add-client-btn')!.addEventListener('click', () => { document.getElementById('client-modal')!.style.display = 'flex'; });
+  document.getElementById('cancel-client-btn')!.addEventListener('click', () => { document.getElementById('client-modal')!.style.display = 'none'; });
+  document.getElementById('save-client-btn')!.addEventListener('click', async () => {
+    const name = (document.getElementById('cl-name') as HTMLInputElement).value.trim();
+    if (!name) { alert('Name required'); return; }
+    const finishes = (document.getElementById('cl-finishes') as HTMLInputElement).value.split(',').map(s=>s.trim()).filter(Boolean);
+    await sbInsert('tem_clients', {
+      name,
+      company: (document.getElementById('cl-company') as HTMLInputElement).value||null,
+      role: (document.getElementById('cl-role') as HTMLInputElement).value||null,
+      project_name: (document.getElementById('cl-project') as HTMLInputElement).value||null,
+      project_location: (document.getElementById('cl-location') as HTMLInputElement).value||null,
+      project_date: (document.getElementById('cl-date') as HTMLInputElement).value||null,
+      finishes_used: finishes,
+      instagram_handle: (document.getElementById('cl-insta') as HTMLInputElement).value||null,
+      notes: (document.getElementById('cl-notes') as HTMLTextAreaElement).value||null,
+    });
+    document.getElementById('client-modal')!.style.display = 'none';
+    loadClients();
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const tab = (e.currentTarget as HTMLElement).dataset.tab!;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      (e.currentTarget as HTMLElement).classList.add('active');
+      document.getElementById(`tab-${tab}`)!.classList.add('active');
+      if (tab === 'outreach') loadOutreach();
+      if (tab === 'clients') loadClients();
+    });
+  });
+
+  // Auth
+  const gate = document.getElementById('gate')!;
+  const app = document.getElementById('app')!;
+  const pwInput = document.getElementById('pw-input') as HTMLInputElement;
+  const pwBtn = document.getElementById('pw-btn')!;
+  const pwError = document.getElementById('pw-error')!;
+
+  function tryLogin(pw: string) {
+    if (pw === ADMIN_PW) {
+      sessionStorage.setItem('tem-admin-password', pw);
+      gate.style.display = 'none';
+      app.style.display = 'block';
+      loadContacts();
+    } else {
+      pwError.textContent = 'Invalid password';
+      pwError.style.display = 'block';
+    }
+  }
+
+  if (sessionStorage.getItem('tem-admin-password') === ADMIN_PW) {
+    gate.style.display = 'none';
+    app.style.display = 'block';
+    loadContacts();
+  }
+
+  pwBtn.addEventListener('click', () => tryLogin(pwInput.value));
+  pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(pwInput.value); });
+  document.getElementById('logout-btn')!.addEventListener('click', () => {
+    sessionStorage.removeItem('tem-admin-password');
+    gate.style.display = 'flex';
+    app.style.display = 'none';
+  });
+</script>
+</body>
+</html>

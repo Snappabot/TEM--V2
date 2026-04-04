@@ -1,0 +1,585 @@
+---
+/*
+  SQL MIGRATION — run in Supabase SQL editor before using this page:
+
+  create table if not exists trend_articles (
+    id uuid default gen_random_uuid() primary key,
+    source text not null,
+    title text not null,
+    url text,
+    published_date date,
+    finish_types text[] default '{}',
+    style_tags text[] default '{}',
+    opportunity_level text default 'none',
+    opportunity_notes text,
+    contact_name text,
+    contact_url text,
+    actioned bool default false,
+    created_at timestamptz default now(),
+    last_updated timestamptz default now()
+  );
+
+  create table if not exists missed_markets (
+    id uuid default gen_random_uuid() primary key,
+    market_name text not null,
+    description text,
+    finish_types text[] default '{}',
+    estimated_size text,
+    competition_level text default 'medium',
+    opportunity_score int default 5,
+    research_notes text,
+    status text default 'identified',
+    created_at timestamptz default now()
+  );
+*/
+export const prerender = false;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trends | TEM Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a0a; color: #e5e5e5; font-family: Inter, system-ui, sans-serif; min-height: 100vh; }
+    a { color: #8b7355; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Auth gate */
+    .gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .gate-box { width: 100%; max-width: 380px; padding: 2rem; }
+    .gate-box h1 { font-weight: 300; font-size: 1.75rem; margin-bottom: 1.5rem; text-align: center; }
+    .gate-box input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; margin-bottom: 0.75rem; outline: none; }
+    .gate-box input:focus { border-color: #8b7355; }
+    .gate-box button { width: 100%; padding: 0.875rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+    .gate-box button:hover { background: #a08060; }
+    .error-msg { color: #f87171; font-size: 0.85rem; margin-bottom: 0.75rem; }
+
+    /* Layout */
+    .header { padding: 1.25rem 2rem; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .header h1 { font-weight: 300; font-size: 1.25rem; }
+    .nav-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .nav-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+    .nav-links { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+    .nav-link { padding: 0.25rem 0.625rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 4px; color: #888; font-size: 0.75rem; text-decoration: none; transition: all 0.15s; }
+    .nav-link:hover, .nav-link.active { border-color: #8b7355; color: #e5e5e5; text-decoration: none; }
+    .nav-header { display: flex; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
+    .logout-btn { background: none; border: none; color: #666; cursor: pointer; font-size: 0.85rem; padding: 0; }
+    .logout-btn:hover { color: #fff; }
+    .content { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid #1e1e1e; }
+    .tab-btn { padding: 0.75rem 1.25rem; background: none; border: none; color: #666; cursor: pointer; font-size: 0.9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+    .tab-btn:hover { color: #e5e5e5; }
+    .tab-btn.active { color: #8b7355; border-bottom-color: #8b7355; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Cards */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+    .card { background: #141414; border: 1px solid #1e1e1e; border-radius: 10px; padding: 1.25rem; transition: border-color 0.15s; }
+    .card:hover { border-color: #2a2a2a; }
+    .card-title { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.5rem; line-height: 1.4; }
+    .card-meta { font-size: 0.78rem; color: #666; margin-bottom: 0.75rem; }
+
+    /* Badges */
+    .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
+    .badge-high { background: #1a3a1a; color: #4ade80; }
+    .badge-medium { background: #2a2a00; color: #facc15; }
+    .badge-low { background: #1a1a2a; color: #818cf8; }
+    .badge-none { background: #1a1a1a; color: #666; }
+    .badge-source { background: #1e1e2e; color: #a78bfa; }
+    .badge-style { background: #1a2a2a; color: #67e8f9; }
+    .badge-finish { background: #2a1a1a; color: #fca5a5; }
+    .badge-actioned { background: #1a2a1a; color: #86efac; }
+    .badge-identified { background: #1e1e2e; color: #a78bfa; }
+    .badge-researching { background: #2a1a00; color: #fb923c; }
+    .badge-passed { background: #1a1a1a; color: #555; }
+
+    /* Tags row */
+    .tags-row { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-bottom: 0.75rem; }
+
+    /* Score bar */
+    .score-bar-wrap { margin-bottom: 0.75rem; }
+    .score-bar-label { font-size: 0.75rem; color: #888; margin-bottom: 0.3rem; display: flex; justify-content: space-between; }
+    .score-bar { height: 6px; background: #1e1e1e; border-radius: 3px; overflow: hidden; }
+    .score-fill { height: 100%; background: #8b7355; border-radius: 3px; transition: width 0.3s; }
+
+    /* Filters */
+    .filters { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: center; }
+    .filter-select { padding: 0.5rem 0.75rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e5e5; font-size: 0.8rem; outline: none; cursor: pointer; }
+    .filter-select:focus { border-color: #8b7355; }
+
+    /* Form */
+    .form-panel { background: #141414; border: 1px solid #1e1e1e; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .form-panel h3 { font-weight: 500; font-size: 1rem; margin-bottom: 1.25rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+    .form-group label { font-size: 0.75rem; color: #888; }
+    .form-group input, .form-group select, .form-group textarea { padding: 0.625rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e5e5; font-size: 0.85rem; outline: none; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+    .btn-primary { padding: 0.625rem 1.25rem; background: #8b7355; color: #fff; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .btn-primary:hover { background: #a08060; }
+    .btn-secondary { padding: 0.625rem 1.25rem; background: #1a1a1a; color: #aaa; border: 1px solid #2a2a2a; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .btn-secondary:hover { border-color: #8b7355; color: #fff; }
+    .btn-sm { padding: 0.3rem 0.625rem; font-size: 0.75rem; border-radius: 4px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #aaa; cursor: pointer; }
+    .btn-sm:hover { border-color: #8b7355; color: #fff; }
+    .btn-actioned { border-color: #4ade80; color: #4ade80; }
+
+    /* Section header */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
+    .section-header h2 { font-weight: 400; font-size: 1.1rem; }
+
+    /* Empty state */
+    .empty { color: #555; text-align: center; padding: 3rem 0; font-size: 0.9rem; }
+
+    /* Notes */
+    .card-notes { font-size: 0.78rem; color: #888; margin-top: 0.5rem; border-top: 1px solid #1e1e1e; padding-top: 0.5rem; }
+
+    /* Market card extra */
+    .market-meta { display: flex; gap: 1rem; font-size: 0.78rem; color: #888; margin-bottom: 0.5rem; }
+
+    /* Toggle add form */
+    .toggle-form-btn { margin-bottom: 1.5rem; }
+
+    /* Last synced */
+    .synced-note { font-size: 0.75rem; color: #555; }
+  </style>
+</head>
+<body>
+  <!-- Auth Gate -->
+  <div id="gate" class="gate">
+    <div class="gate-box">
+      <h1>Admin Access</h1>
+      <input type="password" id="pw-input" placeholder="Admin password" />
+      <p id="pw-error" class="error-msg" style="display:none"></p>
+      <button id="pw-btn">Enter</button>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="app" style="display:none">
+    <div class="header">
+      <h1>TEM Admin — Trends</h1>
+      <div class="nav-header">
+        <div class="nav-group">
+          <span class="nav-label">SEO &amp; Campaigns</span>
+          <div class="nav-links">
+            <a href="/admin/campaigns" class="nav-link">Campaigns</a>
+            <a href="/admin/strategy" class="nav-link">Strategy</a>
+            <a href="/admin/content" class="nav-link">Content</a>
+            <a href="/admin/links" class="nav-link">Links</a>
+          </div>
+        </div>
+        <div class="nav-group">
+          <span class="nav-label">Tracking</span>
+          <div class="nav-links">
+            <a href="/admin/analytics" class="nav-link">Analytics</a>
+            <a href="/admin/cro" class="nav-link">CRO</a>
+          </div>
+        </div>
+        <div class="nav-group">
+          <span class="nav-label">Operations</span>
+          <div class="nav-links">
+            <a href="/admin/team" class="nav-link">Team</a>
+            <a href="/admin/future" class="nav-link">AI Future</a>
+          </div>
+        </div>
+        <div class="nav-group">
+          <span class="nav-label">Intelligence</span>
+          <div class="nav-links">
+            <a href="/admin/trends" class="nav-link active">Trends</a>
+            <a href="/admin/crm" class="nav-link">CRM</a>
+            <a href="/admin/portfolio" class="nav-link">Portfolio</a>
+            <a href="/admin/mentions" class="nav-link">Mentions</a>
+            <a href="/admin/competitors-state" class="nav-link">Competitors</a>
+          </div>
+        </div>
+        <button class="logout-btn" id="logout-btn">Log out</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="feed">Publication Trend Feed</button>
+        <button class="tab-btn" data-tab="markets">Missed Market Radar</button>
+      </div>
+
+      <!-- TAB: Trend Feed -->
+      <div id="tab-feed" class="tab-panel active">
+        <div class="section-header">
+          <h2>Publication Trend Feed</h2>
+          <span class="synced-note" id="synced-note">Loading...</span>
+        </div>
+
+        <div class="filters">
+          <select class="filter-select" id="filter-source">
+            <option value="">All sources</option>
+            <option value="dezeen">Dezeen</option>
+            <option value="architecture_australia">Architecture Australia</option>
+            <option value="archdaily">ArchDaily</option>
+            <option value="habitus">Habitus</option>
+            <option value="the_design_files">The Design Files</option>
+            <option value="local_project">Local Project</option>
+            <option value="other">Other</option>
+          </select>
+          <select class="filter-select" id="filter-opportunity">
+            <option value="">All opportunities</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+            <option value="none">None</option>
+          </select>
+          <select class="filter-select" id="filter-actioned">
+            <option value="">All status</option>
+            <option value="false">Pending</option>
+            <option value="true">Actioned</option>
+          </select>
+          <button class="btn-secondary" id="refresh-articles-btn">Refresh</button>
+        </div>
+
+        <button class="btn-primary toggle-form-btn" id="toggle-add-article">+ Add Article</button>
+
+        <!-- Add Article Form -->
+        <div id="add-article-form" class="form-panel" style="display:none">
+          <h3>Add Article Manually</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Title *</label>
+              <input type="text" id="art-title" placeholder="Article title" />
+            </div>
+            <div class="form-group">
+              <label>Source</label>
+              <select id="art-source">
+                <option value="dezeen">Dezeen</option>
+                <option value="architecture_australia">Architecture Australia</option>
+                <option value="archdaily">ArchDaily</option>
+                <option value="habitus">Habitus</option>
+                <option value="the_design_files">The Design Files</option>
+                <option value="local_project">Local Project</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>URL</label>
+              <input type="url" id="art-url" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Published Date</label>
+              <input type="date" id="art-date" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Finish Types (comma-separated)</label>
+              <input type="text" id="art-finishes" placeholder="venetian, lime, hemp" />
+            </div>
+            <div class="form-group">
+              <label>Style Tags (comma-separated)</label>
+              <input type="text" id="art-styles" placeholder="biophilic, japandi, sustainable" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Opportunity Level</label>
+              <select id="art-opportunity">
+                <option value="none">None</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Contact Name (optional)</label>
+              <input type="text" id="art-contact-name" placeholder="Architect/designer name" />
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Opportunity Notes</label>
+              <textarea id="art-notes" placeholder="Why is this an opportunity?"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" id="save-article-btn">Save Article</button>
+            <button class="btn-secondary" id="cancel-article-btn">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Articles Grid -->
+        <div class="card-grid" id="articles-grid">
+          <div class="empty">Loading articles...</div>
+        </div>
+      </div>
+
+      <!-- TAB: Missed Markets -->
+      <div id="tab-markets" class="tab-panel">
+        <div class="section-header">
+          <h2>Missed Market Radar</h2>
+          <button class="btn-primary" id="seed-markets-btn">Seed Default Markets</button>
+        </div>
+        <div class="card-grid" id="markets-grid">
+          <div class="empty">Loading markets...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const ADMIN_PW = 'TEM-admin-2026!';
+  const SB_URL = 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdHhib2hqanBraHpod2xucnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDgzMjEsImV4cCI6MjA4NjYyNDMyMX0.UWgOz-9ZAy0xxVH-VTTysFzvrbD1CX0a459rNC391Hw';
+
+  const MISSED_MARKETS_SEED = [
+    { market_name: 'Passive House AU', description: 'Natural breathable renders, hemp lime ideal for certified Passive House builds', finish_types: ['hemp','lime'], estimated_size: 'Growing — ~500 certified builds/yr', competition_level: 'low', opportunity_score: 9, research_notes: 'PHAA members directory is a goldmine for outreach', status: 'identified' },
+    { market_name: 'Mudbrick/Rammed Earth Heritage Restorers', description: 'Lime compatibility critical — these builders need heritage-appropriate finishes', finish_types: ['lime','clay'], estimated_size: 'Niche but premium', competition_level: 'low', opportunity_score: 9, research_notes: 'Earth Builders Association + Council heritage grants', status: 'identified' },
+    { market_name: 'Luxury Hotel Refits (Boutique)', description: 'Bespoke finishes as point of difference — high spend, repeat work', finish_types: ['venetian','microcement','tadelakt'], estimated_size: 'High value per project', competition_level: 'medium', opportunity_score: 9, research_notes: 'Target boutique hotel groups in VIC/NSW', status: 'identified' },
+    { market_name: 'Wellness Centres & Day Spas', description: 'Biophilic interior finishes — earth tones, texture, humidity-tolerant', finish_types: ['venetian','clay','lime'], estimated_size: 'Medium — growing sector', competition_level: 'medium', opportunity_score: 7, research_notes: 'Instagram hashtag #spaaesthetic shows demand', status: 'identified' },
+    { market_name: 'Education Sector (Montessori/Waldorf)', description: 'Natural materials mandate — parents and schools pay premium for authentic', finish_types: ['clay','hemp','lime'], estimated_size: 'Niche but loyal', competition_level: 'low', opportunity_score: 7, research_notes: 'Waldorf Australia & Montessori Australia directories', status: 'identified' },
+    { market_name: 'Wine Cellar & Barrel Room Fitouts', description: 'Lime render for humidity control — functional AND aesthetic angle', finish_types: ['lime'], estimated_size: 'Small but very premium', competition_level: 'low', opportunity_score: 7, research_notes: 'Yarra Valley / Mornington Peninsula wineries', status: 'identified' },
+    { market_name: 'High-end Food & Beverage (Restaurants)', description: 'Textured accent walls — designers spec finishes for atmosphere', finish_types: ['venetian','microcement','clay'], estimated_size: 'Large in metro areas', competition_level: 'high', opportunity_score: 8, research_notes: 'Target interior designers who spec restaurant fitouts', status: 'identified' },
+    { market_name: 'Film/TV Set Design', description: 'Decorative plaster demand for period shoots and bespoke sets', finish_types: ['venetian','lime','clay'], estimated_size: 'Melbourne film scene growing', competition_level: 'low', opportunity_score: 5, research_notes: 'Screen Australia, AFTRS, VIC production companies', status: 'identified' },
+    { market_name: 'Display Homes (Volume Builders)', description: 'Premium finish showcase to upsell buyers — recurring large contracts', finish_types: ['venetian','microcement'], estimated_size: 'Very large', competition_level: 'high', opportunity_score: 6, research_notes: 'Metricon, Simonds, AV Jennings display villages', status: 'identified' },
+    { market_name: 'Tiny Home / Modular Builds', description: 'Lightweight hemp render — growing movement with sustainability focus', finish_types: ['hemp'], estimated_size: 'Small but growing fast', competition_level: 'low', opportunity_score: 6, research_notes: 'Tiny Houses Australia community', status: 'identified' },
+  ];
+
+  function sbHeaders() {
+    return { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+  }
+
+  async function sbGet(table: string, query = '') {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, { headers: sbHeaders() });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+
+  async function sbInsert(table: string, data: any) {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method: 'POST', headers: sbHeaders(), body: JSON.stringify(data) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+
+  async function sbPatch(table: string, id: string, data: any) {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'PATCH', headers: sbHeaders(), body: JSON.stringify(data) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+
+  function opBadge(level: string) {
+    const map: any = { high: 'badge-high', medium: 'badge-medium', low: 'badge-low', none: 'badge-none' };
+    return `<span class="badge ${map[level] || 'badge-none'}">${level || 'none'}</span>`;
+  }
+
+  function statusBadge(s: string) {
+    const map: any = { identified: 'badge-identified', researching: 'badge-researching', actioned: 'badge-actioned', passed: 'badge-passed' };
+    return `<span class="badge ${map[s] || 'badge-identified'}">${s || 'identified'}</span>`;
+  }
+
+  let allArticles: any[] = [];
+
+  async function loadArticles() {
+    const grid = document.getElementById('articles-grid')!;
+    const note = document.getElementById('synced-note')!;
+    try {
+      allArticles = await sbGet('trend_articles', 'order=created_at.desc');
+      note.textContent = `Last synced: ${new Date().toLocaleTimeString('en-AU')}`;
+      renderArticles();
+    } catch(e) {
+      grid.innerHTML = `<div class="empty">Error loading articles. Check Supabase table exists.</div>`;
+    }
+  }
+
+  function renderArticles() {
+    const grid = document.getElementById('articles-grid')!;
+    const src = (document.getElementById('filter-source') as HTMLSelectElement).value;
+    const opp = (document.getElementById('filter-opportunity') as HTMLSelectElement).value;
+    const act = (document.getElementById('filter-actioned') as HTMLSelectElement).value;
+
+    let arts = allArticles;
+    if (src) arts = arts.filter(a => a.source === src);
+    if (opp) arts = arts.filter(a => a.opportunity_level === opp);
+    if (act !== '') arts = arts.filter(a => String(a.actioned) === act);
+
+    if (!arts.length) { grid.innerHTML = '<div class="empty">No articles found. Add one above.</div>'; return; }
+
+    grid.innerHTML = arts.map(a => `
+      <div class="card" id="article-${a.id}">
+        <div class="card-title">${a.title}</div>
+        <div class="card-meta">${a.published_date || ''} ${a.published_date ? '·' : ''} ${a.source?.replace(/_/g,' ')}</div>
+        <div class="tags-row">
+          ${opBadge(a.opportunity_level)}
+          <span class="badge badge-source">${a.source?.replace(/_/g,' ')}</span>
+          ${(a.finish_types||[]).map((f:string)=>`<span class="badge badge-finish">${f}</span>`).join('')}
+          ${(a.style_tags||[]).map((s:string)=>`<span class="badge badge-style">${s}</span>`).join('')}
+          ${a.actioned ? '<span class="badge badge-actioned">Actioned</span>' : ''}
+        </div>
+        ${a.opportunity_notes ? `<div class="card-notes">${a.opportunity_notes}</div>` : ''}
+        ${a.contact_name ? `<div class="card-notes" style="margin-top:0.25rem">Contact: ${a.contact_name}</div>` : ''}
+        <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap;align-items:center">
+          ${a.url ? `<a href="${a.url}" target="_blank" style="font-size:0.78rem">View article →</a>` : ''}
+          ${!a.actioned ? `<button class="btn-sm btn-actioned action-btn" data-id="${a.id}">Mark Actioned</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.action-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = (e.currentTarget as HTMLElement).dataset.id!;
+        await sbPatch('trend_articles', id, { actioned: true, last_updated: new Date().toISOString() });
+        loadArticles();
+      });
+    });
+  }
+
+  async function loadMarkets() {
+    const grid = document.getElementById('markets-grid')!;
+    try {
+      const markets = await sbGet('missed_markets', 'order=opportunity_score.desc');
+      if (!markets.length) { grid.innerHTML = '<div class="empty">No markets yet. Click "Seed Default Markets" to pre-populate.</div>'; return; }
+      renderMarkets(markets);
+    } catch(e) {
+      grid.innerHTML = `<div class="empty">Error loading markets. Check Supabase table exists.</div>`;
+    }
+  }
+
+  function renderMarkets(markets: any[]) {
+    const grid = document.getElementById('markets-grid')!;
+    const statusOptions = ['identified','researching','actioned','passed'];
+    grid.innerHTML = markets.map(m => `
+      <div class="card">
+        <div class="card-title">${m.market_name}</div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Opportunity</span><span>${m.opportunity_score}/10</span></div>
+          <div class="score-bar"><div class="score-fill" style="width:${m.opportunity_score*10}%"></div></div>
+        </div>
+        <div class="market-meta">
+          <span>Competition: ${m.competition_level || 'medium'}</span>
+          ${m.estimated_size ? `<span>${m.estimated_size}</span>` : ''}
+        </div>
+        <div class="tags-row">
+          ${statusBadge(m.status)}
+          ${(m.finish_types||[]).map((f:string)=>`<span class="badge badge-finish">${f}</span>`).join('')}
+        </div>
+        <div class="card-meta" style="margin-bottom:0.5rem">${m.description || ''}</div>
+        ${m.research_notes ? `<div class="card-notes">${m.research_notes}</div>` : ''}
+        <div style="margin-top:0.75rem">
+          <select class="filter-select market-status-select" data-id="${m.id}" style="font-size:0.75rem;padding:0.25rem 0.5rem">
+            ${statusOptions.map(s=>`<option value="${s}" ${m.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.market-status-select').forEach(sel => {
+      sel.addEventListener('change', async (e) => {
+        const el = e.currentTarget as HTMLSelectElement;
+        await sbPatch('missed_markets', el.dataset.id!, { status: el.value });
+      });
+    });
+  }
+
+  // Init
+  const gate = document.getElementById('gate')!;
+  const app = document.getElementById('app')!;
+  const pwInput = document.getElementById('pw-input') as HTMLInputElement;
+  const pwBtn = document.getElementById('pw-btn')!;
+  const pwError = document.getElementById('pw-error')!;
+
+  function tryLogin(pw: string) {
+    if (pw === ADMIN_PW) {
+      sessionStorage.setItem('tem-admin-password', pw);
+      gate.style.display = 'none';
+      app.style.display = 'block';
+      loadArticles();
+      loadMarkets();
+    } else {
+      pwError.textContent = 'Invalid password';
+      pwError.style.display = 'block';
+    }
+  }
+
+  if (sessionStorage.getItem('tem-admin-password') === ADMIN_PW) {
+    gate.style.display = 'none';
+    app.style.display = 'block';
+    loadArticles();
+    loadMarkets();
+  }
+
+  pwBtn.addEventListener('click', () => tryLogin(pwInput.value));
+  pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(pwInput.value); });
+
+  document.getElementById('logout-btn')!.addEventListener('click', () => {
+    sessionStorage.removeItem('tem-admin-password');
+    gate.style.display = 'flex';
+    app.style.display = 'none';
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const tab = (e.currentTarget as HTMLElement).dataset.tab!;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      (e.currentTarget as HTMLElement).classList.add('active');
+      document.getElementById(`tab-${tab}`)!.classList.add('active');
+    });
+  });
+
+  // Filters
+  ['filter-source','filter-opportunity','filter-actioned'].forEach(id => {
+    document.getElementById(id)!.addEventListener('change', renderArticles);
+  });
+
+  document.getElementById('refresh-articles-btn')!.addEventListener('click', loadArticles);
+
+  // Add article toggle
+  const toggleBtn = document.getElementById('toggle-add-article')!;
+  const addForm = document.getElementById('add-article-form')!;
+  toggleBtn.addEventListener('click', () => {
+    addForm.style.display = addForm.style.display === 'none' ? 'block' : 'none';
+    toggleBtn.textContent = addForm.style.display === 'none' ? '+ Add Article' : '— Cancel';
+  });
+  document.getElementById('cancel-article-btn')!.addEventListener('click', () => {
+    addForm.style.display = 'none';
+    toggleBtn.textContent = '+ Add Article';
+  });
+
+  document.getElementById('save-article-btn')!.addEventListener('click', async () => {
+    const title = (document.getElementById('art-title') as HTMLInputElement).value.trim();
+    if (!title) { alert('Title is required'); return; }
+    const finishes = (document.getElementById('art-finishes') as HTMLInputElement).value.split(',').map(s=>s.trim()).filter(Boolean);
+    const styles = (document.getElementById('art-styles') as HTMLInputElement).value.split(',').map(s=>s.trim()).filter(Boolean);
+    await sbInsert('trend_articles', {
+      title,
+      source: (document.getElementById('art-source') as HTMLSelectElement).value,
+      url: (document.getElementById('art-url') as HTMLInputElement).value || null,
+      published_date: (document.getElementById('art-date') as HTMLInputElement).value || null,
+      finish_types: finishes,
+      style_tags: styles,
+      opportunity_level: (document.getElementById('art-opportunity') as HTMLSelectElement).value,
+      opportunity_notes: (document.getElementById('art-notes') as HTMLTextAreaElement).value || null,
+      contact_name: (document.getElementById('art-contact-name') as HTMLInputElement).value || null,
+    });
+    addForm.style.display = 'none';
+    toggleBtn.textContent = '+ Add Article';
+    loadArticles();
+  });
+
+  // Seed markets
+  document.getElementById('seed-markets-btn')!.addEventListener('click', async () => {
+    if (!confirm('This will seed the 10 default missed markets. Continue?')) return;
+    for (const m of MISSED_MARKETS_SEED) await sbInsert('missed_markets', m);
+    loadMarkets();
+  });
+</script>
+</body>
+</html>

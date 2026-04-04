@@ -1,0 +1,597 @@
+---
+/*
+  SQL MIGRATION — run in Supabase SQL editor before using this page:
+
+  create table if not exists instagram_mentions (
+    id uuid default gen_random_uuid() primary key,
+    handle text not null,
+    post_url text,
+    post_date date,
+    caption_snippet text,
+    finish_mentioned text,
+    reach_estimate text,
+    sentiment text default 'positive',
+    actioned bool default false,
+    response_sent bool default false,
+    notes text,
+    created_at timestamptz default now()
+  );
+
+  create table if not exists web_mentions (
+    id uuid default gen_random_uuid() primary key,
+    source_name text not null,
+    source_url text,
+    title text,
+    published_date date,
+    snippet text,
+    mention_type text default 'brand_mention',
+    sentiment text default 'positive',
+    backlink bool default false,
+    da_estimate int,
+    actioned bool default false,
+    notes text,
+    created_at timestamptz default now()
+  );
+*/
+export const prerender = false;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mentions | TEM Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a0a; color: #e5e5e5; font-family: Inter, system-ui, sans-serif; min-height: 100vh; }
+    a { color: #8b7355; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .gate-box { width: 100%; max-width: 380px; padding: 2rem; }
+    .gate-box h1 { font-weight: 300; font-size: 1.75rem; margin-bottom: 1.5rem; text-align: center; }
+    .gate-box input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; margin-bottom: 0.75rem; outline: none; }
+    .gate-box input:focus { border-color: #8b7355; }
+    .gate-box button { width: 100%; padding: 0.875rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+    .gate-box button:hover { background: #a08060; }
+    .error-msg { color: #f87171; font-size: 0.85rem; margin-bottom: 0.75rem; }
+
+    .header { padding: 1.25rem 2rem; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .header h1 { font-weight: 300; font-size: 1.25rem; }
+    .nav-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .nav-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+    .nav-links { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+    .nav-link { padding: 0.25rem 0.625rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 4px; color: #888; font-size: 0.75rem; text-decoration: none; transition: all 0.15s; }
+    .nav-link:hover, .nav-link.active { border-color: #8b7355; color: #e5e5e5; text-decoration: none; }
+    .nav-header { display: flex; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
+    .logout-btn { background: none; border: none; color: #666; cursor: pointer; font-size: 0.85rem; padding: 0; }
+    .logout-btn:hover { color: #fff; }
+    .content { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid #1e1e1e; }
+    .tab-btn { padding: 0.75rem 1.25rem; background: none; border: none; color: #666; cursor: pointer; font-size: 0.9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+    .tab-btn:hover { color: #e5e5e5; }
+    .tab-btn.active { color: #8b7355; border-bottom-color: #8b7355; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
+    .badge-positive { background: #1a3a1a; color: #4ade80; }
+    .badge-neutral { background: #1e1e2e; color: #818cf8; }
+    .badge-negative { background: #3a0a0a; color: #f87171; }
+    .badge-actioned { background: #1a2a1a; color: #86efac; }
+    .badge-type { background: #1a1a2a; color: #a78bfa; }
+    .badge-backlink { background: #1a2a2a; color: #34d399; }
+
+    .btn-primary { padding: 0.625rem 1.25rem; background: #8b7355; color: #fff; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .btn-primary:hover { background: #a08060; }
+    .btn-secondary { padding: 0.625rem 1.25rem; background: #1a1a1a; color: #aaa; border: 1px solid #2a2a2a; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .btn-secondary:hover { border-color: #8b7355; color: #fff; }
+    .btn-sm { padding: 0.3rem 0.625rem; font-size: 0.75rem; border-radius: 4px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #aaa; cursor: pointer; }
+    .btn-sm:hover { border-color: #8b7355; color: #fff; }
+
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
+    .section-header h2 { font-weight: 400; font-size: 1.1rem; }
+    .empty { color: #555; text-align: center; padding: 3rem 0; font-size: 0.9rem; }
+
+    .filters { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center; }
+    .filter-select { padding: 0.5rem 0.75rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e5e5; font-size: 0.8rem; outline: none; cursor: pointer; }
+    .filter-select:focus { border-color: #8b7355; }
+
+    /* Instagram cards */
+    .insta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .insta-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 10px; padding: 1.25rem; }
+    .insta-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .insta-handle { font-weight: 500; font-size: 0.95rem; }
+    .insta-date { font-size: 0.75rem; color: #555; }
+    .insta-caption { font-size: 0.82rem; color: #aaa; line-height: 1.5; margin-bottom: 0.75rem; }
+    .insta-meta { font-size: 0.75rem; color: #666; margin-bottom: 0.75rem; }
+    .insta-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* Web mentions table */
+    .mentions-table { width: 100%; border-collapse: collapse; }
+    .mentions-table th { text-align: left; padding: 0.625rem 1rem; font-size: 0.75rem; color: #666; border-bottom: 1px solid #1e1e1e; font-weight: 500; }
+    .mentions-table td { padding: 0.75rem 1rem; font-size: 0.82rem; border-bottom: 1px solid #141414; vertical-align: middle; }
+    .mentions-table tr:hover td { background: #111; }
+
+    /* Alerts guide */
+    .alerts-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 10px; padding: 1.5rem; max-width: 680px; }
+    .alerts-card h3 { font-weight: 500; margin-bottom: 1rem; }
+    .alert-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: #1a1a1a; border-radius: 6px; margin-bottom: 0.5rem; }
+    .alert-query { font-family: monospace; font-size: 0.85rem; color: #8b7355; flex: 1; }
+    .alert-copy { padding: 0.25rem 0.5rem; background: #2a2a2a; border: none; border-radius: 4px; color: #aaa; font-size: 0.72rem; cursor: pointer; }
+    .alert-copy:hover { background: #3a3a3a; color: #fff; }
+    .alert-note { font-size: 0.75rem; color: #666; margin-top: 0.25rem; }
+    .alerts-link { display: inline-block; margin-top: 1rem; padding: 0.625rem 1.25rem; background: #1a1a2a; border: 1px solid #2a2a4a; border-radius: 6px; color: #a78bfa; font-size: 0.85rem; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .modal { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 1.75rem; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { font-weight: 500; font-size: 1rem; margin-bottom: 1.25rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+    .form-group label { font-size: 0.75rem; color: #888; }
+    .form-group input, .form-group select, .form-group textarea { padding: 0.625rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e5e5; font-size: 0.85rem; outline: none; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+<div id="gate" class="gate">
+  <div class="gate-box">
+    <h1>Admin Access</h1>
+    <input type="password" id="pw-input" placeholder="Admin password" />
+    <p id="pw-error" class="error-msg" style="display:none"></p>
+    <button id="pw-btn">Enter</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="header">
+    <h1>TEM Admin — Mentions</h1>
+    <div class="nav-header">
+      <div class="nav-group">
+        <span class="nav-label">SEO &amp; Campaigns</span>
+        <div class="nav-links">
+          <a href="/admin/campaigns" class="nav-link">Campaigns</a>
+          <a href="/admin/strategy" class="nav-link">Strategy</a>
+          <a href="/admin/content" class="nav-link">Content</a>
+          <a href="/admin/links" class="nav-link">Links</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Tracking</span>
+        <div class="nav-links">
+          <a href="/admin/analytics" class="nav-link">Analytics</a>
+          <a href="/admin/cro" class="nav-link">CRO</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Operations</span>
+        <div class="nav-links">
+          <a href="/admin/team" class="nav-link">Team</a>
+          <a href="/admin/future" class="nav-link">AI Future</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Intelligence</span>
+        <div class="nav-links">
+          <a href="/admin/trends" class="nav-link">Trends</a>
+          <a href="/admin/crm" class="nav-link">CRM</a>
+          <a href="/admin/portfolio" class="nav-link">Portfolio</a>
+          <a href="/admin/mentions" class="nav-link active">Mentions</a>
+          <a href="/admin/competitors-state" class="nav-link">Competitors</a>
+        </div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Log out</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="instagram">Instagram Tags</button>
+      <button class="tab-btn" data-tab="web">Web Mentions</button>
+      <button class="tab-btn" data-tab="alerts">Google Alerts Setup</button>
+    </div>
+
+    <!-- INSTAGRAM TAB -->
+    <div id="tab-instagram" class="tab-panel active">
+      <div class="section-header">
+        <h2>Instagram Tag Log</h2>
+        <button class="btn-primary" id="add-insta-btn">+ Log Mention</button>
+      </div>
+      <div class="filters">
+        <select class="filter-select" id="filter-insta-sentiment">
+          <option value="">All sentiment</option>
+          <option value="positive">Positive</option>
+          <option value="neutral">Neutral</option>
+          <option value="negative">Negative</option>
+        </select>
+        <select class="filter-select" id="filter-insta-actioned">
+          <option value="">All</option>
+          <option value="false">Pending</option>
+          <option value="true">Responded</option>
+        </select>
+      </div>
+      <div class="insta-grid" id="insta-grid">
+        <div class="empty">Loading mentions...</div>
+      </div>
+    </div>
+
+    <!-- WEB MENTIONS TAB -->
+    <div id="tab-web" class="tab-panel">
+      <div class="section-header">
+        <h2>Web Mentions &amp; Articles</h2>
+        <button class="btn-primary" id="add-web-btn">+ Add Mention</button>
+      </div>
+      <div class="filters">
+        <select class="filter-select" id="filter-web-type">
+          <option value="">All types</option>
+          <option value="brand_mention">Brand Mention</option>
+          <option value="product_mention">Product Mention</option>
+          <option value="editorial">Editorial</option>
+          <option value="review">Review</option>
+          <option value="directory">Directory</option>
+        </select>
+        <select class="filter-select" id="filter-web-sentiment">
+          <option value="">All sentiment</option>
+          <option value="positive">Positive</option>
+          <option value="neutral">Neutral</option>
+          <option value="negative">Negative</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="mentions-table">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Sentiment</th>
+              <th>Backlink</th>
+              <th>DA</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="web-tbody"></tbody>
+        </table>
+        <div id="web-empty" class="empty">Loading web mentions...</div>
+      </div>
+    </div>
+
+    <!-- ALERTS TAB -->
+    <div id="tab-alerts" class="tab-panel">
+      <div class="section-header">
+        <h2>Google Alerts Setup</h2>
+      </div>
+      <div class="alerts-card">
+        <h3>Set up these Google Alerts to monitor TEM brand mentions</h3>
+        <p style="font-size:0.82rem;color:#888;margin-bottom:1rem">Go to <a href="https://www.google.com/alerts" target="_blank">google.com/alerts</a> and create an alert for each query below. Set delivery to daily digest.</p>
+
+        <div class="alert-item">
+          <div>
+            <div class="alert-query">"Troweled Earth Melbourne"</div>
+            <div class="alert-note">Core brand name — catches all direct mentions</div>
+          </div>
+          <button class="alert-copy" onclick="copyAlert('Troweled Earth Melbourne')">Copy</button>
+        </div>
+        <div class="alert-item">
+          <div>
+            <div class="alert-query">"troweled earth plaster"</div>
+            <div class="alert-note">Catches product mentions without location</div>
+          </div>
+          <button class="alert-copy" onclick="copyAlert('troweled earth plaster')">Copy</button>
+        </div>
+        <div class="alert-item">
+          <div>
+            <div class="alert-query">"TEM plaster Melbourne"</div>
+            <div class="alert-note">Abbreviation monitor</div>
+          </div>
+          <button class="alert-copy" onclick="copyAlert('TEM plaster Melbourne')">Copy</button>
+        </div>
+        <div class="alert-item">
+          <div>
+            <div class="alert-query">"hemp render Melbourne"</div>
+            <div class="alert-note">Category alert — catches market conversations TEM can join</div>
+          </div>
+          <button class="alert-copy" onclick="copyAlert('hemp render Melbourne')">Copy</button>
+        </div>
+        <div class="alert-item">
+          <div>
+            <div class="alert-query">"venetian plaster Melbourne"</div>
+            <div class="alert-note">Competitor monitoring — see who else is being mentioned</div>
+          </div>
+          <button class="alert-copy" onclick="copyAlert('venetian plaster Melbourne')">Copy</button>
+        </div>
+        <div class="alert-item">
+          <div>
+            <div class="alert-query">"lime render Melbourne"</div>
+            <div class="alert-note">Category alert — lime render market activity</div>
+          </div>
+          <button class="alert-copy" onclick="copyAlert('lime render Melbourne')">Copy</button>
+        </div>
+
+        <a href="https://www.google.com/alerts" target="_blank" class="alerts-link">Open Google Alerts →</a>
+        <p style="font-size:0.75rem;color:#555;margin-top:0.75rem">Tip: Once set up, paste interesting alerts into Web Mentions tab for tracking.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Instagram Mention Modal -->
+<div id="insta-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>Log Instagram Mention</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Handle *</label><input type="text" id="im-handle" placeholder="@username" /></div>
+      <div class="form-group"><label>Post Date</label><input type="date" id="im-date" /></div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Post URL</label><input type="url" id="im-url" placeholder="https://instagram.com/p/..." /></div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Caption Snippet</label><textarea id="im-caption" placeholder="Paste relevant caption text..."></textarea></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Finish Mentioned</label><input type="text" id="im-finish" placeholder="venetian, lime..." /></div>
+      <div class="form-group"><label>Reach Estimate</label><input type="text" id="im-reach" placeholder="e.g. 15k followers" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Sentiment</label>
+        <select id="im-sentiment"><option value="positive">Positive</option><option value="neutral">Neutral</option><option value="negative">Negative</option></select>
+      </div>
+      <div class="form-group"><label>Response Sent?</label>
+        <select id="im-responded"><option value="false">No</option><option value="true">Yes</option></select>
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Notes</label><textarea id="im-notes"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" id="save-insta-btn">Save</button>
+      <button class="btn-secondary" id="cancel-insta-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Web Mention Modal -->
+<div id="web-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>Add Web Mention</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Source Name *</label><input type="text" id="wm-source" placeholder="Dezeen, Architecture AU..." /></div>
+      <div class="form-group"><label>Source URL</label><input type="url" id="wm-url" /></div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Title</label><input type="text" id="wm-title" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Published Date</label><input type="date" id="wm-date" /></div>
+      <div class="form-group"><label>Mention Type</label>
+        <select id="wm-type">
+          <option value="brand_mention">Brand Mention</option>
+          <option value="product_mention">Product Mention</option>
+          <option value="editorial">Editorial</option>
+          <option value="review">Review</option>
+          <option value="directory">Directory</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Sentiment</label>
+        <select id="wm-sentiment"><option value="positive">Positive</option><option value="neutral">Neutral</option><option value="negative">Negative</option></select>
+      </div>
+      <div class="form-group"><label>DA Estimate</label><input type="number" id="wm-da" placeholder="1–100" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Has Backlink?</label>
+        <select id="wm-backlink"><option value="false">No</option><option value="true">Yes</option></select>
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Snippet</label><textarea id="wm-snippet" placeholder="Key quote or context..."></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" id="save-web-btn">Save</button>
+      <button class="btn-secondary" id="cancel-web-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PW = 'TEM-admin-2026!';
+  const SB_URL = 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdHhib2hqanBraHpod2xucnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDgzMjEsImV4cCI6MjA4NjYyNDMyMX0.UWgOz-9ZAy0xxVH-VTTysFzvrbD1CX0a459rNC391Hw';
+
+  function sbH() { return { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }; }
+  async function sbGet(table: string, q = '') { const r = await fetch(`${SB_URL}/rest/v1/${table}?${q}`, { headers: sbH() }); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+  async function sbInsert(table: string, data: any) { const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method: 'POST', headers: sbH(), body: JSON.stringify(data) }); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+  async function sbPatch(table: string, id: string, data: any) { const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'PATCH', headers: sbH(), body: JSON.stringify(data) }); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+
+  function sentBadge(s: string) {
+    const m: any = { positive: 'badge-positive', neutral: 'badge-neutral', negative: 'badge-negative' };
+    return `<span class="badge ${m[s]||'badge-neutral'}">${s||'neutral'}</span>`;
+  }
+
+  let allInsta: any[] = [];
+  let allWeb: any[] = [];
+
+  async function loadInsta() {
+    const grid = document.getElementById('insta-grid')!;
+    try {
+      allInsta = await sbGet('instagram_mentions', 'order=post_date.desc');
+      renderInsta();
+    } catch(e) {
+      grid.innerHTML = '<div class="empty">Error loading. Check instagram_mentions table exists.</div>';
+    }
+  }
+
+  function renderInsta() {
+    const grid = document.getElementById('insta-grid')!;
+    const sentF = (document.getElementById('filter-insta-sentiment') as HTMLSelectElement).value;
+    const actF = (document.getElementById('filter-insta-actioned') as HTMLSelectElement).value;
+    let items = allInsta;
+    if (sentF) items = items.filter(i => i.sentiment === sentF);
+    if (actF !== '') items = items.filter(i => String(i.response_sent) === actF);
+    if (!items.length) { grid.innerHTML = '<div class="empty">No Instagram mentions yet.</div>'; return; }
+    grid.innerHTML = items.map(i => `
+      <div class="insta-card">
+        <div class="insta-card-header">
+          <span class="insta-handle">${i.handle}</span>
+          <span class="insta-date">${i.post_date||''}</span>
+        </div>
+        <div style="display:flex;gap:0.375rem;flex-wrap:wrap;margin-bottom:0.625rem">
+          ${sentBadge(i.sentiment)}
+          ${i.finish_mentioned ? `<span class="badge" style="background:#2a1a1a;color:#fca5a5">${i.finish_mentioned}</span>` : ''}
+          ${i.response_sent ? '<span class="badge badge-actioned">Responded</span>' : ''}
+        </div>
+        ${i.caption_snippet ? `<div class="insta-caption">"${i.caption_snippet}"</div>` : ''}
+        ${i.reach_estimate ? `<div class="insta-meta">Reach: ${i.reach_estimate}</div>` : ''}
+        ${i.notes ? `<div class="insta-meta">${i.notes}</div>` : ''}
+        <div class="insta-actions">
+          ${i.post_url ? `<a href="${i.post_url}" target="_blank" class="btn-sm" style="display:inline-block">View Post</a>` : ''}
+          ${!i.response_sent ? `<button class="btn-sm" onclick="markResponded('${i.id}')">Mark Responded</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  (window as any).markResponded = async function(id: string) {
+    await sbPatch('instagram_mentions', id, { response_sent: true, actioned: true });
+    loadInsta();
+  };
+
+  async function loadWeb() {
+    const tbody = document.getElementById('web-tbody')!;
+    const empty = document.getElementById('web-empty')!;
+    try {
+      allWeb = await sbGet('web_mentions', 'order=published_date.desc');
+      renderWeb();
+    } catch(e) {
+      empty.textContent = 'Error loading. Check web_mentions table exists.';
+      empty.style.display = 'block';
+    }
+  }
+
+  function renderWeb() {
+    const tbody = document.getElementById('web-tbody')!;
+    const empty = document.getElementById('web-empty')!;
+    const typeF = (document.getElementById('filter-web-type') as HTMLSelectElement).value;
+    const sentF = (document.getElementById('filter-web-sentiment') as HTMLSelectElement).value;
+    let items = allWeb;
+    if (typeF) items = items.filter(i => i.mention_type === typeF);
+    if (sentF) items = items.filter(i => i.sentiment === sentF);
+    if (!items.length) { tbody.innerHTML = ''; empty.textContent = 'No web mentions yet.'; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    tbody.innerHTML = items.map(i => `
+      <tr>
+        <td><a href="${i.source_url||'#'}" target="_blank">${i.source_name}</a></td>
+        <td style="max-width:240px">${i.title||'—'}</td>
+        <td><span class="badge badge-type">${(i.mention_type||'').replace(/_/g,' ')}</span></td>
+        <td>${sentBadge(i.sentiment)}</td>
+        <td>${i.backlink ? '<span class="badge badge-backlink">Yes</span>' : '<span style="color:#555">No</span>'}</td>
+        <td style="color:#888">${i.da_estimate||'—'}</td>
+        <td style="color:#666;white-space:nowrap">${i.published_date||'—'}</td>
+        <td><button class="btn-sm" onclick="markWebActioned('${i.id}')" ${i.actioned ? 'disabled style="opacity:0.4"' : ''}>${i.actioned ? 'Done' : 'Action'}</button></td>
+      </tr>
+    `).join('');
+  }
+
+  (window as any).markWebActioned = async function(id: string) {
+    await sbPatch('web_mentions', id, { actioned: true });
+    loadWeb();
+  };
+
+  (window as any).copyAlert = function(text: string) {
+    navigator.clipboard.writeText(text);
+  };
+
+  // Filters
+  ['filter-insta-sentiment','filter-insta-actioned'].forEach(id => {
+    document.getElementById(id)!.addEventListener('change', renderInsta);
+  });
+  ['filter-web-type','filter-web-sentiment'].forEach(id => {
+    document.getElementById(id)!.addEventListener('change', renderWeb);
+  });
+
+  // Instagram modal
+  document.getElementById('add-insta-btn')!.addEventListener('click', () => { document.getElementById('insta-modal')!.style.display = 'flex'; });
+  document.getElementById('cancel-insta-btn')!.addEventListener('click', () => { document.getElementById('insta-modal')!.style.display = 'none'; });
+  document.getElementById('save-insta-btn')!.addEventListener('click', async () => {
+    const handle = (document.getElementById('im-handle') as HTMLInputElement).value.trim();
+    if (!handle) { alert('Handle required'); return; }
+    await sbInsert('instagram_mentions', {
+      handle,
+      post_url: (document.getElementById('im-url') as HTMLInputElement).value || null,
+      post_date: (document.getElementById('im-date') as HTMLInputElement).value || null,
+      caption_snippet: (document.getElementById('im-caption') as HTMLTextAreaElement).value || null,
+      finish_mentioned: (document.getElementById('im-finish') as HTMLInputElement).value || null,
+      reach_estimate: (document.getElementById('im-reach') as HTMLInputElement).value || null,
+      sentiment: (document.getElementById('im-sentiment') as HTMLSelectElement).value,
+      response_sent: (document.getElementById('im-responded') as HTMLSelectElement).value === 'true',
+      notes: (document.getElementById('im-notes') as HTMLTextAreaElement).value || null,
+    });
+    document.getElementById('insta-modal')!.style.display = 'none';
+    loadInsta();
+  });
+
+  // Web mention modal
+  document.getElementById('add-web-btn')!.addEventListener('click', () => { document.getElementById('web-modal')!.style.display = 'flex'; });
+  document.getElementById('cancel-web-btn')!.addEventListener('click', () => { document.getElementById('web-modal')!.style.display = 'none'; });
+  document.getElementById('save-web-btn')!.addEventListener('click', async () => {
+    const source = (document.getElementById('wm-source') as HTMLInputElement).value.trim();
+    if (!source) { alert('Source name required'); return; }
+    await sbInsert('web_mentions', {
+      source_name: source,
+      source_url: (document.getElementById('wm-url') as HTMLInputElement).value || null,
+      title: (document.getElementById('wm-title') as HTMLInputElement).value || null,
+      published_date: (document.getElementById('wm-date') as HTMLInputElement).value || null,
+      mention_type: (document.getElementById('wm-type') as HTMLSelectElement).value,
+      sentiment: (document.getElementById('wm-sentiment') as HTMLSelectElement).value,
+      da_estimate: parseInt((document.getElementById('wm-da') as HTMLInputElement).value) || null,
+      backlink: (document.getElementById('wm-backlink') as HTMLSelectElement).value === 'true',
+      snippet: (document.getElementById('wm-snippet') as HTMLTextAreaElement).value || null,
+    });
+    document.getElementById('web-modal')!.style.display = 'none';
+    loadWeb();
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const tab = (e.currentTarget as HTMLElement).dataset.tab!;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      (e.currentTarget as HTMLElement).classList.add('active');
+      document.getElementById(`tab-${tab}`)!.classList.add('active');
+      if (tab === 'web') loadWeb();
+    });
+  });
+
+  // Auth
+  const gate = document.getElementById('gate')!;
+  const app = document.getElementById('app')!;
+  const pwInput = document.getElementById('pw-input') as HTMLInputElement;
+  function tryLogin(pw: string) {
+    if (pw === ADMIN_PW) {
+      sessionStorage.setItem('tem-admin-password', pw);
+      gate.style.display = 'none';
+      app.style.display = 'block';
+      loadInsta();
+    } else {
+      const e = document.getElementById('pw-error')!;
+      e.textContent = 'Invalid password';
+      e.style.display = 'block';
+    }
+  }
+  if (sessionStorage.getItem('tem-admin-password') === ADMIN_PW) { gate.style.display = 'none'; app.style.display = 'block'; loadInsta(); }
+  document.getElementById('pw-btn')!.addEventListener('click', () => tryLogin(pwInput.value));
+  pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(pwInput.value); });
+  document.getElementById('logout-btn')!.addEventListener('click', () => { sessionStorage.removeItem('tem-admin-password'); gate.style.display = 'flex'; app.style.display = 'none'; });
+</script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+---
+/*
+  SQL MIGRATION — run in Supabase SQL editor before using this page:
+
+  -- Requires tem_clients table (created in crm.astro migration).
+  -- Run this after crm.astro migration:
+
+  create table if not exists collaborator_projects (
+    id uuid default gen_random_uuid() primary key,
+    collaborator_id uuid references tem_clients(id) on delete cascade,
+    project_name text not null,
+    location text,
+    finish_types text[] default '{}',
+    project_value text,
+    completion_date date,
+    instagram_url text,
+    article_url text,
+    notes text,
+    photos text[] default '{}',
+    created_at timestamptz default now()
+  );
+*/
+export const prerender = false;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio | TEM Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a0a; color: #e5e5e5; font-family: Inter, system-ui, sans-serif; min-height: 100vh; }
+    a { color: #8b7355; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .gate-box { width: 100%; max-width: 380px; padding: 2rem; }
+    .gate-box h1 { font-weight: 300; font-size: 1.75rem; margin-bottom: 1.5rem; text-align: center; }
+    .gate-box input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; margin-bottom: 0.75rem; outline: none; }
+    .gate-box input:focus { border-color: #8b7355; }
+    .gate-box button { width: 100%; padding: 0.875rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+    .gate-box button:hover { background: #a08060; }
+    .error-msg { color: #f87171; font-size: 0.85rem; margin-bottom: 0.75rem; }
+
+    .header { padding: 1.25rem 2rem; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .header h1 { font-weight: 300; font-size: 1.25rem; }
+    .nav-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .nav-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+    .nav-links { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+    .nav-link { padding: 0.25rem 0.625rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 4px; color: #888; font-size: 0.75rem; text-decoration: none; transition: all 0.15s; }
+    .nav-link:hover, .nav-link.active { border-color: #8b7355; color: #e5e5e5; text-decoration: none; }
+    .nav-header { display: flex; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
+    .logout-btn { background: none; border: none; color: #666; cursor: pointer; font-size: 0.85rem; padding: 0; }
+    .logout-btn:hover { color: #fff; }
+    .content { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid #1e1e1e; }
+    .tab-btn { padding: 0.75rem 1.25rem; background: none; border: none; color: #666; cursor: pointer; font-size: 0.9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+    .tab-btn:hover { color: #e5e5e5; }
+    .tab-btn.active { color: #8b7355; border-bottom-color: #8b7355; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
+    .badge-finish { background: #2a1a1a; color: #fca5a5; }
+
+    .btn-primary { padding: 0.625rem 1.25rem; background: #8b7355; color: #fff; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .btn-primary:hover { background: #a08060; }
+    .btn-secondary { padding: 0.625rem 1.25rem; background: #1a1a1a; color: #aaa; border: 1px solid #2a2a2a; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .btn-secondary:hover { border-color: #8b7355; color: #fff; }
+    .btn-sm { padding: 0.3rem 0.625rem; font-size: 0.75rem; border-radius: 4px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #aaa; cursor: pointer; }
+    .btn-sm:hover { border-color: #8b7355; color: #fff; }
+    .btn-prep { border-color: #8b7355; color: #8b7355; }
+    .btn-prep:hover { background: #8b7355; color: #fff; }
+
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
+    .section-header h2 { font-weight: 400; font-size: 1.1rem; }
+    .empty { color: #555; text-align: center; padding: 3rem 0; font-size: 0.9rem; }
+
+    /* Collaborator cards */
+    .collab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+    .collab-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 10px; overflow: hidden; transition: border-color 0.15s; }
+    .collab-card:hover { border-color: #2a2a2a; }
+    .collab-card-body { padding: 1.25rem; }
+    .collab-name { font-size: 1rem; font-weight: 500; margin-bottom: 0.25rem; }
+    .collab-sub { font-size: 0.8rem; color: #888; margin-bottom: 0.75rem; }
+    .collab-tags { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-bottom: 0.75rem; }
+    .collab-actions { display: flex; gap: 0.5rem; padding: 0.875rem 1.25rem; border-top: 1px solid #1e1e1e; background: #0d0d0d; }
+
+    /* Timeline */
+    .timeline { position: relative; }
+    .timeline-item { padding: 0 0 1.5rem 2rem; border-left: 1px solid #2a2a2a; position: relative; }
+    .timeline-item:last-child { border-left: none; }
+    .timeline-dot { width: 10px; height: 10px; background: #8b7355; border-radius: 50%; position: absolute; left: -5px; top: 4px; }
+    .timeline-date { font-size: 0.75rem; color: #666; margin-bottom: 0.25rem; }
+    .timeline-title { font-weight: 500; font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .timeline-sub { font-size: 0.8rem; color: #888; }
+
+    /* Project log */
+    .collab-select-wrap { margin-bottom: 1.5rem; }
+    .filter-select { padding: 0.5rem 0.75rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e5e5; font-size: 0.8rem; outline: none; cursor: pointer; }
+    .filter-select:focus { border-color: #8b7355; }
+
+    /* Meeting Prep panel */
+    .prep-panel { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 1.75rem; max-width: 700px; }
+    .prep-panel h2 { font-weight: 400; font-size: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid #1e1e1e; padding-bottom: 1rem; }
+    .prep-section { margin-bottom: 1.5rem; }
+    .prep-section h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-bottom: 0.625rem; }
+    .prep-section p { font-size: 0.9rem; line-height: 1.6; }
+    .print-btn { padding: 0.625rem 1.25rem; background: #1a1a1a; color: #aaa; border: 1px solid #2a2a2a; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .print-btn:hover { border-color: #8b7355; color: #fff; }
+    .back-link { display: inline-block; margin-bottom: 1.25rem; font-size: 0.85rem; color: #8b7355; cursor: pointer; background: none; border: none; padding: 0; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .modal { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 1.75rem; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { font-weight: 500; font-size: 1rem; margin-bottom: 1.25rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+    .form-group label { font-size: 0.75rem; color: #888; }
+    .form-group input, .form-group select, .form-group textarea { padding: 0.625rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e5e5; font-size: 0.85rem; outline: none; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+
+    @media print {
+      .header, .tabs, .tab-btn, .btn-sm, .btn-prep, .print-btn, .back-link, .collab-grid, .section-header button { display: none !important; }
+      body { background: #fff; color: #000; }
+      .prep-panel { border: none; }
+    }
+  </style>
+</head>
+<body>
+<div id="gate" class="gate">
+  <div class="gate-box">
+    <h1>Admin Access</h1>
+    <input type="password" id="pw-input" placeholder="Admin password" />
+    <p id="pw-error" class="error-msg" style="display:none"></p>
+    <button id="pw-btn">Enter</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="header">
+    <h1>TEM Admin — Portfolio</h1>
+    <div class="nav-header">
+      <div class="nav-group">
+        <span class="nav-label">SEO &amp; Campaigns</span>
+        <div class="nav-links">
+          <a href="/admin/campaigns" class="nav-link">Campaigns</a>
+          <a href="/admin/strategy" class="nav-link">Strategy</a>
+          <a href="/admin/content" class="nav-link">Content</a>
+          <a href="/admin/links" class="nav-link">Links</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Tracking</span>
+        <div class="nav-links">
+          <a href="/admin/analytics" class="nav-link">Analytics</a>
+          <a href="/admin/cro" class="nav-link">CRO</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Operations</span>
+        <div class="nav-links">
+          <a href="/admin/team" class="nav-link">Team</a>
+          <a href="/admin/future" class="nav-link">AI Future</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Intelligence</span>
+        <div class="nav-links">
+          <a href="/admin/trends" class="nav-link">Trends</a>
+          <a href="/admin/crm" class="nav-link">CRM</a>
+          <a href="/admin/portfolio" class="nav-link active">Portfolio</a>
+          <a href="/admin/mentions" class="nav-link">Mentions</a>
+          <a href="/admin/competitors-state" class="nav-link">Competitors</a>
+        </div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Log out</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="collaborators">Tracked Collaborators</button>
+      <button class="tab-btn" data-tab="projects">Project Log</button>
+      <button class="tab-btn" data-tab="prep">Meeting Prep</button>
+    </div>
+
+    <!-- COLLABORATORS TAB -->
+    <div id="tab-collaborators" class="tab-panel active">
+      <div class="section-header">
+        <h2>Collaborators (TEM Used)</h2>
+        <button class="btn-primary" id="add-project-quick-btn">+ Add Project</button>
+      </div>
+      <div class="collab-grid" id="collab-grid">
+        <div class="empty">Loading collaborators...</div>
+      </div>
+    </div>
+
+    <!-- PROJECT LOG TAB -->
+    <div id="tab-projects" class="tab-panel">
+      <div class="section-header">
+        <h2>Project Log</h2>
+        <button class="btn-primary" id="add-project-btn">+ Add Project</button>
+      </div>
+      <div class="collab-select-wrap">
+        <select class="filter-select" id="collab-filter" style="min-width:220px">
+          <option value="">All collaborators</option>
+        </select>
+      </div>
+      <div id="project-timeline"><div class="empty">Loading projects...</div></div>
+    </div>
+
+    <!-- MEETING PREP TAB -->
+    <div id="tab-prep" class="tab-panel">
+      <div class="section-header">
+        <h2>Meeting Prep Generator</h2>
+      </div>
+      <div style="margin-bottom:1.25rem">
+        <label style="font-size:0.8rem;color:#888;display:block;margin-bottom:0.5rem">Select Collaborator</label>
+        <select class="filter-select" id="prep-select" style="min-width:250px">
+          <option value="">Choose a collaborator...</option>
+        </select>
+      </div>
+      <div id="prep-output"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Project Modal -->
+<div id="project-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>Add Project</h3>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Collaborator</label>
+        <select id="proj-collab"></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Project Name *</label><input type="text" id="proj-name" /></div>
+      <div class="form-group"><label>Location</label><input type="text" id="proj-location" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Finish Types (comma-sep)</label><input type="text" id="proj-finishes" placeholder="venetian, lime" /></div>
+      <div class="form-group"><label>Project Value</label><input type="text" id="proj-value" placeholder="$50k–$100k" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Completion Date</label><input type="date" id="proj-date" /></div>
+      <div class="form-group"><label>Instagram URL</label><input type="url" id="proj-insta" /></div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Notes</label><textarea id="proj-notes"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" id="save-project-btn">Save Project</button>
+      <button class="btn-secondary" id="cancel-project-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PW = 'TEM-admin-2026!';
+  const SB_URL = 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdHhib2hqanBraHpod2xucnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDgzMjEsImV4cCI6MjA4NjYyNDMyMX0.UWgOz-9ZAy0xxVH-VTTysFzvrbD1CX0a459rNC391Hw';
+
+  function sbH() { return { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }; }
+  async function sbGet(table: string, q = '') { const r = await fetch(`${SB_URL}/rest/v1/${table}?${q}`, { headers: sbH() }); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+  async function sbInsert(table: string, data: any) { const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method: 'POST', headers: sbH(), body: JSON.stringify(data) }); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+
+  let collabs: any[] = [];
+  let allProjects: any[] = [];
+
+  async function loadCollabs() {
+    const grid = document.getElementById('collab-grid')!;
+    try {
+      collabs = await sbGet('tem_clients', 'order=created_at.desc');
+      allProjects = await sbGet('collaborator_projects', 'order=completion_date.desc');
+      populateCollabSelects();
+      renderCollabs();
+    } catch(e) {
+      grid.innerHTML = '<div class="empty">Error loading. Ensure tem_clients table exists (see CRM page).</div>';
+    }
+  }
+
+  function populateCollabSelects() {
+    const opts = collabs.map(c => `<option value="${c.id}">${c.name}${c.company ? ` (${c.company})` : ''}</option>`).join('');
+    ['proj-collab','collab-filter','prep-select'].forEach(id => {
+      const el = document.getElementById(id) as HTMLSelectElement;
+      if (!el) return;
+      const prefix = id === 'collab-filter' ? '<option value="">All collaborators</option>' : id === 'prep-select' ? '<option value="">Choose a collaborator...</option>' : '';
+      el.innerHTML = prefix + opts;
+    });
+  }
+
+  function renderCollabs() {
+    const grid = document.getElementById('collab-grid')!;
+    if (!collabs.length) { grid.innerHTML = '<div class="empty">No collaborators yet. Add TEM clients via the CRM page.</div>'; return; }
+    grid.innerHTML = collabs.map(c => {
+      const projects = allProjects.filter(p => p.collaborator_id === c.id);
+      return `<div class="collab-card">
+        <div class="collab-card-body">
+          <div class="collab-name">${c.name}</div>
+          <div class="collab-sub">${c.company||''} ${c.role ? `· ${c.role}` : ''} ${c.project_location ? `· ${c.project_location}` : ''}</div>
+          <div class="collab-tags">
+            ${(c.finishes_used||[]).map((f: string) => `<span class="badge badge-finish">${f}</span>`).join('')}
+          </div>
+          ${c.instagram_handle ? `<div style="font-size:0.8rem;margin-bottom:0.5rem"><a href="https://instagram.com/${c.instagram_handle.replace('@','')}" target="_blank">${c.instagram_handle}</a></div>` : ''}
+          <div style="font-size:0.78rem;color:#555">${projects.length} project${projects.length!==1?'s':''} logged</div>
+          ${c.notes ? `<div style="font-size:0.78rem;color:#888;margin-top:0.5rem;border-top:1px solid #1e1e1e;padding-top:0.5rem">${c.notes}</div>` : ''}
+        </div>
+        <div class="collab-actions">
+          <button class="btn-sm btn-prep" onclick="openPrep('${c.id}')">Meeting Prep</button>
+          <button class="btn-sm" onclick="openAddProject('${c.id}')">+ Project</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderProjects(collabId = '') {
+    const container = document.getElementById('project-timeline')!;
+    let projects = allProjects;
+    if (collabId) projects = projects.filter(p => p.collaborator_id === collabId);
+    if (!projects.length) { container.innerHTML = '<div class="empty">No projects yet.</div>'; return; }
+    const collabMap: any = {};
+    collabs.forEach(c => collabMap[c.id] = c);
+    container.innerHTML = `<div class="timeline">${projects.map(p => {
+      const c = collabMap[p.collaborator_id];
+      return `<div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-date">${p.completion_date || 'Date TBC'} ${c ? `· ${c.name}` : ''}</div>
+        <div class="timeline-title">${p.project_name}</div>
+        <div class="timeline-sub">${p.location||''} ${p.project_value ? `· ${p.project_value}` : ''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.375rem;margin-top:0.375rem">
+          ${(p.finish_types||[]).map((f: string) => `<span class="badge badge-finish">${f}</span>`).join('')}
+        </div>
+        ${p.instagram_url ? `<div style="margin-top:0.25rem"><a href="${p.instagram_url}" target="_blank" style="font-size:0.78rem">Instagram post →</a></div>` : ''}
+        ${p.notes ? `<div style="font-size:0.78rem;color:#888;margin-top:0.375rem">${p.notes}</div>` : ''}
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  (window as any).openPrep = function(collabId: string) {
+    const tabBtn = document.querySelector('[data-tab="prep"]') as HTMLElement;
+    tabBtn?.click();
+    const sel = document.getElementById('prep-select') as HTMLSelectElement;
+    sel.value = collabId;
+    sel.dispatchEvent(new Event('change'));
+  };
+
+  (window as any).openAddProject = function(collabId: string) {
+    document.getElementById('project-modal')!.style.display = 'flex';
+    (document.getElementById('proj-collab') as HTMLSelectElement).value = collabId;
+  };
+
+  document.getElementById('prep-select')!.addEventListener('change', (e) => {
+    const id = (e.target as HTMLSelectElement).value;
+    const output = document.getElementById('prep-output')!;
+    if (!id) { output.innerHTML = ''; return; }
+    const c = collabs.find(x => x.id === id);
+    if (!c) return;
+    const projects = allProjects.filter(p => p.collaborator_id === id);
+    const finishes = [...new Set([...(c.finishes_used||[]), ...projects.flatMap((p: any) => p.finish_types||[])])];
+    output.innerHTML = `
+      <div class="prep-panel" id="prep-content">
+        <h2>Meeting Prep: ${c.name}</h2>
+        <div class="prep-section">
+          <h3>Who They Are</h3>
+          <p><strong>${c.name}</strong>${c.company ? ` — ${c.company}` : ''}<br>${c.role||''}</p>
+        </div>
+        <div class="prep-section">
+          <h3>TEM Finishes Used</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:0.375rem">${finishes.map(f => `<span class="badge badge-finish">${f}</span>`).join('') || '<span style="color:#555">None recorded</span>'}</div>
+        </div>
+        <div class="prep-section">
+          <h3>Recent Projects (${projects.length})</h3>
+          ${projects.length ? projects.slice(0,3).map(p => `<p style="margin-bottom:0.375rem">• <strong>${p.project_name}</strong>${p.location ? ` — ${p.location}` : ''}${p.completion_date ? ` (${p.completion_date})` : ''}</p>`).join('') : '<p style="color:#555">No projects logged yet.</p>'}
+        </div>
+        <div class="prep-section">
+          <h3>Contact</h3>
+          <p>${c.instagram_handle ? `Instagram: <a href="https://instagram.com/${c.instagram_handle.replace('@','')}" target="_blank">${c.instagram_handle}</a><br>` : ''}${c.website ? `Website: <a href="${c.website}" target="_blank">${c.website}</a>` : ''}</p>
+        </div>
+        ${c.notes ? `<div class="prep-section"><h3>Notes</h3><p>${c.notes}</p></div>` : ''}
+        <div class="prep-section">
+          <h3>TEM Products to Mention</h3>
+          <p>${finishes.includes('venetian') ? '• Marbellino Venetian Plaster — polished luxury<br>' : ''}${finishes.includes('lime') ? '• Natural Lime Render — breathable, heritage-compatible<br>' : ''}${finishes.includes('hemp') ? '• Hemp Render — sustainable, passive house certified<br>' : ''}${finishes.includes('microcement') ? '• Concretum Microcement — industrial contemporary<br>' : ''}${!finishes.length ? 'Prepare full product range overview.' : ''}</p>
+        </div>
+        <div style="margin-top:1.5rem">
+          <button class="print-btn" onclick="window.print()">Print / Save PDF</button>
+        </div>
+      </div>`;
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const tab = (e.currentTarget as HTMLElement).dataset.tab!;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      (e.currentTarget as HTMLElement).classList.add('active');
+      document.getElementById(`tab-${tab}`)!.classList.add('active');
+      if (tab === 'projects') renderProjects((document.getElementById('collab-filter') as HTMLSelectElement).value);
+    });
+  });
+
+  document.getElementById('collab-filter')!.addEventListener('change', (e) => {
+    renderProjects((e.target as HTMLSelectElement).value);
+  });
+
+  // Add project modal
+  ['add-project-btn','add-project-quick-btn'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', () => { document.getElementById('project-modal')!.style.display = 'flex'; });
+  });
+  document.getElementById('cancel-project-btn')!.addEventListener('click', () => { document.getElementById('project-modal')!.style.display = 'none'; });
+  document.getElementById('save-project-btn')!.addEventListener('click', async () => {
+    const name = (document.getElementById('proj-name') as HTMLInputElement).value.trim();
+    const collabId = (document.getElementById('proj-collab') as HTMLSelectElement).value;
+    if (!name) { alert('Project name required'); return; }
+    const finishes = (document.getElementById('proj-finishes') as HTMLInputElement).value.split(',').map(s=>s.trim()).filter(Boolean);
+    await sbInsert('collaborator_projects', {
+      collaborator_id: collabId || null,
+      project_name: name,
+      location: (document.getElementById('proj-location') as HTMLInputElement).value || null,
+      finish_types: finishes,
+      project_value: (document.getElementById('proj-value') as HTMLInputElement).value || null,
+      completion_date: (document.getElementById('proj-date') as HTMLInputElement).value || null,
+      instagram_url: (document.getElementById('proj-insta') as HTMLInputElement).value || null,
+      notes: (document.getElementById('proj-notes') as HTMLTextAreaElement).value || null,
+    });
+    document.getElementById('project-modal')!.style.display = 'none';
+    await loadCollabs();
+    renderProjects();
+  });
+
+  // Auth
+  const gate = document.getElementById('gate')!;
+  const app = document.getElementById('app')!;
+  const pwInput = document.getElementById('pw-input') as HTMLInputElement;
+  function tryLogin(pw: string) {
+    if (pw === ADMIN_PW) {
+      sessionStorage.setItem('tem-admin-password', pw);
+      gate.style.display = 'none';
+      app.style.display = 'block';
+      loadCollabs();
+    } else {
+      const e = document.getElementById('pw-error')!;
+      e.textContent = 'Invalid password';
+      e.style.display = 'block';
+    }
+  }
+  if (sessionStorage.getItem('tem-admin-password') === ADMIN_PW) { gate.style.display = 'none'; app.style.display = 'block'; loadCollabs(); }
+  document.getElementById('pw-btn')!.addEventListener('click', () => tryLogin(pwInput.value));
+  pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(pwInput.value); });
+  document.getElementById('logout-btn')!.addEventListener('click', () => { sessionStorage.removeItem('tem-admin-password'); gate.style.display = 'flex'; app.style.display = 'none'; });
+</script>
+</body>
+</html>

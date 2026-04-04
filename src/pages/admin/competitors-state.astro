@@ -1,0 +1,596 @@
+---
+/*
+  SQL MIGRATION — run in Supabase SQL editor before using this page:
+
+  create table if not exists state_competitors (
+    id uuid default gen_random_uuid() primary key,
+    business_name text not null,
+    state text not null,
+    rank int,
+    speciality text[] default '{}',
+    instagram_handle text,
+    website text,
+    instagram_followers int,
+    google_rating float,
+    google_reviews int,
+    products_used text[] default '{}',
+    builders_used text[] default '{}',
+    designers_used text[] default '{}',
+    style_tags text[] default '{}',
+    pricing_tier text default 'mid',
+    monitored bool default false,
+    last_updated date,
+    notes text,
+    created_at timestamptz default now()
+  );
+
+  create table if not exists competitor_activity (
+    id uuid default gen_random_uuid() primary key,
+    competitor_id uuid references state_competitors(id) on delete cascade,
+    activity_type text not null,
+    description text,
+    spotted_date date,
+    source_url text,
+    notes text,
+    created_at timestamptz default now()
+  );
+*/
+export const prerender = false;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Competitors | TEM Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a0a; color: #e5e5e5; font-family: Inter, system-ui, sans-serif; min-height: 100vh; }
+    a { color: #8b7355; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .gate-box { width: 100%; max-width: 380px; padding: 2rem; }
+    .gate-box h1 { font-weight: 300; font-size: 1.75rem; margin-bottom: 1.5rem; text-align: center; }
+    .gate-box input { width: 100%; padding: 0.875rem 1rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 1rem; margin-bottom: 0.75rem; outline: none; }
+    .gate-box input:focus { border-color: #8b7355; }
+    .gate-box button { width: 100%; padding: 0.875rem; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+    .gate-box button:hover { background: #a08060; }
+    .error-msg { color: #f87171; font-size: 0.85rem; margin-bottom: 0.75rem; }
+
+    .header { padding: 1.25rem 2rem; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .header h1 { font-weight: 300; font-size: 1.25rem; }
+    .nav-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .nav-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+    .nav-links { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+    .nav-link { padding: 0.25rem 0.625rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 4px; color: #888; font-size: 0.75rem; text-decoration: none; transition: all 0.15s; }
+    .nav-link:hover, .nav-link.active { border-color: #8b7355; color: #e5e5e5; text-decoration: none; }
+    .nav-header { display: flex; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
+    .logout-btn { background: none; border: none; color: #666; cursor: pointer; font-size: 0.85rem; padding: 0; }
+    .logout-btn:hover { color: #fff; }
+    .content { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid #1e1e1e; }
+    .tab-btn { padding: 0.75rem 1.25rem; background: none; border: none; color: #666; cursor: pointer; font-size: 0.9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+    .tab-btn:hover { color: #e5e5e5; }
+    .tab-btn.active { color: #8b7355; border-bottom-color: #8b7355; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* State tabs */
+    .state-tabs { display: flex; gap: 0.375rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .state-tab { padding: 0.375rem 0.875rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 20px; color: #888; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+    .state-tab:hover { border-color: #8b7355; color: #e5e5e5; }
+    .state-tab.active { background: #8b7355; border-color: #8b7355; color: #fff; }
+
+    .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
+    .badge-budget { background: #1a1a2a; color: #818cf8; }
+    .badge-mid { background: #1a2a1a; color: #86efac; }
+    .badge-premium { background: #2a1a00; color: #fb923c; }
+    .badge-luxury { background: #3a1a00; color: #fbbf24; }
+    .badge-monitored { background: #1a3a1a; color: #4ade80; }
+    .badge-spec { background: #1a1a2a; color: #a78bfa; }
+    .badge-warn { background: #2a1a00; color: #fb923c; border: 1px solid #fb923c; }
+
+    .btn-primary { padding: 0.625rem 1.25rem; background: #8b7355; color: #fff; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .btn-primary:hover { background: #a08060; }
+    .btn-secondary { padding: 0.625rem 1.25rem; background: #1a1a1a; color: #aaa; border: 1px solid #2a2a2a; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .btn-secondary:hover { border-color: #8b7355; color: #fff; }
+    .btn-sm { padding: 0.3rem 0.625rem; font-size: 0.75rem; border-radius: 4px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #aaa; cursor: pointer; }
+    .btn-sm:hover { border-color: #8b7355; color: #fff; }
+    .btn-monitor { border-color: #4ade80; color: #4ade80; }
+
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
+    .section-header h2 { font-weight: 400; font-size: 1.1rem; }
+    .empty { color: #555; text-align: center; padding: 3rem 0; font-size: 0.9rem; }
+
+    /* Competitor cards */
+    .comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .comp-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 10px; padding: 1.25rem; position: relative; transition: border-color 0.15s; }
+    .comp-card:hover { border-color: #2a2a2a; }
+    .comp-card.monitored { border-color: #1a3a1a; }
+    .comp-rank { position: absolute; top: 1rem; right: 1rem; width: 28px; height: 28px; background: #1a1a1a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: #8b7355; border: 1px solid #2a2a2a; }
+    .comp-name { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.25rem; padding-right: 2rem; }
+    .comp-sub { font-size: 0.78rem; color: #888; margin-bottom: 0.75rem; }
+    .comp-stats { display: flex; gap: 1rem; font-size: 0.75rem; color: #888; margin-bottom: 0.75rem; }
+    .comp-tags { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-bottom: 0.75rem; }
+    .comp-products { font-size: 0.75rem; color: #555; margin-bottom: 0.75rem; }
+    .comp-products strong { color: #888; }
+    .comp-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; padding-top: 0.75rem; border-top: 1px solid #1e1e1e; }
+
+    /* Inline editing */
+    .inline-input { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #e5e5e5; font-size: 0.82rem; padding: 0.25rem 0.5rem; outline: none; width: 100%; font-family: inherit; }
+    .inline-input:focus { border-color: #8b7355; }
+
+    /* Activity feed */
+    .activity-feed { display: flex; flex-direction: column; gap: 0.625rem; }
+    .activity-item { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 1rem; }
+    .activity-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
+    .activity-type { font-size: 0.75rem; font-weight: 500; color: #8b7355; }
+    .activity-date { font-size: 0.75rem; color: #555; }
+    .activity-desc { font-size: 0.85rem; line-height: 1.5; }
+    .activity-sub { font-size: 0.75rem; color: #666; margin-top: 0.25rem; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .modal { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 1.75rem; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { font-weight: 500; font-size: 1rem; margin-bottom: 1.25rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+    .form-group label { font-size: 0.75rem; color: #888; }
+    .form-group input, .form-group select, .form-group textarea { padding: 0.625rem 0.75rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e5e5; font-size: 0.85rem; outline: none; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+<div id="gate" class="gate">
+  <div class="gate-box">
+    <h1>Admin Access</h1>
+    <input type="password" id="pw-input" placeholder="Admin password" />
+    <p id="pw-error" class="error-msg" style="display:none"></p>
+    <button id="pw-btn">Enter</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="header">
+    <h1>TEM Admin — Competitors</h1>
+    <div class="nav-header">
+      <div class="nav-group">
+        <span class="nav-label">SEO &amp; Campaigns</span>
+        <div class="nav-links">
+          <a href="/admin/campaigns" class="nav-link">Campaigns</a>
+          <a href="/admin/strategy" class="nav-link">Strategy</a>
+          <a href="/admin/content" class="nav-link">Content</a>
+          <a href="/admin/links" class="nav-link">Links</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Tracking</span>
+        <div class="nav-links">
+          <a href="/admin/analytics" class="nav-link">Analytics</a>
+          <a href="/admin/cro" class="nav-link">CRO</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Operations</span>
+        <div class="nav-links">
+          <a href="/admin/team" class="nav-link">Team</a>
+          <a href="/admin/future" class="nav-link">AI Future</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Intelligence</span>
+        <div class="nav-links">
+          <a href="/admin/trends" class="nav-link">Trends</a>
+          <a href="/admin/crm" class="nav-link">CRM</a>
+          <a href="/admin/portfolio" class="nav-link">Portfolio</a>
+          <a href="/admin/mentions" class="nav-link">Mentions</a>
+          <a href="/admin/competitors-state" class="nav-link active">Competitors</a>
+        </div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Log out</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="by-state">By State</button>
+      <button class="tab-btn" data-tab="activity">Activity Feed</button>
+    </div>
+
+    <!-- BY STATE TAB -->
+    <div id="tab-by-state" class="tab-panel active">
+      <div class="section-header">
+        <h2>Top Plasterers by State</h2>
+        <div style="display:flex;gap:0.5rem">
+          <button class="btn-primary" id="seed-competitors-btn">Seed Default Data</button>
+          <button class="btn-primary" id="add-comp-btn">+ Add Competitor</button>
+        </div>
+      </div>
+
+      <div class="state-tabs" id="state-tabs">
+        <button class="state-tab active" data-state="VIC">VIC</button>
+        <button class="state-tab" data-state="NSW">NSW</button>
+        <button class="state-tab" data-state="QLD">QLD</button>
+        <button class="state-tab" data-state="SA">SA</button>
+        <button class="state-tab" data-state="WA">WA</button>
+        <button class="state-tab" data-state="TAS">TAS</button>
+        <button class="state-tab" data-state="ACT">ACT</button>
+        <button class="state-tab" data-state="NT">NT</button>
+      </div>
+
+      <div class="comp-grid" id="comp-grid">
+        <div class="empty">Loading competitors...</div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY TAB -->
+    <div id="tab-activity" class="tab-panel">
+      <div class="section-header">
+        <h2>Competitor Activity Feed</h2>
+        <button class="btn-primary" id="add-activity-btn">+ Log Activity</button>
+      </div>
+      <div class="activity-feed" id="activity-feed">
+        <div class="empty">Loading activity...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Competitor Modal -->
+<div id="comp-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>Add Competitor</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Business Name *</label><input type="text" id="cm-name" /></div>
+      <div class="form-group"><label>State</label>
+        <select id="cm-state"><option value="VIC">VIC</option><option value="NSW">NSW</option><option value="QLD">QLD</option><option value="SA">SA</option><option value="WA">WA</option><option value="TAS">TAS</option><option value="ACT">ACT</option><option value="NT">NT</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Rank (1–10)</label><input type="number" id="cm-rank" min="1" max="10" /></div>
+      <div class="form-group"><label>Pricing Tier</label>
+        <select id="cm-tier"><option value="budget">Budget</option><option value="mid">Mid</option><option value="premium">Premium</option><option value="luxury">Luxury</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Instagram Handle</label><input type="text" id="cm-insta" placeholder="@handle" /></div>
+      <div class="form-group"><label>Website</label><input type="url" id="cm-website" /></div>
+    </div>
+    <div class="form-row triple">
+      <div class="form-group"><label>IG Followers</label><input type="number" id="cm-followers" /></div>
+      <div class="form-group"><label>Google Rating</label><input type="number" id="cm-rating" step="0.1" min="1" max="5" /></div>
+      <div class="form-group"><label>Google Reviews</label><input type="number" id="cm-reviews" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Specialities (comma-sep)</label><input type="text" id="cm-spec" placeholder="venetian, lime, microcement" /></div>
+      <div class="form-group"><label>Products Used (comma-sep)</label><input type="text" id="cm-products" placeholder="Rockcote, Armourcoat" /></div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Notes</label><textarea id="cm-notes"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" id="save-comp-btn">Save</button>
+      <button class="btn-secondary" id="cancel-comp-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Activity Modal -->
+<div id="activity-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>Log Competitor Activity</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Competitor</label><select id="act-comp"></select></div>
+      <div class="form-group"><label>Activity Type</label>
+        <select id="act-type">
+          <option value="new_project">New Project</option>
+          <option value="new_product">New Product</option>
+          <option value="price_change">Price Change</option>
+          <option value="collaboration">Collaboration</option>
+          <option value="award">Award</option>
+          <option value="social_campaign">Social Campaign</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Spotted Date</label><input type="date" id="act-date" /></div>
+      <div class="form-group"><label>Source URL</label><input type="url" id="act-url" /></div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Description *</label><textarea id="act-desc" placeholder="What did you spot?"></textarea></div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group"><label>Notes / TEM Response</label><textarea id="act-notes" placeholder="What should TEM do in response?"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" id="save-activity-btn">Save</button>
+      <button class="btn-secondary" id="cancel-activity-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PW = 'TEM-admin-2026!';
+  const SB_URL = 'https://djtxbohjjpkhzhwlnrtu.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdHhib2hqanBraHpod2xucnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDgzMjEsImV4cCI6MjA4NjYyNDMyMX0.UWgOz-9ZAy0xxVH-VTTysFzvrbD1CX0a459rNC391Hw';
+
+  const SEED_COMPETITORS = [
+    // VIC
+    { business_name: 'Parlour Studio', state: 'VIC', rank: 1, speciality: ['venetian','microcement'], pricing_tier: 'premium', notes: 'High-end Melbourne studio — strong Instagram presence' },
+    { business_name: 'Earthy Plaster Co', state: 'VIC', rank: 2, speciality: ['clay','lime','hemp'], pricing_tier: 'premium', notes: 'Natural finishes focus — closest competitor to TEM positioning' },
+    { business_name: 'The Plaster Studio Melbourne', state: 'VIC', rank: 3, speciality: ['venetian','polished_plaster'], pricing_tier: 'mid' },
+    { business_name: 'Fine Finishes VIC', state: 'VIC', rank: 4, speciality: ['venetian','decorative'], pricing_tier: 'luxury' },
+    { business_name: 'Rockcote VIC Distributor', state: 'VIC', rank: 5, speciality: ['lime','heritage'], products_used: ['Rockcote'], pricing_tier: 'mid' },
+    { business_name: 'Armourcoat Melbourne', state: 'VIC', rank: 6, speciality: ['venetian','microcement'], products_used: ['Armourcoat'], pricing_tier: 'luxury' },
+    { business_name: 'Venice Plaster Melbourne', state: 'VIC', rank: 7, speciality: ['venetian'], pricing_tier: 'mid' },
+    { business_name: 'Australian Tadelakt', state: 'VIC', rank: 8, speciality: ['lime','heritage'], pricing_tier: 'premium', notes: 'Tadelakt specialists — direct overlap with TEM lime range' },
+    { business_name: 'Limetec', state: 'VIC', rank: 9, speciality: ['lime','heritage'], pricing_tier: 'mid' },
+    { business_name: 'La Veneziana', state: 'VIC', rank: 10, speciality: ['venetian','decorative'], pricing_tier: 'premium' },
+    // NSW
+    { business_name: 'Studio Plastique', state: 'NSW', rank: 1, speciality: ['venetian','microcement'], pricing_tier: 'luxury' },
+    { business_name: 'Sydney Fine Finishes', state: 'NSW', rank: 2, speciality: ['venetian','polished_plaster'], pricing_tier: 'premium' },
+    { business_name: 'Venetian Plaster Sydney', state: 'NSW', rank: 3, speciality: ['venetian'], pricing_tier: 'mid' },
+    { business_name: 'NSW Render & Plaster', state: 'NSW', rank: 4, speciality: ['lime','heritage'], pricing_tier: 'mid' },
+    { business_name: 'Dulux AcraTex Applicators NSW', state: 'NSW', rank: 5, speciality: ['microcement'], products_used: ['Dulux AcraTex'], pricing_tier: 'budget' },
+    { business_name: 'Rockcote NSW', state: 'NSW', rank: 6, speciality: ['lime','heritage'], products_used: ['Rockcote'], pricing_tier: 'mid' },
+    { business_name: 'Heritage Lime Works NSW', state: 'NSW', rank: 7, speciality: ['lime','heritage'], pricing_tier: 'premium', notes: 'Heritage focus — government/restoration work' },
+    { business_name: "Plasterers' Guild NSW", state: 'NSW', rank: 8, speciality: ['decorative','venetian'], pricing_tier: 'mid' },
+    { business_name: 'Lime Coat Australia', state: 'NSW', rank: 9, speciality: ['lime'], pricing_tier: 'mid' },
+    { business_name: 'Boral Render NSW', state: 'NSW', rank: 10, speciality: ['heritage'], products_used: ['Boral'], pricing_tier: 'budget' },
+    // QLD
+    { business_name: 'Finish Line QLD', state: 'QLD', rank: 1, speciality: ['microcement','venetian'], pricing_tier: 'premium' },
+    { business_name: 'Brisbane Venetian Plaster', state: 'QLD', rank: 2, speciality: ['venetian'], pricing_tier: 'mid' },
+    { business_name: 'QLD Render Solutions', state: 'QLD', rank: 3, speciality: ['microcement','heritage'], pricing_tier: 'mid' },
+    { business_name: 'North QLD Lime', state: 'QLD', rank: 4, speciality: ['lime'], pricing_tier: 'mid' },
+    { business_name: 'Rockcote QLD', state: 'QLD', rank: 5, speciality: ['heritage','lime'], products_used: ['Rockcote'], pricing_tier: 'mid' },
+    { business_name: 'Venetian Finishes QLD', state: 'QLD', rank: 6, speciality: ['venetian'], pricing_tier: 'mid' },
+    { business_name: 'Plaster Art QLD', state: 'QLD', rank: 7, speciality: ['decorative','venetian'], pricing_tier: 'premium' },
+    { business_name: 'Coastal Render QLD', state: 'QLD', rank: 8, speciality: ['microcement'], pricing_tier: 'budget' },
+    { business_name: 'Eco Render QLD', state: 'QLD', rank: 9, speciality: ['hemp','lime'], pricing_tier: 'mid', notes: 'Natural/eco positioning — monitor for market overlap' },
+    { business_name: 'Artisan Plaster QLD', state: 'QLD', rank: 10, speciality: ['venetian','decorative'], pricing_tier: 'premium' },
+  ];
+
+  function sbH() { return { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }; }
+  async function sbGet(table: string, q = '') { const r = await fetch(`${SB_URL}/rest/v1/${table}?${q}`, { headers: sbH() }); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+  async function sbInsert(table: string, data: any) { const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method: 'POST', headers: sbH(), body: JSON.stringify(data) }); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+  async function sbPatch(table: string, id: string, data: any) { const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'PATCH', headers: sbH(), body: JSON.stringify(data) }); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+
+  function tierBadge(t: string) {
+    const m: any = { budget: 'badge-budget', mid: 'badge-mid', premium: 'badge-premium', luxury: 'badge-luxury' };
+    return `<span class="badge ${m[t]||'badge-mid'}">${t||'mid'}</span>`;
+  }
+
+  let allComps: any[] = [];
+  let activeState = 'VIC';
+
+  async function loadComps() {
+    const grid = document.getElementById('comp-grid')!;
+    try {
+      allComps = await sbGet('state_competitors', 'order=state.asc,rank.asc');
+      populateCompSelect();
+      renderComps();
+    } catch(e) {
+      grid.innerHTML = '<div class="empty">Error loading. Check state_competitors table exists.</div>';
+    }
+  }
+
+  function populateCompSelect() {
+    const sel = document.getElementById('act-comp') as HTMLSelectElement;
+    sel.innerHTML = allComps.map(c => `<option value="${c.id}">${c.business_name} (${c.state})</option>`).join('');
+  }
+
+  function renderComps() {
+    const grid = document.getElementById('comp-grid')!;
+    const comps = allComps.filter(c => c.state === activeState).sort((a,b) => (a.rank||99)-(b.rank||99));
+    if (!comps.length) { grid.innerHTML = `<div class="empty">No competitors recorded for ${activeState} yet. Add one or seed default data.</div>`; return; }
+
+    grid.innerHTML = comps.map(c => {
+      const hasNatural = (c.speciality||[]).some((s: string) => ['lime','hemp','clay'].includes(s));
+      return `<div class="comp-card ${c.monitored ? 'monitored' : ''}" id="comp-card-${c.id}">
+        <div class="comp-rank">${c.rank||'?'}</div>
+        <div class="comp-name">${c.business_name}</div>
+        <div class="comp-sub">${c.state} ${c.pricing_tier ? `· ${c.pricing_tier}` : ''}</div>
+        <div class="comp-stats">
+          ${c.instagram_followers ? `<span>IG: ${c.instagram_followers.toLocaleString()}</span>` : ''}
+          ${c.google_rating ? `<span>⭐ ${c.google_rating} (${c.google_reviews||0})</span>` : ''}
+        </div>
+        <div class="comp-tags">
+          ${tierBadge(c.pricing_tier)}
+          ${c.monitored ? '<span class="badge badge-monitored">Watching</span>' : ''}
+          ${hasNatural ? '<span class="badge badge-warn">Natural overlaps TEM</span>' : ''}
+          ${(c.speciality||[]).map((s: string)=>`<span class="badge badge-spec">${s.replace(/_/g,' ')}</span>`).join('')}
+        </div>
+        ${(c.products_used||[]).length ? `<div class="comp-products"><strong>Products:</strong> ${c.products_used.join(', ')}</div>` : ''}
+        ${c.notes ? `<div style="font-size:0.78rem;color:#888;margin-bottom:0.75rem">${c.notes}</div>` : ''}
+        <div class="comp-actions">
+          ${c.instagram_handle ? `<a href="https://instagram.com/${c.instagram_handle.replace('@','')}" target="_blank" class="btn-sm">Instagram</a>` : ''}
+          ${c.website ? `<a href="${c.website}" target="_blank" class="btn-sm">Website</a>` : ''}
+          <button class="btn-sm ${c.monitored ? '' : 'btn-monitor'}" onclick="toggleMonitor('${c.id}', ${c.monitored})">${c.monitored ? 'Unwatch' : 'Watch'}</button>
+          <button class="btn-sm" onclick="openEditComp('${c.id}')">Edit</button>
+          <button class="btn-sm" onclick="openActivityForComp('${c.id}')">+ Activity</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  (window as any).toggleMonitor = async function(id: string, current: boolean) {
+    await sbPatch('state_competitors', id, { monitored: !current });
+    const c = allComps.find(x => x.id === id);
+    if (c) c.monitored = !current;
+    renderComps();
+  };
+
+  (window as any).openEditComp = function(id: string) {
+    const c = allComps.find(x => x.id === id);
+    if (!c) return;
+    (document.getElementById('cm-name') as HTMLInputElement).value = c.business_name;
+    (document.getElementById('cm-state') as HTMLSelectElement).value = c.state;
+    (document.getElementById('cm-rank') as HTMLInputElement).value = c.rank || '';
+    (document.getElementById('cm-tier') as HTMLSelectElement).value = c.pricing_tier || 'mid';
+    (document.getElementById('cm-insta') as HTMLInputElement).value = c.instagram_handle || '';
+    (document.getElementById('cm-website') as HTMLInputElement).value = c.website || '';
+    (document.getElementById('cm-followers') as HTMLInputElement).value = c.instagram_followers || '';
+    (document.getElementById('cm-rating') as HTMLInputElement).value = c.google_rating || '';
+    (document.getElementById('cm-reviews') as HTMLInputElement).value = c.google_reviews || '';
+    (document.getElementById('cm-spec') as HTMLInputElement).value = (c.speciality||[]).join(', ');
+    (document.getElementById('cm-products') as HTMLInputElement).value = (c.products_used||[]).join(', ');
+    (document.getElementById('cm-notes') as HTMLTextAreaElement).value = c.notes || '';
+    const modal = document.getElementById('comp-modal')!;
+    modal.style.display = 'flex';
+    const saveBtn = document.getElementById('save-comp-btn')!;
+    saveBtn.dataset.editId = id;
+  };
+
+  (window as any).openActivityForComp = function(id: string) {
+    document.getElementById('activity-modal')!.style.display = 'flex';
+    (document.getElementById('act-comp') as HTMLSelectElement).value = id;
+    const today = new Date().toISOString().split('T')[0];
+    (document.getElementById('act-date') as HTMLInputElement).value = today;
+  };
+
+  async function loadActivity() {
+    const feed = document.getElementById('activity-feed')!;
+    try {
+      const activities = await sbGet('competitor_activity', 'order=spotted_date.desc&limit=50');
+      if (!activities.length) { feed.innerHTML = '<div class="empty">No activity logged yet.</div>'; return; }
+      const compMap: any = {};
+      allComps.forEach(c => compMap[c.id] = c);
+      const typeLabels: any = { new_project:'New Project', new_product:'New Product', price_change:'Price Change', collaboration:'Collaboration', award:'Award', social_campaign:'Social Campaign' };
+      feed.innerHTML = activities.map((a: any) => {
+        const c = compMap[a.competitor_id];
+        return `<div class="activity-item">
+          <div class="activity-header">
+            <div>
+              <span class="activity-type">${typeLabels[a.activity_type]||a.activity_type}</span>
+              <span style="color:#888;font-size:0.8rem;margin-left:0.5rem">${c ? `— ${c.business_name} (${c.state})` : ''}</span>
+            </div>
+            <span class="activity-date">${a.spotted_date||''}</span>
+          </div>
+          <div class="activity-desc">${a.description||''}</div>
+          ${a.notes ? `<div class="activity-sub">TEM response: ${a.notes}</div>` : ''}
+          ${a.source_url ? `<div style="margin-top:0.25rem"><a href="${a.source_url}" target="_blank" style="font-size:0.75rem">Source →</a></div>` : ''}
+        </div>`;
+      }).join('');
+    } catch(e) {
+      feed.innerHTML = '<div class="empty">Error loading activity.</div>';
+    }
+  }
+
+  // State tabs
+  document.querySelectorAll('.state-tab').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      activeState = (e.currentTarget as HTMLElement).dataset.state!;
+      document.querySelectorAll('.state-tab').forEach(b => b.classList.remove('active'));
+      (e.currentTarget as HTMLElement).classList.add('active');
+      renderComps();
+    });
+  });
+
+  // Seed
+  document.getElementById('seed-competitors-btn')!.addEventListener('click', async () => {
+    if (!confirm('Seed default competitors (VIC/NSW/QLD)? This adds them to the database.')) return;
+    for (const c of SEED_COMPETITORS) await sbInsert('state_competitors', c);
+    loadComps();
+  });
+
+  // Add competitor modal
+  document.getElementById('add-comp-btn')!.addEventListener('click', () => {
+    const saveBtn = document.getElementById('save-comp-btn')!;
+    delete saveBtn.dataset.editId;
+    document.getElementById('comp-modal')!.style.display = 'flex';
+  });
+  document.getElementById('cancel-comp-btn')!.addEventListener('click', () => { document.getElementById('comp-modal')!.style.display = 'none'; });
+  document.getElementById('save-comp-btn')!.addEventListener('click', async () => {
+    const name = (document.getElementById('cm-name') as HTMLInputElement).value.trim();
+    if (!name) { alert('Business name required'); return; }
+    const spec = (document.getElementById('cm-spec') as HTMLInputElement).value.split(',').map(s=>s.trim()).filter(Boolean);
+    const products = (document.getElementById('cm-products') as HTMLInputElement).value.split(',').map(s=>s.trim()).filter(Boolean);
+    const data: any = {
+      business_name: name,
+      state: (document.getElementById('cm-state') as HTMLSelectElement).value,
+      rank: parseInt((document.getElementById('cm-rank') as HTMLInputElement).value) || null,
+      pricing_tier: (document.getElementById('cm-tier') as HTMLSelectElement).value,
+      instagram_handle: (document.getElementById('cm-insta') as HTMLInputElement).value || null,
+      website: (document.getElementById('cm-website') as HTMLInputElement).value || null,
+      instagram_followers: parseInt((document.getElementById('cm-followers') as HTMLInputElement).value) || null,
+      google_rating: parseFloat((document.getElementById('cm-rating') as HTMLInputElement).value) || null,
+      google_reviews: parseInt((document.getElementById('cm-reviews') as HTMLInputElement).value) || null,
+      speciality: spec,
+      products_used: products,
+      notes: (document.getElementById('cm-notes') as HTMLTextAreaElement).value || null,
+      last_updated: new Date().toISOString().split('T')[0],
+    };
+    const editId = (document.getElementById('save-comp-btn') as HTMLElement).dataset.editId;
+    if (editId) {
+      await sbPatch('state_competitors', editId, data);
+    } else {
+      await sbInsert('state_competitors', data);
+    }
+    document.getElementById('comp-modal')!.style.display = 'none';
+    await loadComps();
+  });
+
+  // Activity modal
+  document.getElementById('add-activity-btn')!.addEventListener('click', () => {
+    const today = new Date().toISOString().split('T')[0];
+    (document.getElementById('act-date') as HTMLInputElement).value = today;
+    document.getElementById('activity-modal')!.style.display = 'flex';
+  });
+  document.getElementById('cancel-activity-btn')!.addEventListener('click', () => { document.getElementById('activity-modal')!.style.display = 'none'; });
+  document.getElementById('save-activity-btn')!.addEventListener('click', async () => {
+    const desc = (document.getElementById('act-desc') as HTMLTextAreaElement).value.trim();
+    if (!desc) { alert('Description required'); return; }
+    await sbInsert('competitor_activity', {
+      competitor_id: (document.getElementById('act-comp') as HTMLSelectElement).value || null,
+      activity_type: (document.getElementById('act-type') as HTMLSelectElement).value,
+      description: desc,
+      spotted_date: (document.getElementById('act-date') as HTMLInputElement).value || null,
+      source_url: (document.getElementById('act-url') as HTMLInputElement).value || null,
+      notes: (document.getElementById('act-notes') as HTMLTextAreaElement).value || null,
+    });
+    document.getElementById('activity-modal')!.style.display = 'none';
+    loadActivity();
+  });
+
+  // Main tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const tab = (e.currentTarget as HTMLElement).dataset.tab!;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      (e.currentTarget as HTMLElement).classList.add('active');
+      document.getElementById(`tab-${tab}`)!.classList.add('active');
+      if (tab === 'activity') loadActivity();
+    });
+  });
+
+  // Auth
+  const gate = document.getElementById('gate')!;
+  const app = document.getElementById('app')!;
+  const pwInput = document.getElementById('pw-input') as HTMLInputElement;
+  function tryLogin(pw: string) {
+    if (pw === ADMIN_PW) {
+      sessionStorage.setItem('tem-admin-password', pw);
+      gate.style.display = 'none';
+      app.style.display = 'block';
+      loadComps();
+    } else {
+      const e = document.getElementById('pw-error')!;
+      e.textContent = 'Invalid password';
+      e.style.display = 'block';
+    }
+  }
+  if (sessionStorage.getItem('tem-admin-password') === ADMIN_PW) { gate.style.display = 'none'; app.style.display = 'block'; loadComps(); }
+  document.getElementById('pw-btn')!.addEventListener('click', () => tryLogin(pwInput.value));
+  pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(pwInput.value); });
+  document.getElementById('logout-btn')!.addEventListener('click', () => { sessionStorage.removeItem('tem-admin-password'); gate.style.display = 'flex'; app.style.display = 'none'; });
+</script>
+</body>
+</html>
