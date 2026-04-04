@@ -167,18 +167,18 @@ function ProductItem({
   const mid = start + segmentSize * 0.5;
   const end = start + segmentSize;
 
-  // Text scale: small → HUGE → small
+  // Text scale: subtle zoom
   const scale = useTransform(
     scrollYProgress,
     [start, start + segmentSize * 0.2, mid, end - segmentSize * 0.2, end],
-    [1, 1.5, 2.5, 1.5, 1]
+    [0.9, 1.1, 1.4, 1.1, 0.9]
   );
 
   // Move to center when active
   const x = useTransform(
     scrollYProgress,
     [start, start + segmentSize * 0.2, mid, end - segmentSize * 0.2, end],
-    ['0%', '20%', '30%', '20%', '0%']
+    ['0%', '8%', '12%', '8%', '0%']
   );
 
   // Opacity boost when active
