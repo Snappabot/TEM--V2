@@ -52,7 +52,7 @@ export default function ExclusiveFinishes() {
     <section
       ref={sectionRef}
       className="relative bg-[#080808] overflow-hidden"
-      style={{ minHeight: '100vh' }}
+      style={{ minHeight: '115vh' }}
     >
       {/* Background image — full bleed, slow pan */}
       <div className="absolute inset-0">
