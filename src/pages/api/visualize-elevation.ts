@@ -42,24 +42,26 @@ function base64ToBlob(dataUrl: string): Blob {
 function buildPrompt(
   teFinishName: string,
   userMaterials: Array<{ label: string }>,
-  applyToAll: boolean
+  applyToAll: boolean,
+  userNotes?: string
 ): string {
-  let prompt = `${SYSTEM_PROMPT}
+  // Action-first prompt — FLUX Kontext responds better when the main task leads
+  const surfaceScope = applyToAll
+    ? 'all rendered wall surfaces, fascias, columns, piers, and exposed concrete'
+    : 'all rendered wall surfaces (leave fascias, soffits, and window frames unchanged)';
 
-Apply the "${teFinishName}" plaster finish to all exterior wall surfaces in this architectural elevation drawing.`;
+  let prompt = `Take the architectural elevation drawing in image 1 and apply the "${teFinishName}" plaster finish texture shown in image 2 to ${surfaceScope}. The finish should be applied boldly and visibly — make the texture and colour clearly apparent on the walls. Match the exact colour, texture, roughness, and material character from the reference sample.`;
 
   if (userMaterials.length > 0) {
-    const materialsList = userMaterials.map((m, i) => `  - Reference ${i + 2}: ${m.label}`).join('\n');
-    prompt += `\n\nAdditional material references are provided:\n${materialsList}\nApply each to the surfaces where they contextually belong (e.g. cladding areas, window frames, etc.).`;
+    const materialsList = userMaterials.map((m, i) => `image ${i + 3} (${m.label})`).join(', ');
+    prompt += ` Additional material references are provided: ${materialsList}. Apply each to the relevant surfaces contextually.`;
   }
 
-  if (applyToAll) {
-    prompt += '\n\nApply the plaster finish to ALL surfaces including fascias, soffits, columns, piers, and all exposed concrete elements.';
-  } else {
-    prompt += '\n\nApply the finish to primary wall surfaces only. Leave fascias, soffits, columns, and piers in their existing material unless clearly part of the main wall plane.';
+  if (userNotes) {
+    prompt += ` User instructions: ${userNotes}.`;
   }
 
-  prompt += '\n\nDo not alter any lines, dimensions, annotations, window openings, or the structural form in any way. Output the exact same resolution and aspect ratio as the input.';
+  prompt += ' Preserve all structural lines, window positions and sizes, roof shape, dimension lines, text annotations, and labels exactly as they are — do not move or remove any drawn element. Output at the same aspect ratio and resolution as the input drawing.';
 
   return prompt;
 }
