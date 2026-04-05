@@ -147,15 +147,11 @@ export const POST: APIRoute = async ({ request }) => {
     prompt += `\n\nAdditional instructions from the user: ${userNotes}`;
   }
 
-  // Build Replicate input
-  // FLUX Kontext Pro accepts input_image + optional extra images
-  const elevationBlob = base64ToBlob(elevationImage);
-  const finishBlob = base64ToBlob(teFinishImage);
-
+  // Build Replicate input — pass base64 data URLs directly (Blob fails server-side)
   const replicateInput: Record<string, unknown> = {
     prompt,
-    input_image: elevationBlob,
-    extra_image_1: finishBlob,
+    input_image: elevationImage,   // data:image/...;base64,...
+    extra_image_1: teFinishImage,  // data:image/...;base64,...
     aspect_ratio: 'match_input_image',
     output_format: 'jpg',
     output_quality: 95,
@@ -166,7 +162,7 @@ export const POST: APIRoute = async ({ request }) => {
   // Add any user material images as extra inputs
   userMaterials.forEach((mat, i) => {
     if (i < 3) {
-      replicateInput[`extra_image_${i + 2}`] = base64ToBlob(mat.image);
+      replicateInput[`extra_image_${i + 2}`] = mat.image;
     }
   });
 
