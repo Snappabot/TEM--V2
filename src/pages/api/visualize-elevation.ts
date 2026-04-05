@@ -106,6 +106,7 @@ export const POST: APIRoute = async ({ request }) => {
     teFinishName?: string;
     userMaterials?: Array<{ image: string; label: string }>;
     applyToAllSurfaces?: boolean;
+    userNotes?: string;
   };
 
   try {
@@ -123,6 +124,7 @@ export const POST: APIRoute = async ({ request }) => {
     teFinishName = 'TE Finish',
     userMaterials = [],
     applyToAllSurfaces = false,
+    userNotes = '',
   } = body;
 
   if (!elevationImage || !teFinishImage) {
@@ -138,7 +140,10 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // Build prompt
-  const prompt = buildPrompt(teFinishName, userMaterials, applyToAllSurfaces);
+  let prompt = buildPrompt(teFinishName, userMaterials, applyToAllSurfaces);
+  if (userNotes) {
+    prompt += `\n\nAdditional instructions from the user: ${userNotes}`;
+  }
 
   // Build Replicate input
   // FLUX Kontext Pro accepts input_image + optional extra images
@@ -174,7 +179,14 @@ export const POST: APIRoute = async ({ request }) => {
     const outputUrl = Array.isArray(output) ? output[0] : output;
     if (!outputUrl) throw new Error('Empty output from Replicate');
 
-    return new Response(JSON.stringify({ output: outputUrl }), {
+    // Proxy the image to avoid CORS issues with temporary Replicate CDN URLs
+    const imageResponse = await fetch(outputUrl.toString());
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const base64 = Buffer.from(imageBuffer).toString('base64');
+    const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+    const dataUrl = `data:${contentType};base64,${base64}`;
+
+    return new Response(JSON.stringify({ output: dataUrl }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

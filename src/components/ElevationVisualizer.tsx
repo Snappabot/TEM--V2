@@ -212,6 +212,7 @@ export default function ElevationVisualizer() {
   const [activeCategory, setActiveCategory] = useState<string>('Marbellino');
   const [userMaterials, setUserMaterials] = useState<UserMaterial[]>([]);
   const [applyToAll, setApplyToAll] = useState(false);
+  const [userNotes, setUserNotes] = useState('');
   const [generating, setGenerating] = useState(false);
   const [resultUrl, setResultUrl] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -280,6 +281,7 @@ export default function ElevationVisualizer() {
           teFinishName: `${selectedTexture.category} ${selectedTexture.name}`,
           userMaterials: materials,
           applyToAllSurfaces: applyToAll,
+          userNotes,
         }),
       });
 
@@ -297,12 +299,13 @@ export default function ElevationVisualizer() {
     } finally {
       setGenerating(false);
     }
-  }, [elevationFile, selectedTexture, userMaterials, applyToAll]);
+  }, [elevationFile, selectedTexture, userMaterials, applyToAll, userNotes]);
 
   const resetToFinish = useCallback(() => {
     setSelectedTexture(null);
     setUserMaterials([]);
     setApplyToAll(false);
+    setUserNotes('');
     setResultUrl('');
     setError('');
     setStep('finish');
@@ -314,6 +317,7 @@ export default function ElevationVisualizer() {
     setSelectedTexture(null);
     setUserMaterials([]);
     setApplyToAll(false);
+    setUserNotes('');
     setResultUrl('');
     setError('');
     setStep('upload');
@@ -643,6 +647,20 @@ export default function ElevationVisualizer() {
                   </p>
                 </div>
               </label>
+
+              {/* Notes field */}
+              <div className="mt-8">
+                <label className="block text-xs tracking-widest uppercase text-white/40 mb-2">
+                  Describe where you want the finish applied (optional)
+                </label>
+                <textarea
+                  value={userNotes}
+                  onChange={(e) => setUserNotes(e.target.value)}
+                  placeholder="e.g. Apply Marbellino to the rendered wall areas only. Leave the brick base coat and window frames as-is."
+                  rows={3}
+                  className="w-full bg-white/5 border border-white/20 rounded-sm px-3 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#8b7355] transition-colors resize-none"
+                />
+              </div>
 
               {error && (
                 <div className="mt-6 p-4 border border-red-500/30 bg-red-500/5 rounded-sm">
