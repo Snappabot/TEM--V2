@@ -50,7 +50,9 @@ function buildPrompt(
     ? 'all rendered wall surfaces, fascias, columns, piers, and exposed concrete'
     : 'all rendered wall surfaces (leave fascias, soffits, and window frames unchanged)';
 
-  let prompt = `Take the architectural elevation drawing in image 1 and apply the "${teFinishName}" plaster finish texture shown in image 2 to ${surfaceScope}. The finish should be applied boldly and visibly — make the texture and colour clearly apparent. Match the exact colour, texture, roughness, and material character from the reference sample. IMPORTANT: The elevation drawing contains area labels and annotations (e.g. "feature plaster", "rendered brickwork", "face brick"). Read these labels carefully. Only apply the finish to the specific areas the user instructs — if the user says "feature plaster areas only", apply the finish exclusively to zones labeled "feature plaster" and leave all other surfaces (brick, rendered brickwork, etc.) completely unchanged.`;
+  // Build a targeted prompt based on userNotes — if user specifies areas, use visual targeting
+  // Default: target shaded/hatched panels typical of architectural drawings
+  let prompt = `Precisely replace the texture and colour ONLY inside the shaded or hatched panel sections of this architectural elevation drawing (image 1) with the full texture, colour, grain, and material detail from the reference finish image (image 2 — "${teFinishName}"). Stretch and tile the reference texture to cover each target area completely from edge to edge. Leave every element outside those sections completely untouched and unchanged — no modifications to lines, dimensions, windows, doors, brickwork, roof, annotations, or any other surfaces. The result must look like a professional architectural visualisation.`;
 
   if (userMaterials.length > 0) {
     const materialsList = userMaterials.map((m, i) => `image ${i + 3} (${m.label})`).join(', ');
@@ -144,7 +146,12 @@ export const POST: APIRoute = async ({ request }) => {
   // Build prompt
   let prompt = buildPrompt(teFinishName, userMaterials, applyToAllSurfaces);
   if (userNotes) {
-    prompt += `\n\nAdditional instructions from the user: ${userNotes}`;
+    // User has described specific areas — prepend their instruction as the primary targeting rule
+    prompt = `Precisely replace the texture and colour ONLY in the areas described by the user instruction below with the full texture, colour, grain, and material detail from the reference finish image (image 2 — "${teFinishName}"). Stretch and tile the reference texture to cover each target area completely from edge to edge. Leave everything else completely untouched — no modifications to lines, dimensions, windows, doors, brickwork, roof, annotations, or any other surfaces.
+
+User instruction: "${userNotes}"
+
+Apply this to the architectural elevation drawing in image 1. The result must look like a professional architectural visualisation.`;
   }
 
   // Build Replicate input — pass base64 data URLs directly (Blob fails server-side)
