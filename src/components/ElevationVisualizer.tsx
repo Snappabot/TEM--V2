@@ -100,7 +100,12 @@ async function fileToBase64(file: File): Promise<string> {
 async function imageUrlToBase64(url: string): Promise<string> {
   const response = await fetch(url);
   const blob = await response.blob();
-  return fileToBase64(blob as File);
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
