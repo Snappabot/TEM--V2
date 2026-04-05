@@ -149,7 +149,7 @@ export const POST: APIRoute = async ({ request }) => {
     prompt,
     input_image: elevationBlob,
     extra_image_1: finishBlob,
-    aspect_ratio: 'match_input',
+    aspect_ratio: 'match_input_image',
     output_format: 'jpg',
     output_quality: 95,
     safety_tolerance: 6,
