@@ -45,25 +45,16 @@ function buildPrompt(
   applyToAll: boolean,
   userNotes?: string
 ): string {
-  // Action-first prompt — FLUX Kontext responds better when the main task leads
-  const surfaceScope = applyToAll
-    ? 'all rendered wall surfaces, fascias, columns, piers, and exposed concrete'
-    : 'all rendered wall surfaces (leave fascias, soffits, and window frames unchanged)';
+  const targetDescription = userNotes
+    ? `the areas described by the user: "${userNotes}"`
+    : 'the dark grey shaded rectangular panels labeled "feature plaster"';
 
-  // Build a targeted prompt based on userNotes — if user specifies areas, use visual targeting
-  // Default: target shaded/hatched panels typical of architectural drawings
-  let prompt = `Precisely replace the texture and colour ONLY inside the shaded or hatched panel sections of this architectural elevation drawing (image 1) with the full texture, colour, grain, and material detail from the reference finish image (image 2 — "${teFinishName}"). Stretch and tile the reference texture to cover each target area completely from edge to edge. Leave every element outside those sections completely untouched and unchanged — no modifications to lines, dimensions, windows, doors, brickwork, roof, annotations, or any other surfaces. The result must look like a professional architectural visualisation.`;
+  let prompt = `Start with this exact architectural elevation drawing (image 1) as the base image. Apply the exact texture, colour, grain, and surface details from the reference finish image (image 2 — "${teFinishName}") ONLY to ${targetDescription}. Fill each target area completely edge-to-edge with the reference texture, matching scale and perspective naturally without gaps or distortion. Replace the solid dark grey fill with the reference material. Do not change, erase, delete, or modify any other part of the drawing — keep all lines, windows, doors, brickwork, rendered surfaces, roof, dimensions, labels, white areas, and the entire structure 100% identical to the original drawing. The rest of the image must remain pixel-perfect to the input elevation. Strictly limit all changes to inside the target areas only.`;
 
   if (userMaterials.length > 0) {
     const materialsList = userMaterials.map((m, i) => `image ${i + 3} (${m.label})`).join(', ');
-    prompt += ` Additional material references are provided: ${materialsList}. Apply each to the relevant surfaces contextually.`;
+    prompt += ` Additional material references provided: ${materialsList}. Apply each to the relevant surfaces contextually within the target areas only.`;
   }
-
-  if (userNotes) {
-    prompt += ` User instructions: ${userNotes}.`;
-  }
-
-  prompt += ' Preserve all structural lines, window positions and sizes, roof shape, dimension lines, text annotations, and labels exactly as they are — do not move or remove any drawn element. Output at the same aspect ratio and resolution as the input drawing.';
 
   return prompt;
 }
