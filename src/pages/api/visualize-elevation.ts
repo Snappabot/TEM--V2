@@ -92,7 +92,7 @@ function saveMaterialsAsync(
 // ─── API Route ────────────────────────────────────────────────────────────────
 
 export const POST: APIRoute = async ({ request }) => {
-  const replicateToken = import.meta.env.REPLICATE_API_TOKEN;
+  const replicateToken = import.meta.env.REPLICATE_API_TOKEN || process.env.REPLICATE_API_TOKEN;
   if (!replicateToken) {
     return new Response(JSON.stringify({ error: 'Replicate API token not configured' }), {
       status: 500,
