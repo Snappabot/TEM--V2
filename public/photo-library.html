@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TE Photo Library</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #fff; font-family: sans-serif; padding: 24px; }
+  h1 { font-size: 1.4rem; margin-bottom: 24px; color: #8b7355; letter-spacing: 0.2em; text-transform: uppercase; }
+  h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.3em; color: #8b7355; margin: 32px 0 12px; border-bottom: 1px solid #222; padding-bottom: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .item { position: relative; aspect-ratio: 1; overflow: hidden; background: #111; border-radius: 4px; }
+  .item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; cursor: zoom-in; }
+  .item img:hover { transform: scale(1.05); }
+  .item .label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.75); font-size: 0.65rem; padding: 4px 6px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item .missing { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.7rem; text-align: center; padding: 8px; }
+  #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 999; align-items: center; justify-content: center; cursor: zoom-out; }
+  #lightbox.open { display: flex; }
+  #lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+  #lightbox .close { position: fixed; top: 16px; right: 24px; font-size: 2rem; cursor: pointer; color: #fff; }
+</style>
+</head>
+<body>
+<h1>Troweled Earth — Photo Library</h1>
+<div id="lightbox"><span class="close" onclick="closeLB()">×</span><img id="lb-img" src=""></div>
+<h2>antique stucco (20)</h2>
+<div class="grid">
+  <div class="item"><img src="/images/products/antique-stucco/Antique+STucco+outside+shower.png" alt="Antique STucco outside shower" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique STucco outside shower</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+Stucco+raw.png" alt="Antique Stucco raw" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique Stucco raw</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+angels.png" alt="Antique stucco angels" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco angels</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+entry+1.png" alt="Antique stucco entry 1" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco entry 1</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+entry.png" alt="Antique stucco entry" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco entry</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+fireplace.png" alt="Antique stucco fireplace" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco fireplace</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+french+window.png" alt="Antique stucco french window" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco french window</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+hallway+art.jpg" alt="Antique stucco hallway art" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco hallway art</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+hallway.png" alt="Antique stucco hallway" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco hallway</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+outside+wall.png" alt="Antique stucco outside wall" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco outside wall</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+patio.png" alt="Antique stucco patio" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco patio</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+stairs.png" alt="Antique stucco stairs" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco stairs</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/Antique+stucco+with+gold+patina.png" alt="Antique stucco with gold patina" loading="lazy" onclick="openLB(this.src)"><div class="label">Antique stucco with gold patina</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/antique-stucco-arch-ceiling.jpg" alt="antique stucco arch ceiling" loading="lazy" onclick="openLB(this.src)"><div class="label">antique stucco arch ceiling</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/antique-stucco-exterior-bench.jpg" alt="antique stucco exterior bench" loading="lazy" onclick="openLB(this.src)"><div class="label">antique stucco exterior bench</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/antique-stucco-french-balcony.jpg" alt="antique stucco french balcony" loading="lazy" onclick="openLB(this.src)"><div class="label">antique stucco french balcony</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/antique-stucco-hallway-hq.jpg" alt="antique stucco hallway hq" loading="lazy" onclick="openLB(this.src)"><div class="label">antique stucco hallway hq</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/antique-stucco-hq-1.jpg" alt="antique stucco hq 1" loading="lazy" onclick="openLB(this.src)"><div class="label">antique stucco hq 1</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/antique-stucco-hq-2.jpg" alt="antique stucco hq 2" loading="lazy" onclick="openLB(this.src)"><div class="label">antique stucco hq 2</div></div>
+  <div class="item"><img src="/images/products/antique-stucco/antique-stucco-vines.jpg" alt="antique stucco vines" loading="lazy" onclick="openLB(this.src)"><div class="label">antique stucco vines</div></div>
+</div>
+<h2>concretum (26)</h2>
+<div class="grid">
+  <div class="item"><img src="/images/products/concretum/Concretum+angular+exterior.jpg" alt="Concretum angular exterior" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum angular exterior</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+beam.png" alt="Concretum beam" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum beam</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+entry+wall+custom+finish.png" alt="Concretum entry wall custom finish" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum entry wall custom finish</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+living+skylight.jpg" alt="Concretum living skylight" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum living skylight</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+lounge+blue.jpg" alt="Concretum lounge blue" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum lounge blue</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+outside+beam.png" alt="Concretum outside beam" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum outside beam</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+outside+garden+wall.png" alt="Concretum outside garden wall" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum outside garden wall</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+outside+lights.png" alt="Concretum outside lights" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum outside lights</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+outside+wall+1.png" alt="Concretum outside wall 1" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum outside wall 1</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+sample+2.png" alt="Concretum sample 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum sample 2</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+stairs+hq.jpg" alt="Concretum stairs hq" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum stairs hq</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+stairs.png" alt="Concretum stairs" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum stairs</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+stairwell+bar.jpg" alt="Concretum stairwell bar" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum stairwell bar</div></div>
+  <div class="item"><img src="/images/products/concretum/Concretum+with+light.png" alt="Concretum with light" loading="lazy" onclick="openLB(this.src)"><div class="label">Concretum with light</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-exterior-arch.jpg" alt="concretum exterior arch" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum exterior arch</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-floating-stair.jpg" alt="concretum floating stair" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum floating stair</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-gallery-1.jpg" alt="concretum gallery 1" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum gallery 1</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-gallery-2.jpg" alt="concretum gallery 2" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum gallery 2</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-gallery-3.jpg" alt="concretum gallery 3" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum gallery 3</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-hero-hq.jpg" alt="concretum hero hq" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum hero hq</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-hero.jpg" alt="concretum hero" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum hero</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-hq-1.jpg" alt="concretum hq 1" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum hq 1</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-hq-2.jpg" alt="concretum hq 2" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum hq 2</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-hq-3.jpg" alt="concretum hq 3" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum hq 3</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-sconce-night.jpg" alt="concretum sconce night" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum sconce night</div></div>
+  <div class="item"><img src="/images/products/concretum/concretum-texture-grey.jpg" alt="concretum texture grey" loading="lazy" onclick="openLB(this.src)"><div class="label">concretum texture grey</div></div>
+</div>
+<h2>custom finishes (22)</h2>
+<div class="grid">
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+1.png" alt="Custom finish 1" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish 1</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+2.png" alt="Custom finish 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish 2</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+bar.png" alt="Custom finish bar" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish bar</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+bathroom+1.png" alt="Custom finish bathroom 1" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish bathroom 1</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+ceiling.png" alt="Custom finish ceiling" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish ceiling</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+earthern+fireplace.png" alt="Custom finish earthern fireplace" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish earthern fireplace</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+fracture.png" alt="Custom finish fracture" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish fracture</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+fractured+plaster.png" alt="Custom finish fractured plaster" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish fractured plaster</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+garden+wall.png" alt="Custom finish garden wall" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish garden wall</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+moroccan.png" alt="Custom finish moroccan" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish moroccan</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+state+of+decay+2.png" alt="Custom finish state of decay 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish state of decay 2</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+volcanic+rock.png" alt="Custom finish volcanic rock" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish volcanic rock</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+finish+wall+and+ceiling.png" alt="Custom finish wall and ceiling" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom finish wall and ceiling</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+lunar+bedroom.jpg" alt="Custom lunar bedroom" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom lunar bedroom</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+lunar+wide.jpg" alt="Custom lunar wide" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom lunar wide</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/Custom+moon+finish.jpg" alt="Custom moon finish" loading="lazy" onclick="openLB(this.src)"><div class="label">Custom moon finish</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/State+of+decay+1.png" alt="State of decay 1" loading="lazy" onclick="openLB(this.src)"><div class="label">State of decay 1</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/exclusive-copper-v2.jpg" alt="exclusive copper v2" loading="lazy" onclick="openLB(this.src)"><div class="label">exclusive copper v2</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/exclusive-copper-water.jpg" alt="exclusive copper water" loading="lazy" onclick="openLB(this.src)"><div class="label">exclusive copper water</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/exclusive-exterior.jpg" alt="exclusive exterior" loading="lazy" onclick="openLB(this.src)"><div class="label">exclusive exterior</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/exclusive-fireplace.jpg" alt="exclusive fireplace" loading="lazy" onclick="openLB(this.src)"><div class="label">exclusive fireplace</div></div>
+  <div class="item"><img src="/images/products/custom-finishes/exclusive-giorgi.jpg" alt="exclusive giorgi" loading="lazy" onclick="openLB(this.src)"><div class="label">exclusive giorgi</div></div>
+</div>
+<h2>earthen renders (13)</h2>
+<div class="grid">
+  <div class="item"><img src="/images/products/earthen-renders/Hemp+commercial+counter.jpg" alt="Hemp commercial counter" loading="lazy" onclick="openLB(this.src)"><div class="label">Hemp commercial counter</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/Hemp+exterior+wall+night+2.jpg" alt="Hemp exterior wall night 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Hemp exterior wall night 2</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/Hemp+exterior+wall+night.jpg" alt="Hemp exterior wall night" loading="lazy" onclick="openLB(this.src)"><div class="label">Hemp exterior wall night</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/hemp-beams.jpg" alt="hemp beams" loading="lazy" onclick="openLB(this.src)"><div class="label">hemp beams</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/hemp-column.jpg" alt="hemp column" loading="lazy" onclick="openLB(this.src)"><div class="label">hemp column</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/hemp-commercial-corridor.jpg" alt="hemp commercial corridor" loading="lazy" onclick="openLB(this.src)"><div class="label">hemp commercial corridor</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/hemp-hero.jpg" alt="hemp hero" loading="lazy" onclick="openLB(this.src)"><div class="label">hemp hero</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/hemp-hq-1.jpg" alt="hemp hq 1" loading="lazy" onclick="openLB(this.src)"><div class="label">hemp hq 1</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/hemp-hq-2.jpg" alt="hemp hq 2" loading="lazy" onclick="openLB(this.src)"><div class="label">hemp hq 2</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/hemp-livingroom.jpg" alt="hemp livingroom" loading="lazy" onclick="openLB(this.src)"><div class="label">hemp livingroom</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/hemp-sculptural-arch.jpg" alt="hemp sculptural arch" loading="lazy" onclick="openLB(this.src)"><div class="label">hemp sculptural arch</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/hemp-texture-arch.jpg" alt="hemp texture arch" loading="lazy" onclick="openLB(this.src)"><div class="label">hemp texture arch</div></div>
+  <div class="item"><img src="/images/products/earthen-renders/hemp-texture-closeup.jpg" alt="hemp texture closeup" loading="lazy" onclick="openLB(this.src)"><div class="label">hemp texture closeup</div></div>
+</div>
+<h2>marbellino (52)</h2>
+<div class="grid">
+  <div class="item"><img src="/images/products/marbellino/Marbellinio+fireplace.png" alt="Marbellinio fireplace" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellinio fireplace</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellinio+outside+wall.png" alt="Marbellinio outside wall" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellinio outside wall</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+angular+exterior.jpg" alt="Marbellino angular exterior" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino angular exterior</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+bathroom+15.png" alt="Marbellino bathroom 15" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino bathroom 15</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+bathroom+8.png" alt="Marbellino bathroom 8" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino bathroom 8</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+common+grey+half.jpg" alt="Marbellino common grey half" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino common grey half</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+common+grey+hallway.jpg" alt="Marbellino common grey hallway" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino common grey hallway</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+common+grey+stairwell+1.jpg" alt="Marbellino common grey stairwell 1" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino common grey stairwell 1</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+common+grey+stairwell+2.jpg" alt="Marbellino common grey stairwell 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino common grey stairwell 2</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+common+grey+stairwell+3.jpg" alt="Marbellino common grey stairwell 3" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino common grey stairwell 3</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+counters+2.png" alt="Marbellino counters 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino counters 2</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+curved+balcony.jpg" alt="Marbellino curved balcony" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino curved balcony</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+curved+sunset.jpg" alt="Marbellino curved sunset" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino curved sunset</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+entry.png" alt="Marbellino entry" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino entry</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+exterior+jarrad.jpg" alt="Marbellino exterior jarrad" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino exterior jarrad</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+exterior+modern.jpg" alt="Marbellino exterior modern" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino exterior modern</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+exterior+porch.jpg" alt="Marbellino exterior porch" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino exterior porch</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+exterior+stairs.jpg" alt="Marbellino exterior stairs" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino exterior stairs</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+fireplace+dark.jpg" alt="Marbellino fireplace dark" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino fireplace dark</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+giorgi+curves.jpg" alt="Marbellino giorgi curves" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino giorgi curves</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+hallway+art.jpg" alt="Marbellino hallway art" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino hallway art</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+house+2.png" alt="Marbellino house 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino house 2</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+ivory+arch+niche.jpg" alt="Marbellino ivory arch niche" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino ivory arch niche</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+ivory+shower.jpg" alt="Marbellino ivory shower" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino ivory shower</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+kitchen+2.png" alt="Marbellino kitchen 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino kitchen 2</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+kitchen.png" alt="Marbellino kitchen" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino kitchen</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+outdoor+arches.jpg" alt="Marbellino outdoor arches" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino outdoor arches</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+rangehood+sand.jpg" alt="Marbellino rangehood sand" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino rangehood sand</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+shop+in+smokey+grey.png" alt="Marbellino shop in smokey grey" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino shop in smokey grey</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+spiral+stair.jpg" alt="Marbellino spiral stair" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino spiral stair</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+spiral+staircase.jpg" alt="Marbellino spiral staircase" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino spiral staircase</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+stairs+2.png" alt="Marbellino stairs 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino stairs 2</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+stairwell+art.jpg" alt="Marbellino stairwell art" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino stairwell art</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+stairwell.png" alt="Marbellino stairwell" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino stairwell</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+state+of+kin.jpg" alt="Marbellino state of kin" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino state of kin</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+texture+cream.jpg" alt="Marbellino texture cream" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino texture cream</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+texture+dark.jpg" alt="Marbellino texture dark" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino texture dark</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+texture+grey.jpg" alt="Marbellino texture grey" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino texture grey</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+texture+light.jpg" alt="Marbellino texture light" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino texture light</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+texture+slate.jpg" alt="Marbellino texture slate" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino texture slate</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+texture+white.jpg" alt="Marbellino texture white" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino texture white</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+white+curves.jpg" alt="Marbellino white curves" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino white curves</div></div>
+  <div class="item"><img src="/images/products/marbellino/Marbellino+with+wooden+door.png" alt="Marbellino with wooden door" loading="lazy" onclick="openLB(this.src)"><div class="label">Marbellino with wooden door</div></div>
+  <div class="item"><img src="/images/products/marbellino/bathroom+marbellino+1.png" alt="bathroom marbellino 1" loading="lazy" onclick="openLB(this.src)"><div class="label">bathroom marbellino 1</div></div>
+  <div class="item"><img src="/images/products/marbellino/marbellino-hq-1.jpg" alt="marbellino hq 1" loading="lazy" onclick="openLB(this.src)"><div class="label">marbellino hq 1</div></div>
+  <div class="item"><img src="/images/products/marbellino/marbellino-hq-2.jpg" alt="marbellino hq 2" loading="lazy" onclick="openLB(this.src)"><div class="label">marbellino hq 2</div></div>
+  <div class="item"><img src="/images/products/marbellino/marbellino-hq-3.jpg" alt="marbellino hq 3" loading="lazy" onclick="openLB(this.src)"><div class="label">marbellino hq 3</div></div>
+  <div class="item"><img src="/images/products/marbellino/marbellino-hq-4.jpg" alt="marbellino hq 4" loading="lazy" onclick="openLB(this.src)"><div class="label">marbellino hq 4</div></div>
+  <div class="item"><img src="/images/products/marbellino/marbellino-hq-5.jpg" alt="marbellino hq 5" loading="lazy" onclick="openLB(this.src)"><div class="label">marbellino hq 5</div></div>
+  <div class="item"><img src="/images/products/marbellino/marbellino-hq-6.jpg" alt="marbellino hq 6" loading="lazy" onclick="openLB(this.src)"><div class="label">marbellino hq 6</div></div>
+  <div class="item"><img src="/images/products/marbellino/marbellino-hq-7.jpg" alt="marbellino hq 7" loading="lazy" onclick="openLB(this.src)"><div class="label">marbellino hq 7</div></div>
+  <div class="item"><img src="/images/products/marbellino/marbellino-hq-8.jpg" alt="marbellino hq 8" loading="lazy" onclick="openLB(this.src)"><div class="label">marbellino hq 8</div></div>
+</div>
+<h2>metallics (62)</h2>
+<div class="grid">
+  <div class="item"><img src="/images/products/metallics/009.jpg" alt="009" loading="lazy" onclick="openLB(this.src)"><div class="label">009</div></div>
+  <div class="item"><img src="/images/products/metallics/14-metallics-rust-patina-closeup.jpg" alt="14 metallics rust patina closeup" loading="lazy" onclick="openLB(this.src)"><div class="label">14 metallics rust patina closeup</div></div>
+  <div class="item"><img src="/images/products/metallics/15-rokka-fireplace-white.jpg" alt="15 rokka fireplace white" loading="lazy" onclick="openLB(this.src)"><div class="label">15 rokka fireplace white</div></div>
+  <div class="item"><img src="/images/products/metallics/1770882026684-Screenshot_20240108_131901_Instagram.jpg" alt="1770882026684 Screenshot_20240108_131901_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1770882026684 Screenshot_20240108_131901_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1770882026690-Screenshot_20240108_131929_Instagram.jpg" alt="1770882026690 Screenshot_20240108_131929_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1770882026690 Screenshot_20240108_131929_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1770882069679-Screenshot_20240108_130651_Instagram.jpg" alt="1770882069679 Screenshot_20240108_130651_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1770882069679 Screenshot_20240108_130651_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1770882069687-Screenshot_20240108_130632_Instagram.jpg" alt="1770882069687 Screenshot_20240108_130632_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1770882069687 Screenshot_20240108_130632_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1770882069702-Screenshot_20240108_130306_Instagram.jpg" alt="1770882069702 Screenshot_20240108_130306_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1770882069702 Screenshot_20240108_130306_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1770882069711-Screenshot_20240108_130151_Instagram.jpg" alt="1770882069711 Screenshot_20240108_130151_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1770882069711 Screenshot_20240108_130151_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1770882095714-Screenshot_20240108_130128_Instagram.jpg" alt="1770882095714 Screenshot_20240108_130128_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1770882095714 Screenshot_20240108_130128_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1770882095721-Screenshot_20240108_130002_Instagram.jpg" alt="1770882095721 Screenshot_20240108_130002_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1770882095721 Screenshot_20240108_130002_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1770882095732-Screenshot_20240108_124708_Instagram.jpg" alt="1770882095732 Screenshot_20240108_124708_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1770882095732 Screenshot_20240108_124708_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1770882170611-Jose_2.png" alt="1770882170611 Jose_2" loading="lazy" onclick="openLB(this.src)"><div class="label">1770882170611 Jose_2</div></div>
+  <div class="item"><img src="/images/products/metallics/1771137985818-20240825_122115.jpg" alt="1771137985818 20240825_122115" loading="lazy" onclick="openLB(this.src)"><div class="label">1771137985818 20240825_122115</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138185339-IMG-20250925-WA0043.jpg" alt="1771138185339 IMG 20250925 WA0043" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138185339 IMG 20250925 WA0043</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138405006-Screenshot_20240108_124201_Instagram.jpg" alt="1771138405006 Screenshot_20240108_124201_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138405006 Screenshot_20240108_124201_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138405012-Screenshot_20240108_124708_Instagram.jpg" alt="1771138405012 Screenshot_20240108_124708_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138405012 Screenshot_20240108_124708_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138413821-Screenshot_20240108_125909_Instagram.jpg" alt="1771138413821 Screenshot_20240108_125909_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138413821 Screenshot_20240108_125909_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138413838-Screenshot_20240108_125945_Instagram.jpg" alt="1771138413838 Screenshot_20240108_125945_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138413838 Screenshot_20240108_125945_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138413848-Screenshot_20240108_130002_Instagram.jpg" alt="1771138413848 Screenshot_20240108_130002_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138413848 Screenshot_20240108_130002_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138421619-Screenshot_20240108_130306_Instagram.jpg" alt="1771138421619 Screenshot_20240108_130306_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138421619 Screenshot_20240108_130306_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138421635-Screenshot_20240108_130632_Instagram.jpg" alt="1771138421635 Screenshot_20240108_130632_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138421635 Screenshot_20240108_130632_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138421643-Screenshot_20240108_130651_Instagram.jpg" alt="1771138421643 Screenshot_20240108_130651_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138421643 Screenshot_20240108_130651_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138421655-Screenshot_20240108_131212_Instagram.jpg" alt="1771138421655 Screenshot_20240108_131212_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138421655 Screenshot_20240108_131212_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138421662-Screenshot_20240108_131224_Instagram.jpg" alt="1771138421662 Screenshot_20240108_131224_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138421662 Screenshot_20240108_131224_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138421669-Screenshot_20240108_130128_Instagram.jpg" alt="1771138421669 Screenshot_20240108_130128_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138421669 Screenshot_20240108_130128_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138421678-Screenshot_20240108_130151_Instagram.jpg" alt="1771138421678 Screenshot_20240108_130151_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138421678 Screenshot_20240108_130151_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138430100-Screenshot_20240108_131339_Instagram.jpg" alt="1771138430100 Screenshot_20240108_131339_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138430100 Screenshot_20240108_131339_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138437569-Screenshot_20240108_131901_Instagram.jpg" alt="1771138437569 Screenshot_20240108_131901_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138437569 Screenshot_20240108_131901_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138437576-Screenshot_20240108_131929_Instagram.jpg" alt="1771138437576 Screenshot_20240108_131929_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138437576 Screenshot_20240108_131929_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138437580-Screenshot_20240108_131937_Instagram.jpg" alt="1771138437580 Screenshot_20240108_131937_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138437580 Screenshot_20240108_131937_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138437615-Screenshot_20240108_131845_Instagram.jpg" alt="1771138437615 Screenshot_20240108_131845_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138437615 Screenshot_20240108_131845_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138446764-Screenshot_20240108_132423_Instagram.jpg" alt="1771138446764 Screenshot_20240108_132423_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138446764 Screenshot_20240108_132423_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138446779-Screenshot_20240108_132510_Instagram.jpg" alt="1771138446779 Screenshot_20240108_132510_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138446779 Screenshot_20240108_132510_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138464537-Screenshot_20240108_134904_Instagram.jpg" alt="1771138464537 Screenshot_20240108_134904_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138464537 Screenshot_20240108_134904_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138464564-Screenshot_20240108_135128_Instagram.jpg" alt="1771138464564 Screenshot_20240108_135128_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138464564 Screenshot_20240108_135128_Instagram</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138471724-Screenshot_20240108_174837_Gallery.jpg" alt="1771138471724 Screenshot_20240108_174837_Gallery" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138471724 Screenshot_20240108_174837_Gallery</div></div>
+  <div class="item"><img src="/images/products/metallics/1771138471786-Snapseed.jpeg" alt="1771138471786 Snapseed" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138471786 Snapseed</div></div>
+  <div class="item"><img src="/images/products/metallics/1771142382111-20251227_162158.jpg" alt="1771142382111 20251227_162158" loading="lazy" onclick="openLB(this.src)"><div class="label">1771142382111 20251227_162158</div></div>
+  <div class="item"><img src="/images/products/metallics/1771142384769-20251227_162123.jpg" alt="1771142384769 20251227_162123" loading="lazy" onclick="openLB(this.src)"><div class="label">1771142384769 20251227_162123</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+Metal+brass+gold+combination.png" alt="Troweled Metal brass gold combination" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled Metal brass gold combination</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+Metal+brass+with+black+patina.png" alt="Troweled Metal brass with black patina" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled Metal brass with black patina</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+Metal+copper+1.png" alt="Troweled Metal copper 1" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled Metal copper 1</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+Metal+copper.jpg" alt="Troweled Metal copper" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled Metal copper</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+Metal+copper.png" alt="Troweled Metal copper" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled Metal copper</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+Metal+stainless+steel.png" alt="Troweled Metal stainless steel" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled Metal stainless steel</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+Metal+verdigris.jpg" alt="Troweled Metal verdigris" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled Metal verdigris</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+Metals+Copper+fusion.png" alt="Troweled Metals Copper fusion" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled Metals Copper fusion</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+Metals+Scorched+copper+1.png" alt="Troweled Metals Scorched copper 1" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled Metals Scorched copper 1</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+Metals+brushed+brass+door.png" alt="Troweled Metals brushed brass door" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled Metals brushed brass door</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+metal+copper+4.png" alt="Troweled metal copper 4" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled metal copper 4</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+metal+copper+with+ageing+patina.png" alt="Troweled metal copper with ageing patina" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled metal copper with ageing patina</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+metal+scorch+steel.png" alt="Troweled metal scorch steel" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled metal scorch steel</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+metal+stainless+steel+2.png" alt="Troweled metal stainless steel 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled metal stainless steel 2</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+metals+copper+outside.png" alt="Troweled metals copper outside" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled metals copper outside</div></div>
+  <div class="item"><img src="/images/products/metallics/Troweled+metals+custom+finish.png" alt="Troweled metals custom finish" loading="lazy" onclick="openLB(this.src)"><div class="label">Troweled metals custom finish</div></div>
+  <div class="item"><img src="/images/products/metallics/manual-exterior-plum.jpg" alt="manual exterior plum" loading="lazy" onclick="openLB(this.src)"><div class="label">manual exterior plum</div></div>
+  <div class="item"><img src="/images/products/metallics/metallics-copper-greenery-hq.png" alt="metallics copper greenery hq" loading="lazy" onclick="openLB(this.src)"><div class="label">metallics copper greenery hq</div></div>
+  <div class="item"><img src="/images/products/metallics/metallics-dec2025-1.jpg" alt="metallics dec2025 1" loading="lazy" onclick="openLB(this.src)"><div class="label">metallics dec2025 1</div></div>
+  <div class="item"><img src="/images/products/metallics/metallics-dec2025-2.jpg" alt="metallics dec2025 2" loading="lazy" onclick="openLB(this.src)"><div class="label">metallics dec2025 2</div></div>
+  <div class="item"><img src="/images/products/metallics/metallics-greenery.png" alt="metallics greenery" loading="lazy" onclick="openLB(this.src)"><div class="label">metallics greenery</div></div>
+  <div class="item"><img src="/images/products/metallics/metallics-timber-wall.png" alt="metallics timber wall" loading="lazy" onclick="openLB(this.src)"><div class="label">metallics timber wall</div></div>
+</div>
+<h2>rokka (15)</h2>
+<div class="grid">
+  <div class="item"><img src="/images/products/rokka/Roka+ceiling+moody.png" alt="Roka ceiling moody" loading="lazy" onclick="openLB(this.src)"><div class="label">Roka ceiling moody</div></div>
+  <div class="item"><img src="/images/products/rokka/Roka+ceiling.png" alt="Roka ceiling" loading="lazy" onclick="openLB(this.src)"><div class="label">Roka ceiling</div></div>
+  <div class="item"><img src="/images/products/rokka/Roka+custom.png" alt="Roka custom" loading="lazy" onclick="openLB(this.src)"><div class="label">Roka custom</div></div>
+  <div class="item"><img src="/images/products/rokka/Roka+outside.png" alt="Roka outside" loading="lazy" onclick="openLB(this.src)"><div class="label">Roka outside</div></div>
+  <div class="item"><img src="/images/products/rokka/Roka+pilbara.png" alt="Roka pilbara" loading="lazy" onclick="openLB(this.src)"><div class="label">Roka pilbara</div></div>
+  <div class="item"><img src="/images/products/rokka/Roka+sample+1.png" alt="Roka sample 1" loading="lazy" onclick="openLB(this.src)"><div class="label">Roka sample 1</div></div>
+  <div class="item"><img src="/images/products/rokka/Roka+sample+2.png" alt="Roka sample 2" loading="lazy" onclick="openLB(this.src)"><div class="label">Roka sample 2</div></div>
+  <div class="item"><img src="/images/products/rokka/Roka+warm+bone.png" alt="Roka warm bone" loading="lazy" onclick="openLB(this.src)"><div class="label">Roka warm bone</div></div>
+  <div class="item"><img src="/images/products/rokka/rokka-ceiling-glass.jpg" alt="rokka ceiling glass" loading="lazy" onclick="openLB(this.src)"><div class="label">rokka ceiling glass</div></div>
+  <div class="item"><img src="/images/products/rokka/rokka-exterior.jpg" alt="rokka exterior" loading="lazy" onclick="openLB(this.src)"><div class="label">rokka exterior</div></div>
+  <div class="item"><img src="/images/products/rokka/rokka-gallery-ceiling.jpg" alt="rokka gallery ceiling" loading="lazy" onclick="openLB(this.src)"><div class="label">rokka gallery ceiling</div></div>
+  <div class="item"><img src="/images/products/rokka/rokka-hero-hq.jpg" alt="rokka hero hq" loading="lazy" onclick="openLB(this.src)"><div class="label">rokka hero hq</div></div>
+  <div class="item"><img src="/images/products/rokka/rokka-hq-1.jpg" alt="rokka hq 1" loading="lazy" onclick="openLB(this.src)"><div class="label">rokka hq 1</div></div>
+  <div class="item"><img src="/images/products/rokka/rokka-library-wall.jpg" alt="rokka library wall" loading="lazy" onclick="openLB(this.src)"><div class="label">rokka library wall</div></div>
+  <div class="item"><img src="/images/products/rokka/rokka-moody-interior.jpg" alt="rokka moody interior" loading="lazy" onclick="openLB(this.src)"><div class="label">rokka moody interior</div></div>
+</div>
+<h2>tadelakt (5)</h2>
+<div class="grid">
+  <div class="item"><img src="/images/products/tadelakt/TADELAKT1.png" alt="TADELAKT1" loading="lazy" onclick="openLB(this.src)"><div class="label">TADELAKT1</div></div>
+  <div class="item"><img src="/images/products/tadelakt/Tadelakt+bathroom+1.png" alt="Tadelakt bathroom 1" loading="lazy" onclick="openLB(this.src)"><div class="label">Tadelakt bathroom 1</div></div>
+  <div class="item"><img src="/images/products/tadelakt/Tadelakt+green.png" alt="Tadelakt green" loading="lazy" onclick="openLB(this.src)"><div class="label">Tadelakt green</div></div>
+  <div class="item"><img src="/images/products/tadelakt/Tadelakt+moody+shower.jpg" alt="Tadelakt moody shower" loading="lazy" onclick="openLB(this.src)"><div class="label">Tadelakt moody shower</div></div>
+  <div class="item"><img src="/images/products/tadelakt/Tadelakt+pink+blush.png" alt="Tadelakt pink blush" loading="lazy" onclick="openLB(this.src)"><div class="label">Tadelakt pink blush</div></div>
+</div>
+<h2>tadellino (21)</h2>
+<div class="grid">
+  <div class="item"><img src="/images/products/tadellino/07-tadelakt-bathroom-shower.jpg" alt="07 tadelakt bathroom shower" loading="lazy" onclick="openLB(this.src)"><div class="label">07 tadelakt bathroom shower</div></div>
+  <div class="item"><img src="/images/products/tadellino/1771138022645-20250227_171011.jpg" alt="1771138022645 20250227_171011" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138022645 20250227_171011</div></div>
+  <div class="item"><img src="/images/products/tadellino/1771138069710-20250721_124214.jpg" alt="1771138069710 20250721_124214" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138069710 20250721_124214</div></div>
+  <div class="item"><img src="/images/products/tadellino/1771138149522-IMG_8341.jpeg" alt="1771138149522 IMG_8341" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138149522 IMG_8341</div></div>
+  <div class="item"><img src="/images/products/tadellino/1771138307094-IMG-20260106-WA0203.jpg" alt="1771138307094 IMG 20260106 WA0203" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138307094 IMG 20260106 WA0203</div></div>
+  <div class="item"><img src="/images/products/tadellino/1771138311842-IMG-20260106-WA0204.jpg" alt="1771138311842 IMG 20260106 WA0204" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138311842 IMG 20260106 WA0204</div></div>
+  <div class="item"><img src="/images/products/tadellino/1771138351386-IMG-20260106-WA0261.jpg" alt="1771138351386 IMG 20260106 WA0261" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138351386 IMG 20260106 WA0261</div></div>
+  <div class="item"><img src="/images/products/tadellino/1771138430124-Screenshot_20240108_131718_Instagram.jpg" alt="1771138430124 Screenshot_20240108_131718_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138430124 Screenshot_20240108_131718_Instagram</div></div>
+  <div class="item"><img src="/images/products/tadellino/1771138437581-Screenshot_20240108_131944_Instagram.jpg" alt="1771138437581 Screenshot_20240108_131944_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138437581 Screenshot_20240108_131944_Instagram</div></div>
+  <div class="item"><img src="/images/products/tadellino/1771138437589-Screenshot_20240108_132044_Instagram.jpg" alt="1771138437589 Screenshot_20240108_132044_Instagram" loading="lazy" onclick="openLB(this.src)"><div class="label">1771138437589 Screenshot_20240108_132044_Instagram</div></div>
+  <div class="item"><img src="/images/products/tadellino/TADELAKT1.png" alt="TADELAKT1" loading="lazy" onclick="openLB(this.src)"><div class="label">TADELAKT1</div></div>
+  <div class="item"><img src="/images/products/tadellino/Tadelakt+bathroom+1.png" alt="Tadelakt bathroom 1" loading="lazy" onclick="openLB(this.src)"><div class="label">Tadelakt bathroom 1</div></div>
+  <div class="item"><img src="/images/products/tadellino/Tadelakt+green.png" alt="Tadelakt green" loading="lazy" onclick="openLB(this.src)"><div class="label">Tadelakt green</div></div>
+  <div class="item"><img src="/images/products/tadellino/Tadelakt+moody+shower.jpg" alt="Tadelakt moody shower" loading="lazy" onclick="openLB(this.src)"><div class="label">Tadelakt moody shower</div></div>
+  <div class="item"><img src="/images/products/tadellino/Tadelakt+pink+blush.png" alt="Tadelakt pink blush" loading="lazy" onclick="openLB(this.src)"><div class="label">Tadelakt pink blush</div></div>
+  <div class="item"><img src="/images/products/tadellino/manual-dark-shower.jpg" alt="manual dark shower" loading="lazy" onclick="openLB(this.src)"><div class="label">manual dark shower</div></div>
+  <div class="item"><img src="/images/products/tadellino/manual-outdoor-shower-vines.jpg" alt="manual outdoor shower vines" loading="lazy" onclick="openLB(this.src)"><div class="label">manual outdoor shower vines</div></div>
+  <div class="item"><img src="/images/products/tadellino/manual-shower-gold.jpg" alt="manual shower gold" loading="lazy" onclick="openLB(this.src)"><div class="label">manual shower gold</div></div>
+  <div class="item"><img src="/images/products/tadellino/manual-vanity-marble.jpg" alt="manual vanity marble" loading="lazy" onclick="openLB(this.src)"><div class="label">manual vanity marble</div></div>
+  <div class="item"><img src="/images/products/tadellino/tadellino-shower-skylight.jpg" alt="tadellino shower skylight" loading="lazy" onclick="openLB(this.src)"><div class="label">tadellino shower skylight</div></div>
+  <div class="item"><img src="/images/products/tadellino/tadellino-vanity-marble.jpg" alt="tadellino vanity marble" loading="lazy" onclick="openLB(this.src)"><div class="label">tadellino vanity marble</div></div>
+</div>
+
+<script>
+function openLB(src){ document.getElementById('lb-img').src=src; document.getElementById('lightbox').classList.add('open'); }
+function closeLB(){ document.getElementById('lightbox').classList.remove('open'); }
+document.getElementById('lightbox').addEventListener('click',function(e){ if(e.target===this)closeLB(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape')closeLB(); });
+</script>
+</body></html>
