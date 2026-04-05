@@ -1,0 +1,24 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CustomCursor from '../components/CustomCursor';
+import ScrollProgress from '../components/ScrollProgress';
+import FinishVisualizer from '../components/FinishVisualizer';
+import AnimatedFooter from '../components/AnimatedFooter';
+
+// Admin password gate — must provide ?key=tem2026
+const key = Astro.url.searchParams.get('key');
+if (key !== 'tem2026') {
+  return Astro.redirect('/visualizer');
+}
+---
+
+<Layout title="Finish Visualizer Classic (Admin) | Troweled Earth Melbourne">
+  <CustomCursor client:load />
+  <ScrollProgress client:load />
+
+  <main>
+    <FinishVisualizer client:load />
+  </main>
+
+  <AnimatedFooter client:visible />
+</Layout>

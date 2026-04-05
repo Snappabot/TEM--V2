@@ -1,17 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import CustomCursor from '../components/CustomCursor';
-import ScrollProgress from '../components/ScrollProgress';
-import FinishVisualizer from '../components/FinishVisualizer';
+import ElevationVisualizer from '../components/ElevationVisualizer';
 import AnimatedFooter from '../components/AnimatedFooter';
 ---
 
-  <Layout title="Finish Visualizer | Troweled Earth Melbourne">
-  <CustomCursor client:load />
-  <ScrollProgress client:load />
-  
-  <main>
-    <FinishVisualizer client:load />
+<Layout
+  title="Elevation Visualizer | Troweled Earth Melbourne"
+  description="See your building elevation transformed with Troweled Earth's signature plaster finishes. Upload your drawing, choose a finish, and visualise instantly."
+  hideChat={true}
+>
+  <main class="min-h-screen bg-black">
+    <ElevationVisualizer client:load />
   </main>
 
   <AnimatedFooter client:visible />
