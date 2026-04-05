@@ -50,7 +50,7 @@ function buildPrompt(
     ? 'all rendered wall surfaces, fascias, columns, piers, and exposed concrete'
     : 'all rendered wall surfaces (leave fascias, soffits, and window frames unchanged)';
 
-  let prompt = `Take the architectural elevation drawing in image 1 and apply the "${teFinishName}" plaster finish texture shown in image 2 to ${surfaceScope}. The finish should be applied boldly and visibly — make the texture and colour clearly apparent on the walls. Match the exact colour, texture, roughness, and material character from the reference sample.`;
+  let prompt = `Take the architectural elevation drawing in image 1 and apply the "${teFinishName}" plaster finish texture shown in image 2 to ${surfaceScope}. The finish should be applied boldly and visibly — make the texture and colour clearly apparent. Match the exact colour, texture, roughness, and material character from the reference sample. IMPORTANT: The elevation drawing contains area labels and annotations (e.g. "feature plaster", "rendered brickwork", "face brick"). Read these labels carefully. Only apply the finish to the specific areas the user instructs — if the user says "feature plaster areas only", apply the finish exclusively to zones labeled "feature plaster" and leave all other surfaces (brick, rendered brickwork, etc.) completely unchanged.`;
 
   if (userMaterials.length > 0) {
     const materialsList = userMaterials.map((m, i) => `image ${i + 3} (${m.label})`).join(', ');

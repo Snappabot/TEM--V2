@@ -654,16 +654,17 @@ export default function ElevationVisualizer() {
               </label>
 
               {/* Notes field */}
-              <div className="mt-8">
-                <label className="block text-xs tracking-widest uppercase text-white/40 mb-2">
-                  Describe where you want the finish applied (optional)
+              <div className="mt-8 border border-[#8b7355]/40 rounded-sm p-4 bg-[#8b7355]/5">
+                <label className="block text-xs tracking-widest uppercase text-[#8b7355] mb-1">
+                  Where to apply the finish — read the drawing labels
                 </label>
+                <p className="text-xs text-white/40 mb-3">The AI reads your drawing's annotations. Tell it exactly which labeled areas to apply the finish to.</p>
                 <textarea
                   value={userNotes}
                   onChange={(e) => setUserNotes(e.target.value)}
-                  placeholder="e.g. Apply Marbellino to the rendered wall areas only. Leave the brick base coat and window frames as-is."
+                  placeholder={'e.g. "Apply only to the areas labeled feature plaster. Leave rendered brickwork, face brick, and all other surfaces unchanged."'}
                   rows={3}
-                  className="w-full bg-white/5 border border-white/20 rounded-sm px-3 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#8b7355] transition-colors resize-none"
+                  className="w-full bg-white/5 border border-white/10 rounded-sm px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#8b7355] transition-colors resize-none"
                 />
               </div>
 
