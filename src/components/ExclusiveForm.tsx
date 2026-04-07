@@ -265,11 +265,11 @@ export default function ExclusiveForm() {
     <section
       id="application"
       className="relative w-full"
-      style={{ background: '#0a0a0a', padding: 'clamp(4rem, 10vw, 8rem) 0' }}
+      style={{ background: '#0a0a0a', padding: 'clamp(1.5rem, 6vw, 6rem) 0 clamp(2rem, 8vw, 6rem)' }}
     >
       <div className="max-w-2xl mx-auto px-6">
         {/* Progress dots */}
-        <div className="flex justify-center gap-3 mb-12">
+        <div className="flex justify-center gap-3 mb-6">
           {[1, 2, 3, 4].map(s => (
             <div
               key={s}
@@ -288,7 +288,7 @@ export default function ExclusiveForm() {
           Step {step} of 4
         </p>
         <h2
-          className="text-center mb-10"
+          className="text-center mb-6"
           style={{
             fontFamily: "'Cormorant Garamond', serif",
             fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
