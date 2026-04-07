@@ -193,8 +193,9 @@ function extractBrief(history: { role: string; content: string }[]): ProjectBrie
   const userMessages = history.filter(m => m.role === 'user');
   const botMessages = history.filter(m => m.role === 'assistant');
 
-  // Pattern 1: explicit intro ("I'm Joe", "my name is Joe", "call me Joe")
-  const explicitName = allText.match(/(?:i'?m|i am|my name(?:'s| is)?|it'?s|call me|name'?s)\s+([A-Za-z]{2,14})\b/i);
+  // Pattern 1: explicit intro ("I'm Joe", "my name is Joe", "call me Joe") — search USER messages only
+  const userText = userMessages.map(m => m.content).join(' ');
+  const explicitName = userText.match(/(?:i'?m|i am|my name(?:'s| is)?|it'?s|call me|name'?s)\s+([A-Za-z]{2,14})\b/i);
   if (explicitName) {
     brief.name = explicitName[1].charAt(0).toUpperCase() + explicitName[1].slice(1);
   }
