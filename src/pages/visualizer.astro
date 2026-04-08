@@ -1,17 +1,3 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import ElevationVisualizer from '../components/ElevationVisualizer';
-import AnimatedFooter from '../components/AnimatedFooter';
+return Astro.redirect('/');
 ---
-
-<Layout
-  title="Elevation Visualizer | Troweled Earth Melbourne"
-  description="See your building elevation transformed with Troweled Earth's signature plaster finishes. Upload your drawing, choose a finish, and visualise instantly."
-  hideChat={true}
->
-  <main class="min-h-screen bg-black">
-    <ElevationVisualizer client:load />
-  </main>
-
-  <AnimatedFooter client:visible />
-</Layout>

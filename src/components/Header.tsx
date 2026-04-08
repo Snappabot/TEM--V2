@@ -9,7 +9,7 @@ const navLinks = [
   { label: 'Applicators', href: '/applicators' },
   { label: 'Where to Buy', href: '/suppliers' },
   { label: 'Blog', href: '/blog' },
-  { label: 'Visualizer', href: '/visualizer' },
+
   { label: 'Contact', href: '/#contact' },
 ];
 
