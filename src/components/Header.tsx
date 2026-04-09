@@ -2,15 +2,14 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const navLinks = [
-  { label: 'Finishes', href: '/#finishes' },
+  { label: 'Finishes', href: '/finishes' },
   { label: 'Projects', href: '/projects' },
   { label: 'Our Story', href: '/story' },
   { label: 'Training', href: '/training' },
   { label: 'Applicators', href: '/applicators' },
   { label: 'Where to Buy', href: '/suppliers' },
   { label: 'Blog', href: '/blog' },
-
-  { label: 'Contact', href: '/#contact' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 // Animation variants
