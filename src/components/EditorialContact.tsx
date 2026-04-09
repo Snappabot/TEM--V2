@@ -20,7 +20,7 @@ export default function EditorialContact() {
   const rightY       = useTransform(scrollYProgress, [0.5, 1], ['50px', '0px']);
 
   return (
-    <section ref={containerRef} style={{ height: '300vh' }} className="relative">
+    <section id="contact" ref={containerRef} style={{ height: '300vh' }} className="relative">
       <div ref={inViewRef} className="sticky top-0 h-screen bg-[#0a0a0a] overflow-hidden flex items-center">
         <div className="w-full max-w-7xl mx-auto px-6 md:px-12">
           <div className="grid md:grid-cols-2 gap-16 md:gap-24 items-center">

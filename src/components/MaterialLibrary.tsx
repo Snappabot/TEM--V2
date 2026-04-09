@@ -82,6 +82,7 @@ export default function MaterialLibrary() {
 
   return (
     <section
+      id="finishes"
       ref={sectionRef}
       className="relative"
       style={{ height: `${materials.length * 40}vh` }}
