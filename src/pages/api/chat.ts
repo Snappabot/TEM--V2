@@ -339,7 +339,9 @@ function respond(message: string, history: { role: string; content: string }[], 
   let collectEmail = false;
 
   // ── Greeting only ─────────────────────────────────────────────────────────
-  if (msgs <= 1 || lower.match(/^(hi+|hello|hey|g'?day|yo|howdy|hiya|sup)[\s!.]*$/i)) {
+  // Only show welcome if bot hasn't greeted yet AND it's a pure greeting message
+  const alreadyGreeted = history.some(m => m.role === 'assistant' && m.content.includes("I'm Jose"));
+  if (!alreadyGreeted && (msgs <= 1 || lower.match(/^(hi+|hello|hey|g'?day|yo|howdy|hiya|sup)[\s!.]*$/i))) {
     return { reply: `G'day! 👋 I'm Jose, the Troweled Earth assistant — I know the full product range inside out and I'm here to help.\n\nWhat can I help you with today? And what's your name?`, shouldEmail: false, collectEmail: false };
   }
 
