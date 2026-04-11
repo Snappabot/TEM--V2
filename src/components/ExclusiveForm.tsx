@@ -44,12 +44,21 @@ function RadioTile({
     <button
       type="button"
       onClick={onClick}
-      className="px-5 py-4 rounded text-sm font-medium tracking-wide transition-all duration-200 text-left w-full"
       style={{
+        display: 'block',
+        width: '100%',
+        padding: '16px 20px',
+        borderRadius: '4px',
+        fontSize: '0.875rem',
+        fontWeight: 500,
+        letterSpacing: '0.05em',
+        textAlign: 'left',
+        transition: 'all 0.2s',
         background: selected ? 'rgba(139,115,85,0.12)' : '#111',
         border: `1px solid ${selected ? '#8b7355' : 'rgba(255,255,255,0.1)'}`,
         color: selected ? '#c9aa82' : 'rgba(255,255,255,0.7)',
         boxShadow: selected ? '0 0 0 1px #8b7355' : 'none',
+        cursor: 'pointer',
       }}
     >
       {label}
@@ -340,7 +349,7 @@ export default function ExclusiveForm() {
 
               {step === 2 && (
                 <div className="flex flex-col gap-8">
-                  <div className="flex flex-col gap-3">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Space Type <span style={{ color: '#8b7355' }}>*</span>
                     </label>
@@ -369,7 +378,7 @@ export default function ExclusiveForm() {
 
               {step === 3 && (
                 <div className="flex flex-col gap-12">
-                  <div className="flex flex-col gap-3">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Timeline <span style={{ color: '#8b7355' }}>*</span>
                     </label>
@@ -385,7 +394,7 @@ export default function ExclusiveForm() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Investment Level <span style={{ color: '#8b7355' }}>*</span>
                     </label>
@@ -401,7 +410,7 @@ export default function ExclusiveForm() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Reference Images
                       <span className="ml-2 normal-case tracking-normal text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
