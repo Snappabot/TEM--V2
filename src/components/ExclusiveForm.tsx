@@ -265,7 +265,7 @@ export default function ExclusiveForm() {
     <section
       id="application"
       className="relative w-full"
-      style={{ background: '#0a0a0a', padding: 'clamp(1.5rem, 6vw, 6rem) 0 clamp(2rem, 8vw, 6rem)' }}
+      style={{ background: '#0a0a0a', padding: 'clamp(1.5rem, 6vw, 6rem) clamp(2rem, 5vw, 4rem) clamp(2rem, 8vw, 6rem)' }}
     >
       <div className="max-w-2xl mx-auto px-8 md:px-6">
         {/* Progress dots */}
