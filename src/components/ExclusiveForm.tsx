@@ -375,12 +375,12 @@ export default function ExclusiveForm() {
               )}
 
               {step === 3 && (
-                <div className="flex flex-col gap-8">
+                <div className="flex flex-col gap-12">
                   <div className="flex flex-col gap-3">
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Timeline <span style={{ color: '#8b7355' }}>*</span>
                     </label>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                       {TIMELINES.map(t => (
                         <RadioTile
                           key={t}
@@ -396,7 +396,7 @@ export default function ExclusiveForm() {
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Investment Level <span style={{ color: '#8b7355' }}>*</span>
                     </label>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                       {INVESTMENTS.map(t => (
                         <RadioTile
                           key={t}
