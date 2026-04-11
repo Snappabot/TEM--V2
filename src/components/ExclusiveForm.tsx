@@ -154,7 +154,7 @@ function SuccessState({ name }: { name: string }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-6"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-10"
       style={{ background: '#0a0a0a' }}
     >
       <div className="max-w-lg mx-auto">
@@ -171,7 +171,7 @@ function SuccessState({ name }: { name: string }) {
           className="mb-6 leading-tight"
           style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2rem, 5vw, 3.5rem)', color: 'white', fontWeight: 600 }}
         >
-          Thank you, {name.split(' ')[0]}.
+          Thank you for your submission, {name.split(' ')[0].charAt(0).toUpperCase() + name.split(' ')[0].slice(1)}.
         </h2>
         <p className="mb-12 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1rem', maxWidth: '38ch', margin: '0 auto 3rem' }}>
           We review all applications personally. If your project is the right fit for an exclusive commission, we will be in touch within 5 business days.
