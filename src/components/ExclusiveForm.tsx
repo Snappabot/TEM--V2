@@ -82,6 +82,7 @@ function FieldInput({
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
+        autoComplete="off"
         style={{
           display: 'block',
           width: '100%',
