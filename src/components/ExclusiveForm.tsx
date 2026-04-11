@@ -356,14 +356,7 @@ export default function ExclusiveForm() {
                     </div>
                   </div>
 
-                  <FieldTextarea
-                    label="Describe the feeling you want this finish to create"
-                    value={form.feeling}
-                    onChange={v => update('feeling', v)}
-                    required
-                    placeholder=""
-                    rows={5}
-                  />
+
 
                   <FieldInput
                     label="Architect or Designer on the project"
@@ -469,7 +462,7 @@ export default function ExclusiveForm() {
                     <ReviewRow label="Email" value={form.email} />
                     <ReviewRow label="Phone" value={form.phone || '—'} />
                     <ReviewRow label="Space Type" value={form.spaceType} />
-                    <ReviewRow label="Vision" value={form.feeling} />
+
                     <ReviewRow label="Designer / Architect" value={form.designerName || '—'} />
                     <ReviewRow label="Timeline" value={form.timeline} />
                     <ReviewRow label="Investment" value={form.investment} />
