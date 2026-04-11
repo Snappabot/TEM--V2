@@ -359,7 +359,7 @@ export default function ExclusiveForm() {
                     value={form.feeling}
                     onChange={v => update('feeling', v)}
                     required
-                    placeholder="e.g. Warm, textured, like touching ancient stone…"
+                    placeholder=""
                     rows={5}
                   />
 
