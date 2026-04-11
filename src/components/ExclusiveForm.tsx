@@ -218,7 +218,7 @@ export default function ExclusiveForm() {
 
   const canProceed = () => {
     if (step === 1) return form.fullName.trim() && form.email.trim() && form.email.includes('@');
-    if (step === 2) return form.spaceType && form.feeling.trim();
+    if (step === 2) return form.spaceType;
     if (step === 3) return form.timeline && form.investment;
     return true;
   };
