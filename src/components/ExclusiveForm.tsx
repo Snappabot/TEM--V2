@@ -344,7 +344,7 @@ export default function ExclusiveForm() {
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Space Type <span style={{ color: '#8b7355' }}>*</span>
                     </label>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-col gap-2">
                       {SPACE_TYPES.map(t => (
                         <RadioTile
                           key={t}
@@ -373,7 +373,7 @@ export default function ExclusiveForm() {
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Timeline <span style={{ color: '#8b7355' }}>*</span>
                     </label>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-col gap-2">
                       {TIMELINES.map(t => (
                         <RadioTile
                           key={t}
@@ -389,7 +389,7 @@ export default function ExclusiveForm() {
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Investment Level <span style={{ color: '#8b7355' }}>*</span>
                     </label>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-col gap-2">
                       {INVESTMENTS.map(t => (
                         <RadioTile
                           key={t}
@@ -442,13 +442,7 @@ export default function ExclusiveForm() {
                     )}
                   </div>
 
-                  <FieldTextarea
-                    label="Anything else you would like us to know"
-                    value={form.notes}
-                    onChange={v => update('notes', v)}
-                    placeholder="Optional"
-                    rows={3}
-                  />
+
                 </div>
               )}
 
@@ -472,7 +466,7 @@ export default function ExclusiveForm() {
                         value={(form.files as unknown as File[]).map(f => f.name).join(', ')}
                       />
                     )}
-                    <ReviewRow label="Additional Notes" value={form.notes || '—'} />
+
                   </div>
 
                   {submitError && (
