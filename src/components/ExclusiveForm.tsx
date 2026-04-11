@@ -125,6 +125,7 @@ function FieldTextarea({
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
+        autoComplete="off"
         className="w-full px-4 py-3 rounded text-white text-sm outline-none resize-none transition-all duration-200"
         style={{
           background: '#111',
