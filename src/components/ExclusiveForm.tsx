@@ -44,7 +44,7 @@ function RadioTile({
     <button
       type="button"
       onClick={onClick}
-      className="px-5 py-3 rounded text-sm font-medium tracking-wide transition-all duration-200 text-left"
+      className="px-5 py-4 rounded text-sm font-medium tracking-wide transition-all duration-200 text-left w-full"
       style={{
         background: selected ? 'rgba(139,115,85,0.12)' : '#111',
         border: `1px solid ${selected ? '#8b7355' : 'rgba(255,255,255,0.1)'}`,
