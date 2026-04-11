@@ -300,7 +300,7 @@ export default function ExclusiveForm() {
         </h2>
 
         {/* Step content */}
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-x-hidden">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={step}
