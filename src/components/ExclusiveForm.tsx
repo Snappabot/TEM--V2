@@ -353,7 +353,7 @@ export default function ExclusiveForm() {
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Space Type <span style={{ color: '#8b7355' }}>*</span>
                     </label>
-                    <div className="flex flex-col gap-2">
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                       {SPACE_TYPES.map(t => (
                         <RadioTile
                           key={t}
@@ -377,12 +377,12 @@ export default function ExclusiveForm() {
               )}
 
               {step === 3 && (
-                <div className="flex flex-col gap-12">
+                <div style={{ display: "flex", flexDirection: "column", gap: "48px" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Timeline <span style={{ color: '#8b7355' }}>*</span>
                     </label>
-                    <div className="flex flex-col gap-2">
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                       {TIMELINES.map(t => (
                         <RadioTile
                           key={t}
@@ -398,7 +398,7 @@ export default function ExclusiveForm() {
                     <label className="text-xs tracking-widest uppercase" style={{ color: 'rgba(139,115,85,0.9)' }}>
                       Investment Level <span style={{ color: '#8b7355' }}>*</span>
                     </label>
-                    <div className="flex flex-col gap-2">
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                       {INVESTMENTS.map(t => (
                         <RadioTile
                           key={t}
