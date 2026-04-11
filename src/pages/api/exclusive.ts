@@ -148,8 +148,9 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const emailPayload: Record<string, unknown> = {
-      from: 'Troweled Earth <notifications@resend.dev>',
-      to: ['matt-troweledearth@outlook.com'],
+      from: 'Troweled Earth <onboarding@resend.dev>',
+      to: ['snappabot@proton.me'],
+      replyTo: email,
       subject: `🎨 Exclusive Commission Application — ${fullName}`,
       html: emailHtml,
     };
