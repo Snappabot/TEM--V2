@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { ViewTransitions } from 'astro:transitions';
 import Header from '../components/Header';
 import ChatWidget from '../components/ChatWidget/ChatWidget';
+import MusicPlayer from '../components/MusicPlayer';
 import CustomCursor from '../components/CustomCursor';
 
 interface Props {
@@ -159,5 +160,6 @@ if (jsonLd) {
       <slot />
     </main>
     {!hideChat && <ChatWidget client:load />}
+    <MusicPlayer client:load />
   </body>
 </html>
