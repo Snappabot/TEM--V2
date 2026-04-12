@@ -24,7 +24,7 @@ export default function MusicPlayer() {
       videoId: YOUTUBE_ID,
       playerVars: { autoplay: 0, controls: 0, loop: 0, rel: 0, showinfo: 0, modestbranding: 1 },
       events: {
-        onReady: (e: any) => { e.target.setVolume(12); setReady(true); },
+        onReady: (e: any) => { e.target.setVolume(8); setReady(true); },
         onStateChange: (e: any) => {
           // YT.PlayerState.ENDED = 0
           if (e.data === 0) { setPlaying(false); setHasPlayed(true); }
