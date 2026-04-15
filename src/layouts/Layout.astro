@@ -152,7 +152,15 @@ if (jsonLd) {
     ))}
 
     <ViewTransitions />
-  </head>
+    <!-- Google Analytics GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3SYT5DMK9Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-3SYT5DMK9Y');
+  </script>
+</head>
   <body class="antialiased scroll-smooth w-full min-w-full bg-black text-white">
     <CustomCursor client:load />
     {!hideHeader && <Header client:load />}
